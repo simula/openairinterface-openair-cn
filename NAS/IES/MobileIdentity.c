@@ -244,6 +244,9 @@ dump_mobile_identity_xml (
     printf ("    <digit13>%u</digit13>\n", imeisv->digit13);
     printf ("    <digit14>%u</digit14>\n", imeisv->digit14);
     printf ("    <digit15>%u</digit15>\n", imeisv->digit15);
+    printf("    <digit16>%u</digit16>\n", imeisv->digit16);
+    printf("    <digit17>%u</digit17>\n", imeisv->digit17);
+
   } else if (mobileidentity->tmsi.typeofidentity == MOBILE_IDENTITY_TMSI) {
     TmsiMobileIdentity_t                   *tmsi = &mobileidentity->tmsi;
 
@@ -422,13 +425,17 @@ decode_imeisv_mobile_identity (
   decoded++;
   imeisv->digit14 = *(buffer + decoded) & 0xf;
   imeisv->digit15 = (*(buffer + decoded) >> 4) & 0xf;
+  decoded++;
+  imeisv->digit16 = *(buffer + decoded) & 0xf;
+  imeisv->digit17 = (*(buffer + decoded) >> 4) & 0xf;
 
   /*
    * IMEISV is coded using BCD coding. If the number of identity digits is
    * even then bits 5 to 8 of the last octet shall be filled with an end
    * mark coded as "1111".
    */
-  if ((imeisv->oddeven == MOBILE_IDENTITY_EVEN) && (imeisv->digit15 != 0x0f)) {
+   
+  if ((imeisv->oddeven == MOBILE_IDENTITY_EVEN) && (imeisv->digit17 != 0x0f)) {
     return (TLV_ENCODE_VALUE_DOESNT_MATCH);
   }
 
@@ -652,11 +659,12 @@ encode_imeisv_mobile_identity (
   encoded++;
   *(buffer + encoded) = 0x00 | (imeisv->digit13 << 4) | imeisv->digit12;
   encoded++;
+  *(buffer + encoded) = 0x00 | (imeisv->digit15 << 4) | imeisv->digit14;
 
   if (imeisv->oddeven != MOBILE_IDENTITY_EVEN) {
-    *(buffer + encoded) = 0x00 | (imeisv->digit15 << 4) | imeisv->digit14;
+    *(buffer + encoded) = 0x00 | (imeisv->digit17 << 4) | imeisv->digit16;
   } else {
-    *(buffer + encoded) = 0xf0 | imeisv->digit14;
+    *(buffer + encoded) = 0xf0 | imeisv->digit16;
   }
 
   encoded++;

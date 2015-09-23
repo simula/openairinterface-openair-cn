@@ -56,6 +56,28 @@ typedef struct {
 } ImsiMobileIdentity_t;
 
 typedef struct {
+  uint8_t  digit1:4;
+  uint8_t  oddeven:1;
+  uint8_t  typeofidentity:3;
+  uint8_t  digit2:4;
+  uint8_t  digit3:4;
+  uint8_t  digit4:4;
+  uint8_t  digit5:4;
+  uint8_t  digit6:4;
+  uint8_t  digit7:4;
+  uint8_t  digit8:4;
+  uint8_t  digit9:4;
+  uint8_t  digit10:4;
+  uint8_t  digit11:4;
+  uint8_t  digit12:4;
+  uint8_t  digit13:4;
+  uint8_t  digit14:4;
+  uint8_t  digit15:4;
+  uint8_t  digit16:4;
+  uint8_t  digit17:4;
+} ImeisvMobileIdentity_t;
+
+typedef struct {
   uint8_t  spare:2;
   uint8_t  mbmssessionidindication:1;
   uint8_t  mccmncindication:1;
@@ -74,7 +96,6 @@ typedef struct {
 } TmgiMobileIdentity_t;
 
 typedef ImsiMobileIdentity_t ImeiMobileIdentity_t;
-typedef ImsiMobileIdentity_t ImeisvMobileIdentity_t;
 typedef ImsiMobileIdentity_t TmsiMobileIdentity_t;
 typedef ImsiMobileIdentity_t NoMobileIdentity_t;
 
