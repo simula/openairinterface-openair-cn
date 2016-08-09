@@ -964,7 +964,7 @@ s1ap_handle_sctp_deconnection (
   /*
    * Checking that the assoc id has a valid eNB attached to.
    */
-  enb_association = s1ap_is_enb_assoc_id_in_list (assoc_id);
+  enb_association = s1ap_is_enb_assoc_id_in_list (assoc_id); 
 	MSC_LOG_EVENT (MSC_S1AP_MME, "0 Event SCTP_CLOSE_ASSOCIATION assoc_id: %d", assoc_id);
 	
   if (enb_association == NULL) {
