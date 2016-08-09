@@ -33,6 +33,8 @@
 //------------------------------------------------------------------------------
 void free_wrapper(void *ptr)
 {
-  free(ptr);
-  ptr = NULL;
+  if (ptr != NULL){
+	free(ptr);
+	ptr = NULL;
+  }
 }

@@ -310,7 +310,7 @@ s1ap_mme_handle_s1_setup_request (
     /* Requirement MME36.413R10_8.7.3.4 Abnormal Conditions
      * If the eNB initiates the procedure by sending a S1 SETUP REQUEST message including the PLMN Identity IEs and
      * none of the PLMNs provided by the eNB is identified by the MME, then the MME shall reject the eNB S1 Setup
-     * Request procedure with the appropriate cause value, e.g, “Unknown PLMN”.
+     * Request procedure with the appropriate cause value, e.g, â€œUnknown PLMNâ€�.
      */
     ta_ret = s1ap_mme_compare_ta_lists (&s1SetupRequest_p->supportedTAs);
 
@@ -957,19 +957,37 @@ s1ap_handle_sctp_deconnection (
   int                                     i = 0;
   MessageDef                             *message_p = NULL;
   enb_description_t                      *enb_association = NULL;
+  hash_node_t                            *node = NULL;
+  hash_key_t 							 mme_ue_id = 0;  
 
   OAILOG_FUNC_IN (LOG_S1AP);
   /*
    * Checking that the assoc id has a valid eNB attached to.
    */
   enb_association = s1ap_is_enb_assoc_id_in_list (assoc_id);
-
+	MSC_LOG_EVENT (MSC_S1AP_MME, "0 Event SCTP_CLOSE_ASSOCIATION assoc_id: %d", assoc_id);
+	
   if (enb_association == NULL) {
     OAILOG_ERROR (LOG_S1AP, "No eNB attached to this assoc_id: %d\n", assoc_id);
     OAILOG_FUNC_RETURN (LOG_S1AP, RETURNerror);
-  }
-
-  MSC_LOG_EVENT (MSC_S1AP_MME, "0 Event SCTP_CLOSE_ASSOCIATION assoc_id: %d", assoc_id);
+  }else{
+		/** Force the detach for any UE which was attached **/
+		while (i < enb_association->ue_coll.size) {
+		if(enb_association->ue_coll.nodes[i] != NULL){
+			node = enb_association->ue_coll.nodes[i];
+			mme_ue_id = ((ue_description_t *)node->data)->mme_ue_s1ap_id;
+			OAILOG_TRACE(LOG_S1AP, "mme_ue_id found: %x \n", mme_ue_id);
+			if (mme_ue_id){
+				OAILOG_TRACE(LOG_S1AP, "Executing UE detah: %x \n", ((ue_description_t *)node->data)->mme_ue_s1ap_id);
+				emm_proc_detach_request (((ue_description_t *)node->data)->mme_ue_s1ap_id, 0 /* ??? emm_proc_detach_type_t */ ,
+																		 1 /*switch_off */ , 0 /*native_ksi */ , 0 /*ksi */ ,
+																		 NULL /*guti */ , NULL /*imsi */ , NULL /*imei */ );
+							 
+			}
+		}
+		i++;
+		}
+	}
 
   hashtable_ts_apply_callback_on_elements(&enb_association->ue_coll, s1ap_send_enb_deregistered_ind, (void*)&arg, (void**)&message_p);
 

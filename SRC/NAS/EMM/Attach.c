@@ -446,6 +446,7 @@ emm_proc_attach_request (
     /*
      * Create UE's EMM context
      */
+	OAILOG_TRACE (LOG_NAS_EMM, "EMM-PROC  - Creating new emm context\n");
     emm_ctx = (emm_data_context_t *) calloc (1, sizeof (emm_data_context_t));
 
     if (!emm_ctx) {
