@@ -55,6 +55,11 @@ typedef enum {
   ECM_DEREGISTERED,
 } mm_state_t;
 
+typedef enum {
+  INVALID_STA = 0,
+  S1AP_UE_DETACH,
+} s1_state_t;
+
 #define IMSI_DIGITS_MAX 15
 
 typedef struct {
@@ -131,6 +136,7 @@ typedef struct ue_context_s {
   uint8_t                msisdn_length;               // set by S6A UPDATE LOCATION ANSWER
 
   mm_state_t             mm_state;                    // not set/read
+  s1_state_t             ue_s1_state;
   /* Globally Unique Temporary Identity */
   bool                   is_guti_set;                 // is guti has been set
   guti_t                 guti;                        // guti.gummei.plmn set by nas_auth_param_req_t

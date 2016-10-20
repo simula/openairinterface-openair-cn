@@ -863,6 +863,10 @@ mme_app_handle_s1ap_ue_context_release_complete (
 
   mme_notify_ue_context_released(&mme_app_desc.mme_ue_contexts, ue_context_p);
   //mme_remove_ue_context(&mme_app_desc.mme_ue_contexts, ue_context_p);
+  if(S1AP_UE_DETACH == ue_context_p->ue_s1_state)
+  {
+      mme_remove_ue_context(&mme_app_desc.mme_ue_contexts, ue_context_p);//Add for ue detach 
+   }
   // TODO remove in context GBR bearers
   OAILOG_FUNC_OUT (LOG_MME_APP);
 }

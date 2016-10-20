@@ -527,7 +527,11 @@ mme_app_handle_delete_session_rsp (
    * Remove UE Context
    */
   mme_app_itti_delete_session_rsp(ue_context_p->mme_ue_s1ap_id);
-  mme_remove_ue_context(&mme_app_desc.mme_ue_contexts, ue_context_p);
+  //mme_remove_ue_context(&mme_app_desc.mme_ue_contexts, ue_context_p);
+  if(ue_context_p->ue_s1_state != S1AP_UE_DETACH)
+  {
+      mme_remove_ue_context(&mme_app_desc.mme_ue_contexts, ue_context_p);
+  }
   OAILOG_FUNC_OUT (LOG_MME_APP);
 }
 
