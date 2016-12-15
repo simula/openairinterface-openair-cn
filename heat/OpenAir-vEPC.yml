@@ -1,0 +1,1907 @@
+heat_template_version: 2015-04-30
+
+description: >
+  Heat Orchestration Template (HOT) to deploy OpenAir Core Network vEPC.
+  Networks, security groups, volumes, ports and instances get created by heat,
+  latest openair core network code is compiled on the build instance and
+  deployed to the SPGW/MME/HSS instances. Once the stack is created, it
+  provides the SSH commandline to access the vEPC.
+
+### STACK INPUTS
+parameters:
+  key:
+    type: string
+    label: SSH Keypair
+    description: Name of the SSH keypair for logging in into instances
+    constraints:
+    - custom_constraint: nova.keypair
+    default: "OAI-Admin"
+  image:
+    type: string
+    label: Ubuntu Image
+    description: Name of the Ubuntu image (needs os-*-config installed)
+    constraints:
+    - custom_constraint: glance.image
+    default: "ubuntu-trusty-os-config"
+  extnet:
+    type: string
+    label: External Network
+    description: Name of the external network containing 2 free floating IPs
+    default: "Lab3-Internet"
+  base_url: 
+    type: string 
+    label: Base URL
+    description: Base URL to fetch kernel config and database dump from
+    default: "https://inostack.vptt.ch"
+  run_flavor:
+    type: string
+    label: Run Flavor
+    description: Flavor to use for normal instances
+    constraints:
+    - custom_constraint: nova.flavor
+    default: "m1.tiny"
+  build_flavor:
+    type: string
+    label: Build Flavor
+    description: Flavor to use for the building instance
+    constraints:
+    - custom_constraint: nova.flavor
+    default: "m1.medium"
+  run_vol_size:
+    type: number
+    label: Run Volume Size
+    description: Volume size in GB to use for normal instances
+    default: 5
+    constraints:
+    - range: { min: 5, max: 10 }
+  build_vol_size:
+    type: number
+    label: Build Volume Size
+    description: Volume size in GB to use for the building instance
+    default: 20
+    constraints:
+    - range: { min: 20, max: 50 }
+  hss_name:
+    type: string
+    label: HSS Hostname
+    description: Hostname of the HSS instance
+    constraints:
+    - length: { min: 3, max: 10 }
+      description: Hostnameg name must be between 3 and 10 characters
+    - allowed_pattern: "[a-z0-9]*"
+      description: Hostname contains only lowercase characters and numbers
+    default: hss
+  mme_name:
+    type: string
+    label: MME Hostname
+    description: Hostname of the MME instance
+    constraints:
+    - length: { min: 3, max: 10 }
+      description: Hostname name must be between 3 and 10 characters
+    - allowed_pattern: "[a-z0-9]*"
+      description: Hostname contains only lowercase characters and numbers
+    default: mme
+  spgw_name:
+    type: string
+    label: SPGW Hostname
+    description: Hostname of the SPGW instance
+    constraints:
+    - length: { min: 3, max: 10 }
+      description: Hostname name must be between 3 and 10 characters
+    - allowed_pattern: "[a-z0-9]*"
+      description: Hostname contains only lowercase characters and numbers
+    default: spgw 
+  build_name:
+    type: string
+    label: Build Hostname
+    description: Hostname of the build instance
+    constraints:
+    - length: { min: 3, max: 10 }
+      description: Hostname name must be between 3 and 10 characters
+    - allowed_pattern: "[a-z0-9]*"
+      description: Hostname contains only lowercase characters and numbers
+    default: build
+  dns1:
+    type: string
+    label: Internal Network DNS 1
+    description: Upstream DNS server 1
+    default: "8.8.8.8"
+  dns2:
+    type: string
+    label: Internal Network DNS 2
+    description: Upstream DNS server 2
+    default: "8.8.4.4"
+  int_cidr: 
+    type: string
+    label: Internal Network CIDR
+    description: Internal network IPv4 Adressing in CIDR notation
+    default: 172.16.0.0/24
+  enb_cidr:
+    type: string
+    label: eNB (VPN) CIDR
+    description: eNB (VPN) network IPv4 Adressing in CIDR notation
+    default: 172.31.0.0/24
+  realm:
+    type: string
+    label: Realm
+    description: Realm (depends on database and hostnames used)
+    default: inostack
+  enb_count:
+    type: number
+    label: eNB Count
+    description: Number of eNBs to support (power of 2)
+    default: 4
+    constraints:
+    - allowed_values:
+      - 2
+      - 4
+      - 8
+      - 16
+  enb_start:
+    type: number
+    label: eNB Start Address
+    description: Start address of eNBs in eNB VPN network
+    default: 10
+    constraints:
+      - range: { min: 10, max: 230 }
+  enb_hostname_prefix:
+    type: string
+    label: Hostname Prefix for eNBs
+    description: Hostname prefix for eNBs
+    constraints:
+    - length: { min: 3, max: 9 }
+      description: Hostname prefix must be between 3 and 9 characters
+    - allowed_pattern: "[a-z]*"
+      description: Hostname prefix contains only lowercase characters
+    default: enb
+  spgw_kernel_version:
+    type: string
+    label: SPWG Kernel Version
+    description: Kernel version to use for SPGW instance (>=4.7)
+    default: 4.7.7
+  ue_dns:
+    type: string
+    label: UE DNS
+    description: DNS pushed to UEs
+    default: 8.8.8.8
+  ue_cidr:
+    type: string
+    label: UE CIDR
+    description: UE address pool in CIDR notation
+    default: 10.10.10.0/24
+  ue_mtu:
+    type: number
+    label: UE MTU
+    description: MTU pushed to UEs
+    default: 1500
+    constraints:
+    - range: { min: 1000, max: 8000 }
+  db_file:
+    type: string
+    label: HSS DB File
+    description: SQL dump file for HSS database to download from base_url
+    default: oai_db_swisscom_ino.sql
+  db_pass:
+    type: string
+    label: HSS DB Password
+    description: Password for the HSS database (user hssadmin)
+    hidden: true
+    default: change_me
+  operator_key:
+    type: string
+    label: Operator Key
+    description: Operator Key to use (depends on DB)
+    default: "11111111111111111111111111111111"
+    constraints:
+    - length: { min: 32, max: 32 }
+      description: Operator key is 32 digits
+    - allowed_pattern: "[0-9]*"
+      description: Operator key is 32 digits
+  mcc:
+    type: number
+    label: MCC
+    description: MCC to use (depends on DB)
+    default: 228
+  mnc:
+    type: number
+    label: MNC
+    description: MNC to use (depends on DB)
+    default: 88
+  mme_gid:
+    type: number
+    label: MME_GID
+    description: MME_GID to use (depends on DB)
+    default: 32768
+  mme_code:
+    type: number
+    label: MME_CODE
+    description: MME_CODE to use (depends on DB)
+    default: 1
+  tac:
+    type: number
+    label: TAC
+    description: TAC to use (depends on DB)
+    default: 1
+  ca_country:
+    type: string
+    label: CA Country
+    description: Country for Certificates
+    default: CH
+  ca_state:
+    type: string
+    label: CA State
+    description: State for Certificates
+    default: Bern
+  ca_city:
+    type: string
+    label: CA City
+    description: City for Certificates
+    default: Bern
+  ca_company:
+    type: string
+    label: CA Company
+    description: Company for Certificates
+    default: Swisscom
+  ca_unit:
+    type: string
+    label: CA Unit
+    description: Organisational unit for Certificates
+    default: INO
+  ca_email:
+    type: string
+    label: CA Email
+    description: Email Address for Certificates
+    default: Daniel.Balsiger@swisscom.com
+  ssh_pub:
+    type: string
+    label: SSH Public Key
+    description: SSH public key for instance interconnect
+    default: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6WwxDHQKgvVTqzC2S4+apYFmVTTI3N1+kTnOJZ5+K/Po9D3Uq89LY2hdRUNcBvOIDW1lGJHLoodyR/W6UaLvT1eTG1le72yCpcliq/nuDc6eUex2Mqz3CMBqWhg3L+21yme0vlT3w0S+uhkiq8s95OMCYMc60bSTHN/RqLB1o8dsLAqix6W5lDxcwVpl8V7viBTvZBUSqTHKA0AXJ4uQDdBqHZY9iUcyyKVzcEaOnd4RdAJPAD+au3dKlpfEdKQjxHTV41QM+VkuImQUMe5MQ7gU4DbHj7YSA3fJhki3jwFHMzFNbYulUgwBdNCFVTcGdQEUib6dXW8LOH59FmUut"
+  ssh_priv:
+    type: string
+    label: SSH Private Key
+    description: SSH private key for instance interconnect
+    hidden: true
+    default: >
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEowIBAAKCAQEAulsMQx0CoL1U6swtkuPmqWBZlU0yNzdfpE5ziWefivz6PQ91
+      KvPS2NoXUVDXAbziA1tZRiRy6KHckf1ulGi709XkxtZXu9sgqXJYqv57g3OnlHsd
+      jKs9wjAaloYNy/ttcpntL5U98NEvroZIqvLPeTjAmDHOtG0kxzf0aiwdaPHbCwKo
+      seluZQ8XMFaZfFe74gU72QVEqkxygNAFyeLkA3Qah2WPYlHMsilc3BGjp3eEXQCT
+      wA/mrt3SpaXxHSkI8R01eNUDPlZLiJkFDHuTEO4FOA2x4+2EgN3yYZIt48BRzMxT
+      W2LpVIMAXTQhVU3BnUBFIm+nV1vCzh+fRZlLrQIDAQABAoIBACnu8OxtK7k1wVTw
+      StUB2VaFqsLQ0xrfp/LWAGOL4LeqwzhYMRpQMULAmHygvzDR6t2sgYMqEn1MZtCn
+      AWn9wz4gpFElzComXcwjQdaAWxSyQqRDq9uKcOQwZNs4IQSkd/VQs7GAWKbGu37/
+      Enz9FDiHz7avhn7NDHiTm7kEYj3JxBCw9QnpuljFu7BZlg1S4eK/rGz7in1hLo62
+      gDfGcDgUgmlJ1aG1rYP2bETsXe0necHDOvQe6rlmdTsX89y+q4QxqYGEGdjCoFZZ
+      F0mEPbS9//9GS+rER5tuSi3bD3k73zg1+e8lHAjlAR3hNmT3JKOEHB0kmTAJyrpL
+      +Gl9WIECgYEA4ekwnl3wT2p2eqmhqC+MoMcUpOtAaoA2ShG3CHcp/U6VcWIMBe7o
+      KMaJcfLp3zerAeyzRfR7t1E83alIQb9cRRd1pbhLjM60d+n6HwT0//4SBiShfQ/m
+      K7Ch1zOaB4h8O8qWDT9Uz6b0AMJA9S6BZ2We3iOT5ysS6MPOwgQAbCECgYEA0y0n
+      4zgq1YFE+56xXAt8/BKqv9nbtNfKganXTXMah+oz546CVUJDPL3z99Zp1w3rUvlJ
+      JH2wbnqvcPCuCvFdCPXpowkN5EWUTUrjeYohDXDZPaJ1pYZXeMKFyVgzZFeP+UKK
+      82gxY5O+kC1I0b2J2u0gxm74huSgBIRx54ZqDg0CgYEAhQsT+vBPyjVkuTCVZ7s5
+      Eqar3cQ+F3qSfmSYan/jVq6lDDU153ifeQQThewNF8xtBaEkoxoskfVh5xj+2Nmd
+      uYLrYkF7HN3PIp/FEeeVcf1rF/sSr9hhMXHAnkBhgfY7U+snG34ksHYeVSQRpVNS
+      GlaajTBetlGDvVkztscsiIECgYBTd0KPtVCAyLIqPaPePJAu1XX1lDcZeD0LGMUH
+      UJpI5BGV0SbEagdHR9DYwT9eB5teVTdKm/8S+5zCJ+6yVomuE/w/O0HpWnLuRc44
+      6JZ9yH+ks8SKItoJ2eClHx5Y5575Jwrif+kdcXTdaXihpaeKBzVwGMZUEqMIhgy7
+      NM5QNQKBgAT80nwpu/KJasbPd/5vlnWKkk9wW1pJJJyGvyrHvQkHYSJmrGNhci+X
+      geZreHUVqcR4VeRP14D71+zIT04r4jcio9deNBRYXdWuAhKVfvEh5iOXfuaBF24e
+      m4y0viefFNyys5/BQI0kpCtJirvAtlsQg8ig+2ALnCk5rLNbgui4
+      -----END RSA PRIVATE KEY-----
+
+### ORDER OF INPUTS
+parameter_groups:
+- label: "Passwords and Keys"
+  parameters:
+  - db_pass
+  - ssh_pub
+  - ssh_priv
+  - key
+- label: "Cloud Networks, Flavors, Images and Volumes"
+  parameters: 
+  - extnet
+  - int_cidr
+  - dns1
+  - dns2
+  - image
+  - run_flavor
+  - run_vol_size
+  - build_flavor
+  - build_vol_size
+- label: "FQDNs, Realm, SPGW kernel, HSS Database and EPC Configuration"
+  parameters:
+  - base_url
+  - spgw_kernel_version
+  - realm
+  - spgw_name
+  - mme_name
+  - hss_name
+  - build_name
+  - db_file
+  - operator_key
+  - mcc
+  - mnc
+  - mme_gid
+  - mme_code
+  - tac
+- label: "eNB and UE Settings"
+  parameters:
+  - ue_cidr
+  - ue_dns
+  - ue_mtu
+  - enb_cidr
+  - enb_count
+  - enb_start
+  - enb_hostname_prefix
+- label: "Certificate Settings"
+  parameters:
+  - ca_country
+  - ca_state
+  - ca_city
+  - ca_company
+  - ca_unit
+  - ca_email
+
+### STACK RESOURCES
+resources:
+### NETWORKS & ROUTERS
+  internal_net:
+    type: OS::Neutron::Net
+    properties:
+      name: OAI-InternalNet
+
+  internal_subnet:
+    type: OS::Neutron::Subnet
+    depends_on: internal_net
+    properties:
+      name: OAI-InternalSubnet
+      ip_version: 4
+      network_id: { get_resource: internal_net }
+      dns_nameservers:
+        - { get_param: dns1 }
+        - { get_param: dns2 }
+      cidr: { get_param: int_cidr }
+
+  router:
+    type: OS::Neutron::Router
+    properties:
+      name: OAI-Router
+
+  router_interface:
+    type: OS::Neutron::RouterInterface
+    depends_on: [ internal_subnet, internal_net, router ]
+    properties:
+      subnet: { get_resource: internal_subnet }
+      router: { get_resource: router }
+
+  router_gateway:
+    type: OS::Neutron::RouterGateway
+    depends_on: router
+    properties:
+      network: { get_param: extnet }
+      router_id: { get_resource: router }
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    depends_on: [ internal_subnet, spgw_port, router_interface ]
+    properties:
+      floating_network: { get_param: extnet }
+      port_id: { get_resource: spgw_port }
+
+### VOLUMES
+  build_vol:
+    type: OS::Cinder::Volume
+    properties:
+      name: { get_param: build_name }
+      size: { get_param: build_vol_size }
+      image: { get_param: image }
+
+  hss_vol:
+    type: OS::Cinder::Volume
+    properties:
+      name: { get_param: hss_name }
+      size: { get_param: run_vol_size }
+      image: { get_param: image }
+
+  mme_vol:
+    type: OS::Cinder::Volume
+    properties:
+      name: { get_param: mme_name }
+      size: { get_param: run_vol_size }
+      image: { get_param: image }
+
+  spgw_vol:
+    type: OS::Cinder::Volume
+    properties:
+      name: { get_param: spgw_name }
+      size: { get_param: run_vol_size }
+      image: { get_param: image }
+
+### PORTS
+  build_port:
+    type: OS::Neutron::Port
+    depends_on: [ build_secgroup, build_vol ]
+    properties:
+      network_id: { get_resource: internal_net }
+      fixed_ips:
+        - subnet_id: { get_resource: internal_subnet }
+      security_groups: [{ get_resource: build_secgroup }]
+
+  spgw_port:
+    type: OS::Neutron::Port
+    depends_on: [ spgw_secgroup, spgw_vol ]
+    properties:
+      network_id: { get_resource: internal_net }
+      fixed_ips:
+        - subnet_id: { get_resource: internal_subnet }
+      security_groups: [{ get_resource: spgw_secgroup }]
+
+  hss_port:
+    type: OS::Neutron::Port
+    depends_on: [ hss_secgroup, hss_vol ]
+    properties:
+      network_id: { get_resource: internal_net }
+      fixed_ips:
+        - subnet_id: { get_resource: internal_subnet }
+      security_groups: [{ get_resource: hss_secgroup }]   
+
+  mme_port:
+    type: OS::Neutron::Port
+    depends_on: [ mme_secgroup, mme_vol ]
+    properties:
+      network_id: { get_resource: internal_net }
+      fixed_ips:
+        - subnet_id: { get_resource: internal_subnet }
+      security_groups: [{ get_resource: mme_secgroup }]
+
+### SECURITY GROUPS
+  spgw_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Add security group rules for SPGW instance
+      name: { get_param: spgw_name }
+      rules:
+        - remote_ip_prefix: 0.0.0.0/0
+
+  build_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Add security group rules for build instance
+      name: { get_param: build_name }
+      rules:
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: icmp
+
+  hss_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Add security group rules for HSS instance
+      name: { get_param: hss_name }
+      rules:
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: icmp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: 132
+  
+  mme_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Add security group rules for MME instance
+      name: { get_param: mme_name }
+      rules:
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: icmp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: 132
+
+### INSTANCES
+
+  build_vm:
+    type: OS::Nova::Server
+    depends_on: [ build_port, build_vol, router_interface ]
+    properties:
+      name: { get_param: build_name }
+      flavor: { get_param: build_flavor }
+      key_name: { get_param: key }
+      block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : build_vol }, delete_on_termination : "true" }]
+      networks:
+        - port: { get_resource: build_port }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: |
+        #!/bin/bash
+        echo "195.176.209.235 opnfv.vptt.ch opnfv" >> /etc/hosts
+
+  spgw_vm:
+    type: OS::Nova::Server
+    depends_on: [ spgw_port, spgw_vol , router_interface ]
+    properties:
+      name: { get_param: spgw_name }
+      flavor: { get_param: run_flavor }
+      key_name: { get_param: key }
+      block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : spgw_vol }, delete_on_termination : "true" }]
+      networks:
+        - port: { get_resource: spgw_port }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: |
+        #!/bin/bash
+        echo "195.176.209.235 opnfv.vptt.ch opnfv" >> /etc/hosts
+
+  hss_vm:
+    type: OS::Nova::Server
+    depends_on: [ hss_port, hss_vol, router_interface ]
+    properties:
+      name: { get_param: hss_name }
+      flavor: { get_param: run_flavor }
+      key_name: { get_param: key }
+      block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : hss_vol }, delete_on_termination : "true" }]
+      networks:
+      - port: { get_resource: hss_port }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: |
+        #!/bin/bash
+        echo "195.176.209.235 opnfv.vptt.ch opnfv" >> /etc/hosts
+
+  mme_vm:
+    type: OS::Nova::Server
+    depends_on: [ mme_port, mme_vol, router_interface ]
+    properties:
+      name: { get_param: mme_name }
+      flavor: { get_param: run_flavor }
+      key_name: { get_param: key }
+      block_device_mapping: [{ device_name: "vda", volume_id : { get_resource : mme_vol }, delete_on_termination : "true" }]
+      networks:
+        - port: { get_resource: mme_port }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: |
+        #!/bin/bash
+        echo "195.176.209.235 opnfv.vptt.ch opnfv" >> /etc/hosts
+
+### SOFTWARE CONFIGURATIONS
+  etc_hosts:
+    type: OS::Heat::SoftwareConfig
+    depends_on: [ hss_vm, mme_vm, spgw_vm, build_vm ]
+    properties:
+      group: script
+      inputs:
+      - name: realm
+        default: { get_param: realm }
+      - name: hss_name
+        default: { get_param: hss_name }
+      - name: mme_name
+        default: { get_param: mme_name }
+      - name: spgw_name
+        default: { get_param: spgw_name }
+      - name: build_name
+        default: { get_param: build_name }
+      - name: hss_ip
+        default: { get_attr: [ hss_vm, first_address ] }
+      - name: mme_ip
+        default: { get_attr: [ mme_vm, first_address ] }
+      - name: spgw_ip
+        default: { get_attr: [ spgw_vm, first_address ] }
+      - name: build_ip
+        default: { get_attr: [ build_vm, first_address ] }
+      - name: enb_cidr
+        default: { get_param: enb_cidr }
+      - name: enb_count
+        default: { get_param: enb_count }
+      - name: enb_start
+        default: { get_param: enb_start }
+      - name: enb_hostname_prefix
+        default: { get_param: enb_hostname_prefix }
+      config: |
+        #!/bin/bash
+        if [ ! -f /etc/hosts.orig ] ; then cp /etc/hosts /etc/hosts.orig ; fi
+        logger "$0: Creating /etc/hosts..."
+        cat > /etc/hosts << __EOF
+        # this file is generated by heat with os-*-config
+        127.0.0.1 localhost
+
+        $spgw_ip $spgw_name.$realm $spgw_name
+        $mme_ip $mme_name.$realm $mme_name
+        $hss_ip $hss_name.$realm $hss_name
+        $spgw_ip $spgw_name.$realm $spgw_name
+        $build_ip $build_name.$realm $build_name
+
+        # this is since we have no DNS for opnfv.vptt.ch
+        195.176.209.235 opnfv.vptt.ch opnfv
+
+        __EOF
+        i=0
+        while [ $i -lt $(expr $enb_count) ] ; do
+          host_part=$(expr $enb_start + $i)
+          echo ${enb_cidr%.*}.$host_part $enb_hostname_prefix$i.$realm $enb_hostname_prefix$i >> /etc/hosts
+          i=$(expr $i + 1)
+        done
+        cat >> /etc/hosts << __EOF
+
+        __EOF
+
+  ssh_keys:
+    type: OS::Heat::SoftwareConfig
+    depends_on: [ hss_vm, mme_vm, spgw_vm, build_vm ]
+    properties:
+      inputs:
+      - name: ssh_priv
+        default: { get_param: ssh_priv }
+      - name: ssh_pub
+        default: { get_param: ssh_pub }
+      group: script
+      config: |
+        #!/bin/bash
+        logger "$0: Creating SSH keys..."
+        mkdir -p /root/.ssh
+        echo $ssh_priv > /root/.ssh/id_rsa
+        sed -e 's|-----BEGIN RSA PRIVATE KEY-----|-----BEGIN_RSA_PRIVATE_KEY-----|' \
+            -e 's|-----END RSA PRIVATE KEY-----|-----END_RSA_PRIVATE_KEY-----|' \
+            -e 's| |\n|g' \
+            -e 's|-----BEGIN_RSA_PRIVATE_KEY-----|-----BEGIN RSA PRIVATE KEY-----|' \
+            -e 's|-----END_RSA_PRIVATE_KEY-----|-----END RSA PRIVATE KEY-----|' \
+            -i /root/.ssh/id_rsa
+        echo $ssh_pub > /root/.ssh/id_rsa.pub
+        echo $ssh_pub > /root/.ssh/authorized_keys
+        chmod 0644 /root/.ssh/id_rsa.pub
+        chmod 0600 /root/.ssh/id_rsa
+        chmod 0644 /root/.ssh/authorized_keys
+        cat > /root/.ssh/config << __EOF
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+        __EOF
+
+  vpn_server:
+    type: OS::Heat::SoftwareConfig
+    depends_on: spgw_vm
+    properties:
+      group: script
+      inputs:
+      - name: mme_name
+        default: { get_param: mme_name }
+      - name: spgw_name
+        default: { get_param: spgw_name }
+      - name: enb_cidr
+        default: { get_param: enb_cidr }
+      - name: enb_cidr
+        default: { get_param: enb_cidr }
+      - name: enb_count
+        default: { get_param: enb_count }
+      - name: enb_start
+        default: { get_param: enb_start }
+      - name: enb_hostname_prefix
+        default: { get_param: enb_hostname_prefix }
+      - name: realm
+        default: { get_param: realm }
+      - name: ca_country
+        default: { get_param: ca_country }
+      - name: ca_state
+        default: { get_param: ca_state }
+      - name: ca_city
+        default: { get_param: ca_city }
+      - name: ca_company
+        default: { get_param: ca_company }
+      - name: ca_unit
+        default: { get_param: ca_unit }
+      - name: ca_email
+        default: { get_param: ca_email }
+      config: |
+        #!/bin/bash
+        logger "$0: Creating /etc/openvpn/clients.txt"
+        mkdir -p /etc/openvpn
+        touch /etc/openvpn/clients.txt
+        echo $mme_name,${enb_cidr%.*}.2 > /etc/openvpn/clients.txt
+        i=0
+        net=$enb_cidr
+        while [ $i -lt $(expr $enb_count) ] ; do
+          host_part=$(expr $enb_start + $i)
+          echo $enb_hostname_prefix$i,${net%.*}.$host_part >> /etc/openvpn/clients.txt
+          i=$(expr $i + 1)
+        done
+        logger "$0: Installing openvpn and creating VPN keys..."
+        DEBIAN_FRONTEND=noninteractive apt-get install -q -y openvpn easy-rsa
+        mkdir -p /etc/openvpn/easy-rsa
+        cp -R /usr/share/easy-rsa/* /etc/openvpn/easy-rsa
+        mkdir -p /etc/openvpn/easy-rsa/keys
+        cd /etc/openvpn/easy-rsa
+        export EASY_RSA="${EASY_RSA:-.}"
+        source ./vars
+        export KEY_COUNTRY="$ca_country"
+        export KEY_PROVINCE="$ca_state"
+        export KEY_CITY="$ca_city"
+        export KEY_ORG="$ca_company"
+        export KEY_EMAIL="$ca_email"
+        export KEY_OU="$ca_unit"
+        export KEY_NAME="VPN_CA"
+        ./clean-all
+        "$EASY_RSA/pkitool" --initca
+        export KEY_NAME=$spgw_name
+        "$EASY_RSA/pkitool" --server $spgw_name
+        ./build-dh
+        openvpn --genkey --secret keys/hmac.key
+        for client in $(cat /etc/openvpn/clients.txt) ; do
+          export KEY_NAME=${client%,*}
+          "$EASY_RSA/pkitool" ${client%,*}
+        done
+        cd -
+        logger "$0: Creating /etc/openvpn/server.conf..."
+        cat > /etc/openvpn/server.conf << __EOF
+        daemon
+        proto udp
+        port 1194
+        dev tun
+        ca /etc/openvpn/easy-rsa/keys/ca.crt
+        cert /etc/openvpn/easy-rsa/keys/$spgw_name.crt
+        key /etc/openvpn/easy-rsa/keys/$spgw_name.key
+        dh /etc/openvpn/easy-rsa/keys/dh2048.pem
+        tls-auth /etc/openvpn/easy-rsa/keys/hmac.key 0
+        server ${net%/*} 255.255.255.0
+        topology subnet
+        client-to-client
+        ifconfig-pool-persist /etc/openvpn/clients.txt
+        keepalive 10 120
+        cipher AES-128-CBC
+        comp-lzo
+        user nobody
+        group nogroup
+        persist-key
+        persist-tun
+        verb 3
+        __EOF
+        logger "$0: Starting VPN server..."
+        systemctl enable openvpn@server.service
+        systemctl restart openvpn@server.service
+        service openvpn restart
+
+  vpn_client:
+    type: OS::Heat::SoftwareConfig
+    depends_on: mme_vm
+    properties:
+      group: script
+      inputs:
+      - name: spgw_name
+        default: { get_param: spgw_name }
+      - name: client_name
+        default: { get_param: mme_name }
+      - name: server_ip
+        default: { get_attr: [ spgw_vm, first_address ] }
+      config: |
+        #!/bin/bash
+        logger "$0: Installing VPN client..."
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install openvpn
+        cat > /etc/openvpn/client.conf << __EOF
+        daemon
+        client
+        proto udp
+        dev tun
+        nobind
+        remote $server_ip 1194
+        ca /etc/openvpn/keys/ca.crt
+        cert /etc/openvpn/keys/$client_name.crt
+        key /etc/openvpn/keys/$client_name.key
+        tls-auth /etc/openvpn/keys/hmac.key 1
+        ns-cert-type server
+        cipher AES-128-CBC
+        comp-lzo
+        user nobody
+        group nogroup
+        persist-key
+        persist-tun
+        verb 3
+        mute 20
+        __EOF
+        cd /tmp
+        ssh $spgw_name "tar -c /etc/openvpn/easy-rsa/keys" | dd of=keys.tar
+        tar -xvf keys.tar
+        mv etc/openvpn/easy-rsa/keys .
+        install -v -d -m 0700 -o root -g root /etc/openvpn/keys
+        install -v -m 0400  -o root -g root keys/ca.crt /etc/openvpn/keys/ca.crt
+        install -v -m 0400  -o root -g root keys/hmac.key /etc/openvpn/keys/hmac.key
+        install -v -m 0400  -o root -g root keys/$client_name.crt /etc/openvpn/keys/$client_name.crt
+        install -v -m 0400  -o root -g root keys/$client_name.key /etc/openvpn/keys/$client_name.key
+        rm etc keys keys.tar -rf
+        systemctl enable openvpn@client.service
+        systemctl restart openvpn@client.service
+        service openvpn restart
+
+  update_system:
+    type: OS::Heat::SoftwareConfig
+    depends_on: [ hss_vm, mme_vm, spgw_vm, build_vm ]
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        logger "$0: Updating system..."
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y update
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y dist-upgrade
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y autoremove
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y autoclean
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y clean
+        logger "$0: Installing git screen and curl..."
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y install curl screen git
+
+  compile_kernel:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      inputs:
+      - name: spgw_kernel_version
+        default: { get_param: spgw_kernel_version }
+      - name: base_url
+        default: { get_param: base_url }
+      config: |
+        #!/bin/bash
+        cd /usr/src
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y install xz-utils build-essential wget libncurses5-dev libssl-dev bc
+        DEBIAN_FRONTEND=noninteractive apt-get -q -y build-dep linux-image-$(uname -r)
+        wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-$spgw_kernel_version.tar.xz
+        tar -xf linux-$spgw_kernel_version.tar.xz
+        curl -s -O $base_url/config-$spgw_kernel_version-gtp
+        cp config-$spgw_kernel_version-gtp linux-$spgw_kernel_version/.config
+        cd linux-$spgw_kernel_version
+        make oldconfig
+        make -j`nproc`
+        make INSTALL_MOD_STRIP=1 modules_install
+        make install
+        cd /root
+        # should reboot to use new kernel. Hangs on ubuntu14
+        #shutdown -r +1
+        #sleep 55
+
+  create_freediameter_certs:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      inputs:
+      - name: realm
+        default: { get_param: realm }
+      - name: mme_name
+        default: { get_param: mme_name }
+      - name: hss_name
+        default: { get_param: hss_name }
+      - name: ca_country
+        default: { get_param: ca_country }
+      - name: ca_state
+        default: { get_param: ca_state }
+      - name: ca_city
+        default: { get_param: ca_city }
+      - name: ca_company
+        default: { get_param: ca_company }
+      - name: ca_unit
+        default: { get_param: ca_unit }
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install openssl
+        certs_dir=/root/certs
+        make_one_cert() {
+          name=$1
+          openssl genrsa -out $name.key.pem 1024
+          openssl req -new -batch -out $name.csr.pem -key $name.key.pem -subj /CN=$name.$realm/C=$ca_country/ST=$ca_state/L=$ca_city/O=$ca_company/OU=$ca_unit
+          openssl ca -cert cacert.pem -keyfile cakey.pem -in $name.csr.pem -out $name.cert.pem -outdir . -batch
+        }
+        mkdir -p $certs_dir
+        cd $certs_dir
+        mkdir -p $certs_dir/demoCA/
+        touch $certs_dir/demoCA/index.txt
+        echo 01 > $certs_dir/demoCA/serial
+        openssl req -new -batch -x509 -days 3650 -nodes -newkey rsa:1024 -out cacert.pem -keyout cakey.pem -subj /CN=$realm/C=$ca_country/ST=$ca_state/L=$ca_city/O=$ca_company/OU=$ca_unit
+        make_one_cert $hss_name
+        make_one_cert $mme_name
+
+  eurecom_certs:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install openssl
+        if [ ! -f /etc/ssl/certs/ca-certificates.crt.bak ] ; then cp /etc/ssl/certs/ca-certificates.crt{,.bak} ; fi
+        echo -n | openssl s_client -showcerts -connect gitlab.eurecom.fr:443 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >> /etc/ssl/certs/ca-certificates.crt
+
+  compile_nettle:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install autoconf automake build-essential libgmp-dev wget
+        cd /tmp
+        rm -rf /tmp/nettle-2.5.tar.gz /tmp/nettle-2.5
+        wget https://ftp.gnu.org/gnu/nettle/nettle-2.5.tar.gz
+        tar -xzf /tmp/nettle-2.5.tar.gz
+        cd /tmp/nettle-2.5
+        ./configure --disable-openssl --enable-shared --prefix=/usr/local
+        make
+        make check
+        make install
+        cd /tmp
+        rm -rf /tmp/nettle-2.5.tar.gz /tmp/nettle-2.5
+        ldconfig
+
+  compile_gnutls:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q purge libgnutls-dev 'libgnutlsxx2?'
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install libtasn1-6-dev libp11-kit-dev libtspi-dev libidn11-dev wget
+        cd /tmp
+        rm -rf /tmp/gnutls-3.1.23.tar.xz* /tmp/gnutls-3.1.23
+        wget ftp://ftp.gnutls.org/gcrypt/gnutls/v3.1/gnutls-3.1.23.tar.xz
+        tar -xJf /tmp/gnutls-3.1.23.tar.xz
+        cd /tmp/gnutls-3.1.23
+        ./configure --prefix=/usr/local
+        make
+        make install
+        cd /tmp
+        rm -rf /tmp/gnutls-3.1.23 /tmp/gnutls-3.1.23.tar.xz
+        ldconfig
+
+  compile_freediameter:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install autoconf automake bison flex build-essential cmake libsctp-dev libidn11-dev libgcrypt-dev
+        cd /tmp
+        rm -rf /tmp/freediameter
+        git clone https://gitlab.eurecom.fr/oai/freediameter.git -b eurecom-1.2.0
+        cd /tmp/freediameter
+        mkdir build
+        cd build
+        cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ../
+        make
+        make install
+        cd /tmp
+        rm -rf /tmp/freediameter
+        ldconfig
+
+  compile_asn1c:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install autoconf automake bison flex build-essential libtool
+        cd /tmp
+        rm -rf /tmp/asn1c
+        git clone https://gitlab.eurecom.fr/oai/asn1c.git
+        cd /tmp/asn1c
+        ./configure --prefix=/usr/local
+        make
+        make install
+        cd /tmp
+        rm -rf /tmp/asn1c
+
+  compile_libgtpnl:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install autoconf automake bison flex build-essential libtool libmnl-dev
+        cd /tmp
+        rm -rf /tmp/libgtpnl
+        git clone git://git.osmocom.org/libgtpnl
+        cd /tmp/libgtpnl
+        autoreconf -fi
+        ./configure --prefix=/usr/local
+        make
+        make install
+        cd /tmp
+        rm -rf /tmp/libgtpnl
+        ldconfig
+
+  compile_openair_cn:
+    type: OS::Heat::SoftwareConfig
+    depends_on: build_vm
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install autoconf automake bison flex build-essential cmake libsctp-dev libconfig8-dev libgmp-dev libsctp-dev libssl-dev libxml2-dev mscgen openssl mariadb-client libmysqlclient-dev check
+        cd /tmp
+        rm -rf openair-cn
+        git clone https://gitlab.eurecom.fr/oai/openair-cn.git
+        cd /tmp/openair-cn/SCRIPTS
+        ./build_mme --clean
+        ./build_mme --clean --daemon
+        ./build_spgw --clean
+        ./build_spgw --clean --daemon
+        ./build_hss --clean
+        ./build_hss --clean --daemon
+
+  mme_conf:
+    type: OS::Heat::SoftwareConfig
+    depends_on: mme_vm
+    properties:
+      group: script
+      inputs:
+      - name: hss_name
+        default: { get_param: hss_name }
+      - name: mme_name
+        default: { get_param: mme_name }
+      - name: realm
+        default: { get_param: realm }
+      - name: enb_count
+        default: { get_param: enb_count }
+      - name: int_cidr
+        default: { get_param: int_cidr }
+      - name: enb_cidr
+        default: { get_param: enb_cidr }
+      - name: mcc
+        default: { get_param: mcc }
+      - name: mnc
+        default: { get_param: mnc }
+      - name: tac
+        default: { get_param: tac }
+      - name: mme_gid
+        default: { get_param: mme_gid }
+      - name: mme_code
+        default: { get_param: mme_code }
+      - name: spgw_ip
+        default: { get_attr: [ spgw_vm, first_address ] }
+      - name: mme_ip
+        default: { get_attr: [ mme_vm, first_address ] }
+      - name: hss_ip
+        default: { get_attr: [ hss_vm, first_address ] }
+      config: |
+        #!/bin/bash
+        logger "$0: Creating MME configuration..."
+        mkdir -p /etc/oai
+        intnet=$int_cidr
+        enbnet=$enb_cidr
+        cat > /etc/oai/mme.conf <<__EOF
+        MME :
+        {
+          REALM                                  = "$realm";
+          MAXENB                                 = $enb_count;
+          MAXUE                                  = 16;
+          RELATIVE_CAPACITY                      = 10;
+          EMERGENCY_ATTACH_SUPPORTED             = "no";
+          UNAUTHENTICATED_IMSI_SUPPORTED         = "no";
+          EPS_NETWORK_FEATURE_SUPPORT_IMS_VOICE_OVER_PS_SESSION_IN_S1      = "no";
+          EPS_NETWORK_FEATURE_SUPPORT_EMERGENCY_BEARER_SERVICES_IN_S1_MODE = "no";
+          EPS_NETWORK_FEATURE_SUPPORT_LOCATION_SERVICES_VIA_EPC            = "no";
+          EPS_NETWORK_FEATURE_SUPPORT_EXTENDED_SERVICE_REQUEST             = "no";
+          IP_CAPABILITY                                                    = "IPV4V6";
+          MME_STATISTIC_TIMER                    = 10;
+          INTERTASK_INTERFACE :
+          {
+            ITTI_QUEUE_SIZE                      = 2000000;
+          };
+          S6A :
+          {
+            S6A_CONF                             = "/etc/oai/mme_fd.conf";
+            HSS_HOSTNAME                         = "$hss_name";
+          };
+          SCTP :
+          {
+            SCTP_INSTREAMS                       = 8;
+            SCTP_OUTSTREAMS                      = 8;
+          };
+          S1AP :
+          {
+            S1AP_OUTCOME_TIMER                   = 10;
+          };
+          GUMMEI_LIST = (
+            { MCC="$mcc" ; MNC="$mnc"; MME_GID="$mme_gid" ; MME_CODE="$mme_code"; }
+          );
+          TAI_LIST = (
+            { MCC="$mcc" ; MNC="$mnc"; TAC="$tac"; }
+          );
+          NAS :
+          {
+            ORDERED_SUPPORTED_INTEGRITY_ALGORITHM_LIST = [ "EIA2" , "EIA1" , "EIA0" ];
+            ORDERED_SUPPORTED_CIPHERING_ALGORITHM_LIST = [ "EEA0" , "EEA1" , "EEA2" ];
+            T3402                                = 1  #in minutes
+            T3412                                = 54 #in minutes
+            T3422                                = 6
+            T3450                                = 6
+            T3460                                = 6
+            T3470                                = 6
+            T3485                                = 8
+            T3486                                = 8
+            T3489                                = 4
+            T3495                                = 8
+          };
+          LOGGING :
+          {
+            OUTPUT                               = "CONSOLE";
+            COLOR                                = "no";
+            SCTP_LOG_LEVEL                       = "TRACE";
+            S1AP_LOG_LEVEL                       = "TRACE";
+            NAS_LOG_LEVEL                        = "TRACE";
+            MME_APP_LOG_LEVEL                    = "TRACE";
+            S6A_LOG_LEVEL                        = "TRACE";
+            UTIL_LOG_LEVEL                       = "TRACE";
+            MSC_LOG_LEVEL                        = "ERROR";
+            ITTI_LOG_LEVEL                       = "ERROR";
+            ASN1_VERBOSITY                       = "none";
+          };
+          NETWORK_INTERFACES :
+          {
+            MME_INTERFACE_NAME_FOR_S1_MME        = "eth0";
+            MME_IPV4_ADDRESS_FOR_S1_MME          = "${enbnet%.*}.2/${enbnet#*/}";
+            MME_INTERFACE_NAME_FOR_S11_MME       = "eth0";
+            MME_IPV4_ADDRESS_FOR_S11_MME         = "$mme_ip/${intnet#*/}";
+            MME_PORT_FOR_S11_MME                 = 2123;
+          };
+        };
+        S-GW :
+        {
+          SGW_IPV4_ADDRESS_FOR_S11                = "$spgw_ip/${intnet#*/}";
+        };
+        __EOF
+        cat > /etc/oai/mme_fd.conf << __EOF
+        Identity       = "$mme_name.$realm";
+        Realm          = "$realm";
+        TLS_Cred       = "/etc/oai/$mme_name.cert.pem", "/etc/oai/$mme_name.key.pem";
+        TLS_CA         = "/etc/oai/cacert.pem";
+        AppServThreads = 4;
+        SCTP_streams   = 8;
+        LoadExtension  = "dict_nas_mipv6.fdx";
+        LoadExtension  = "dict_s6a.fdx";
+        No_TCP;
+        No_IPv6;
+        NoRelay;
+        ConnectPeer= "$hss_name.$realm" { ConnectTo = "$hss_ip"; No_IPv6; No_TLS; port = 3868; realm = "$realm";};
+        __EOF
+
+  spgw_conf:
+    type: OS::Heat::SoftwareConfig
+    depends_on: spgw_vm
+    properties:
+      group: script
+      inputs:
+      - name: ue_cidr
+        default: { get_param: ue_cidr }
+      - name: ue_dns
+        default: { get_param: ue_dns }
+      - name: ue_mtu
+        default: { get_param: ue_mtu }
+      - name: int_cidr
+        default: { get_param: int_cidr }
+      - name: enb_cidr
+        default: { get_param: enb_cidr }
+      - name: spgw_ip
+        default: { get_attr: [ spgw_vm, first_address ] }
+      config: |
+        #!/bin/bash
+        logger "$0: Creating SPGW configuration..."
+        mkdir -p /etc/oai
+        intnet=$int_cidr
+        enbnet=$enb_cidr
+        cat > /etc/oai/spgw.conf << __EOF
+        S-GW :
+        {
+          NETWORK_INTERFACES :
+          {
+            SGW_INTERFACE_NAME_FOR_S11               = "eth0";
+            SGW_IPV4_ADDRESS_FOR_S11                 = "$spgw_ip/${intnet#*/}";
+            SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP     = "tun0";
+            SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP       = "${enbnet%.*}.1/${enbnet#*/}";
+            SGW_IPV4_PORT_FOR_S1U_S12_S4_UP          = 2152;
+            SGW_INTERFACE_NAME_FOR_S5_S8_UP          = "none";
+            SGW_IPV4_ADDRESS_FOR_S5_S8_UP            = "0.0.0.0/24";
+          };
+
+          INTERTASK_INTERFACE :
+          {
+            ITTI_QUEUE_SIZE                          = 2000000;
+          };
+
+          LOGGING :
+          {
+            OUTPUT                                   = "CONSOLE";
+            THREAD_SAFE                              = "yes";
+            COLOR                                    = "no";
+            UDP_LOG_LEVEL                            = "TRACE";
+            GTPV1U_LOG_LEVEL                         = "TRACE";
+            GTPV2C_LOG_LEVEL                         = "TRACE";
+            SPGW_APP_LOG_LEVEL                       = "TRACE";
+            S11_LOG_LEVEL                            = "TRACE";
+          };
+        };
+        P-GW =
+        {
+          NETWORK_INTERFACES :
+          {
+            PGW_INTERFACE_NAME_FOR_S5_S8             = "none";
+            PGW_INTERFACE_NAME_FOR_SGI               = "eth0";
+            PGW_MASQUERADE_SGI                       = "yes";
+            UE_TCP_MSS_CLAMPING                      = "no";
+          };
+
+          IP_ADDRESS_POOL :
+          {
+            IPV4_LIST = (
+                                                     "$ue_cidr"
+                        );
+          };
+
+          DEFAULT_DNS_IPV4_ADDRESS                   = "$ue_dns";
+          DEFAULT_DNS_SEC_IPV4_ADDRESS               = "8.8.4.4";
+          FORCE_PUSH_PROTOCOL_CONFIGURATION_OPTIONS  = "no";
+          UE_MTU                                     = $ue_mtu;
+        };
+        __EOF
+
+  hss_conf:
+    type: OS::Heat::SoftwareConfig
+    depends_on: hss_vm
+    properties:
+      group: script
+      inputs:
+      - name: db_pass
+        default: { get_param: db_pass }
+      - name: operator_key
+        default: { get_param: operator_key }
+      - name: hss_name
+        default: { get_param: hss_name }
+      - name: realm
+        default: { get_param: realm }
+      - name: hss_ip
+        default: { get_attr: [ hss_vm, first_address ] }
+      config: |
+        #!/bin/bash
+        logger "$0: Creating HSS configuration..."
+        mkdir -p /etc/oai
+        cat > /etc/oai/hss.conf << __EOF
+        HSS :
+        {
+          MYSQL_server = "127.0.0.1";
+          MYSQL_user   = "hssadmin";
+          MYSQL_pass   = "$db_pass";
+          MYSQL_db     = "oai_db";
+          OPERATOR_key = "$operator_key";
+          RANDOM       = "true";
+          FD_conf      = "/etc/oai/hss_fd.conf";
+        };
+        __EOF
+        cat > /etc/oai/hss_fd.conf << __EOF
+        Identity       = "$hss_name.$realm";
+        Realm          = "$realm";
+        TLS_Cred       = "/etc/oai/$hss_name.cert.pem", "/etc/oai/$hss_name.key.pem";
+        TLS_CA         = "/etc/oai/cacert.pem";
+        AppServThreads = 4;
+        SCTP_streams   = 8;
+        ListenOn       = "$hss_ip";
+        Port           = 3868;
+        SecPort        = 5868;
+        LoadExtension  = "acl_wl.fdx" : "/etc/oai/hss_acl.conf";
+        LoadExtension  = "dict_nas_mipv6.fdx";
+        LoadExtension  = "dict_s6a.fdx";
+        No_TCP;
+        No_IPv6;
+        NoRelay;
+        __EOF
+        cat > /etc/oai/hss_acl.conf <<__EOF
+        ALLOW_OLD_TLS   *.$realm
+        __EOF
+
+  install_nettle:
+    type: OS::Heat::SoftwareConfig
+    depends_on: [ hss_vm, mme_vm ]
+    properties:
+      group: script
+      inputs:
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        scp -r $build_name:/usr/local/lib /tmp
+        install -v -m 0644 -o root -g root /tmp/lib/libnettle.so.4.4 /tmp/lib/libhogweed.so.2.2 /usr/local/lib/
+        ln -sfv libnettle.so.4.4 /usr/local/lib/libnettle.so.4
+        ln -sfv libnettle.so.4.4 /usr/local/lib/libnettle.so
+        ln -sfv libhogweed.so.2.2 /usr/local/lib/libhogweed.so.2
+        ln -sfv libhogweed.so.2.2 /usr/local/lib/libhogweed.so
+        ldconfig
+        rm /tmp/lib -rf
+
+  install_gnutls:
+    type: OS::Heat::SoftwareConfig
+    depends_on: [ hss_vm, mme_vm ]
+    properties:
+      group: script
+      inputs:
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        scp -r $build_name:/usr/local/lib /tmp
+        install -v -m 0644 -o root -g root /tmp/lib/libgnutls.so.28.21.3 /usr/local/lib/
+        ln -sfv libgnutls.so.28.21.3 /usr/local/lib/libgnutls.so.28
+        ln -sfv libgnutls.so.28.21.3 /usr/local/lib/libgnutls.so
+        ldconfig
+        rm /tmp/lib -rf
+
+  install_freediameter:
+    type: OS::Heat::SoftwareConfig
+    depends_on: [ hss_vm, mme_vm ]
+    properties:
+      group: script
+      inputs:
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        scp -r $build_name:/usr/local/lib /tmp
+        install -v -m 0644 -o root -g root /tmp/lib/libfdcore.so.1.2.0 /tmp/lib/libfdproto.so.1.2.0 /usr/local/lib/
+        ln -sfv libfdproto.so.1.2.0 /usr/local/lib/libfdproto.so.6
+        ln -sfv libfdproto.so.6 /usr/local/lib/libfdproto.so
+        ln -sfv libfdcore.so.1.2.0 /usr/local/lib/libfdcore.so.6
+        ln -sfv libfdcore.so.6 /usr/local/lib/libfdcore.so
+        install -v -d -m 0755 -o root -g root /usr/local/lib/freeDiameter
+        install -v -m 0644 -o root -g root /tmp/lib/freeDiameter/* /usr/local/lib/freeDiameter
+        ldconfig
+        rm /tmp/lib -rf
+
+  install_libgtpnl:
+    type: OS::Heat::SoftwareConfig
+    depends_on: spgw_vm
+    properties:
+      group: script
+      inputs:
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        scp -r $build_name:/usr/local/lib /tmp
+        install -v -m 0644 -o root -g root /tmp/lib/libgtpnl.so.0.0.0 /usr/local/lib/
+        ln -sfv libgtpnl.so.0.0.0 /usr/local/lib/libgtpnl.so.0
+        ln -sfv libgtpnl.so.0.0.0 /usr/local/lib/libgtpnl.so
+        ldconfig
+        rm /tmp/lib -rf
+
+  install_kernel:
+    type: OS::Heat::SoftwareConfig
+    depends_on: spgw_vm
+    properties:
+      group: script
+      inputs:
+      - name: spgw_kernel_version
+        default: { get_param: spgw_kernel_version }
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        #sleep 90 # wait for build to reboot  # we dont reboot on ubuntu14
+        scp $build_name:/boot/*$spgw_kernel_version* /tmp
+        install -o root -g root -m 0644 -v /tmp/*$spgw_kernel_version* /boot/
+        rm /tmp/*$spgw_kernel_version*
+        ssh $build_name "tar -c /lib/modules/$spgw_kernel_version" | dd of=/tmp/modules.tar
+        cd /tmp
+        tar -xf modules.tar
+        cp -av lib/modules/$spgw_kernel_version /lib/modules
+        rm modules.tar lib -rf
+        update-initramfs -c -k $spgw_kernel_version
+        update-grub
+        # should reboot to use new kernel. Hangs on ubuntu14
+        #shutdown -r +1
+        #sleep 55
+
+  install_freediameter_certs:
+    type: OS::Heat::SoftwareConfig
+    depends_on: [ hss_vm, mme_vm ]
+    properties:
+      group: script
+      inputs:
+      - name: hostname
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        scp -r $build_name:/root/certs /tmp
+        install -v -m 0600 -o root -g root /tmp/certs/cacert.pem /etc/oai
+        install -v -m 0600 -o root -g root /tmp/certs/$hostname.key.pem /etc/oai
+        install -v -m 0600 -o root -g root /tmp/certs/$hostname.cert.pem /etc/oai
+        rm /tmp/certs -rf
+
+  install_database:
+    type: OS::Heat::SoftwareConfig
+    depends_on: hss_vm
+    properties:
+      group: script
+      inputs:
+      - name: db_file
+        default: { get_param: db_file }
+      - name: base_url
+        default: { get_param: base_url }
+      - name: db_pass
+        default: { get_param: db_pass }
+      config: |
+        #!/bin/bash
+        # this was the only way I found to let it work on xenial and trusty
+        function reply_mysql_server_questions() {
+          echo
+          echo
+          echo
+        }
+        reply_mysql_server_questions | DEBIAN_FRONTEND=noninteractive apt-get -y -q install autoconf automake bison flex build-essential cmake libsctp-dev libconfig8-dev libgmp-dev libsctp-dev libssl-dev libxml2-dev mscgen openssl mariadb-server mariadb-client libmysqlclient-dev check
+        sleep 5
+        echo "CREATE DATABASE oai_db; GRANT ALL PRIVILEGES ON oai_db.* TO 'hssadmin'@'localhost' IDENTIFIED BY '$db_pass';" | mysql -u root 
+        cd /root
+        curl -s -O $base_url/$db_file
+        mysql -u hssadmin -p$db_pass -D oai_db < /root/$db_file
+
+  install_hss:
+    type: OS::Heat::SoftwareConfig
+    depends_on: hss_vm
+    properties:
+      group: script
+      inputs:
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install libconfig9 libsctp1 libtspi1 libgmp10
+        scp $build_name:/usr/local/bin/oai_hss /tmp
+        scp $build_name:/usr/sbin/oai_hssd /tmp
+        install -v -m 0755 -o root -g root /tmp/oai_hss /tmp/oai_hssd /usr/local/sbin
+        rm /tmp/oai_hss*
+
+  install_mme:
+    type: OS::Heat::SoftwareConfig
+    depends_on: mme_vm
+    properties:
+      group: script
+      inputs:
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install libconfig9 libsctp1 libtspi1 libgmp10
+        scp $build_name:/usr/local/bin/mme /tmp
+        scp $build_name:/usr/sbin/mmed /tmp
+        install -v -m 0755 -o root -g root /tmp/mme /tmp/mmed /usr/local/sbin
+        rm /tmp/mme*
+
+  install_spgw:
+    type: OS::Heat::SoftwareConfig
+    depends_on: spgw_vm
+    properties:
+      group: script
+      inputs:
+      - name: build_name
+        default: { get_param: build_name }
+      config: |
+        #!/bin/bash
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q install libconfig9 libmnl0
+        scp $build_name:/usr/local/bin/spgw /tmp
+        scp $build_name:/usr/sbin/spgwd /tmp
+        install -v -m 0755 -o root -g root /tmp/spgw /tmp/spgwd /usr/local/sbin
+        rm /tmp/spgw*
+
+### BUILD DEPLOYMENTS
+  create_etc_hosts_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: etc_hosts
+    properties:
+      config:
+        get_resource: etc_hosts
+      server:
+        get_resource: build_vm
+
+  update_system_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_build, update_system ]
+    properties:
+      config:
+        get_resource: update_system
+      server:
+        get_resource: build_vm
+
+  ssh_keys_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_build, update_system_build, ssh_keys ]
+    properties:
+      config:
+        get_resource: ssh_keys
+      server:
+        get_resource: build_vm
+
+  compile_kernel_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_build, compile_kernel ]
+    properties:
+      config:
+        get_resource: compile_kernel
+      server:
+        get_resource: build_vm
+
+  eurecom_certs_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ compile_kernel_build, eurecom_certs ]
+    properties:
+      config:
+        get_resource: eurecom_certs
+      server:
+        get_resource: build_vm
+
+  create_freediameter_certs_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ compile_kernel_build, create_freediameter_certs ]
+    properties:
+      config:
+        get_resource: create_freediameter_certs
+      server:
+        get_resource: build_vm
+
+  compile_libgtpnl_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ compile_kernel_build, compile_libgtpnl ]
+    properties:
+      config:
+        get_resource: compile_libgtpnl
+      server:
+        get_resource: build_vm
+
+  compile_nettle_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ compile_kernel_build, compile_nettle ]
+    properties:
+      config:
+        get_resource: compile_nettle
+      server:
+        get_resource: build_vm
+
+  compile_gnutls_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ compile_nettle_build, compile_gnutls ]
+    properties:
+      config:
+        get_resource: compile_gnutls
+      server:
+        get_resource: build_vm
+
+  compile_freediameter_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ compile_nettle_build, compile_gnutls_build, eurecom_certs_build, compile_freediameter ]
+    properties:
+      config:
+        get_resource: compile_freediameter
+      server:
+        get_resource: build_vm
+
+  compile_asn1c_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ compile_freediameter_build, eurecom_certs_build, compile_asn1c ]
+    properties:
+      config:
+        get_resource: compile_asn1c
+      server:
+        get_resource: build_vm
+
+  compile_openair_cn_build:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ compile_freediameter_build, compile_libgtpnl_build, compile_asn1c_build, create_freediameter_certs_build, eurecom_certs_build, compile_openair_cn ]
+    properties:
+      config:
+        get_resource: compile_openair_cn
+      server:
+        get_resource: build_vm
+
+### HSS DEPLOYMENTS
+  create_etc_hosts_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: etc_hosts
+    properties:
+      config:
+        get_resource: etc_hosts
+      server:
+        get_resource: hss_vm
+
+  update_system_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_hss, update_system ]
+    properties:
+      config:
+        get_resource: update_system
+      server:
+        get_resource: hss_vm
+
+  create_hss_conf:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_hss, update_system_hss, hss_conf ]
+    properties:
+      config:
+        get_resource: hss_conf
+      server:
+        get_resource: hss_vm
+
+  ssh_keys_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_build, update_system_build, ssh_keys ]
+    properties:
+      config:
+        get_resource: ssh_keys
+      server:
+        get_resource: hss_vm
+
+  install_database_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_hss, create_hss_conf, install_database ]
+    properties:
+      config:
+        get_resource: install_database
+      server:
+        get_resource: hss_vm
+
+  install_nettle_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_hss, ssh_keys_build, compile_openair_cn_build, install_nettle ]
+    properties:
+      config:
+        get_resource: install_nettle
+      server:
+        get_resource: hss_vm
+
+  install_gnutls_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_hss, ssh_keys_build, compile_openair_cn_build, install_nettle_hss, install_gnutls ]
+    properties:
+      config:
+        get_resource: install_gnutls
+      server:
+        get_resource: hss_vm
+
+  install_freediameter_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_hss, ssh_keys_build, compile_openair_cn_build, install_nettle_hss, install_gnutls_hss, install_freediameter ]
+    properties:
+      config:
+        get_resource: install_freediameter
+      server:
+        get_resource: hss_vm
+
+  install_freediameter_certs_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_mme, ssh_keys_build, compile_openair_cn_build, install_freediameter_hss, create_hss_conf, install_freediameter_certs ]
+    properties:
+      config:
+        get_resource: install_freediameter_certs
+      server:
+        get_resource: hss_vm
+      input_values:
+        hostname: { get_param: hss_name }
+
+  deploy_hss:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_hss, ssh_keys_build, compile_openair_cn_build, install_freediameter_certs_hss, install_database_hss, install_hss ]
+    properties:
+      config:
+        get_resource: install_hss
+      server:
+        get_resource: hss_vm
+
+### MME DEPLOYMENTS
+  create_etc_hosts_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: etc_hosts
+    properties:
+      config:
+        get_resource: etc_hosts
+      server:
+        get_resource: mme_vm
+
+  update_system_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_mme, update_system ]
+    properties:
+      config:
+        get_resource: update_system
+      server:
+        get_resource: mme_vm
+
+  create_mme_conf:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_mme, update_system_mme, mme_conf ]
+    properties:
+      config:
+        get_resource: mme_conf
+      server:
+        get_resource: mme_vm
+
+  ssh_keys_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_mme, update_system_mme, ssh_keys ]
+    properties:
+      config:
+        get_resource: ssh_keys
+      server:
+        get_resource: mme_vm
+
+  vpn_client_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_mme, ssh_keys_spgw, vpn_server_spgw, vpn_client ]
+    properties:
+      config:
+        get_resource: vpn_client
+      server:
+        get_resource: mme_vm
+      input_values:
+        client_name: { get_param: mme_name }
+
+  install_nettle_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_mme, ssh_keys_build, compile_openair_cn_build, install_nettle ]
+    properties:
+      config:
+        get_resource: install_nettle
+      server:
+        get_resource: mme_vm
+
+  install_gnutls_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_mme, ssh_keys_build, compile_openair_cn_build, install_nettle_mme, install_gnutls ]
+    properties:
+      config:
+        get_resource: install_gnutls
+      server:
+        get_resource: mme_vm
+
+  install_freediameter_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_mme, ssh_keys_build, compile_openair_cn_build, install_nettle_mme, install_gnutls_mme, install_freediameter ]
+    properties:
+      config:
+        get_resource: install_freediameter
+      server:
+        get_resource: mme_vm
+
+  install_freediameter_certs_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_mme, ssh_keys_build, compile_openair_cn_build, install_freediameter_mme, create_mme_conf, install_freediameter_certs ]
+    properties:
+      config:
+        get_resource: install_freediameter_certs
+      server:
+        get_resource: mme_vm
+      input_values:
+        hostname: { get_param: mme_name }
+
+  deploy_mme:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_mme, ssh_keys_build, compile_openair_cn_build, install_freediameter_mme, install_freediameter_certs_mme, create_mme_conf, vpn_client_mme, install_mme ]
+    properties:
+      config:
+        get_resource: install_mme
+      server:
+        get_resource: mme_vm
+
+### SPGW DEPLOYMENTS
+  create_etc_hosts_spgw:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: etc_hosts
+    properties:
+      config:
+        get_resource: etc_hosts
+      server:
+        get_resource: spgw_vm
+
+  update_system_spgw:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_spgw, update_system ]
+    properties:
+      config:
+        get_resource: update_system
+      server:
+        get_resource: spgw_vm
+
+  create_spgw_conf:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_spgw, update_system_spgw, spgw_conf ]
+    properties:
+      config:
+        get_resource: spgw_conf
+      server:
+        get_resource: spgw_vm
+
+  vpn_server_spgw:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_spgw, update_system_spgw, vpn_server ]
+    properties:
+      config:
+        get_resource: vpn_server
+      server:
+        get_resource: spgw_vm
+
+  ssh_keys_spgw:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ create_etc_hosts_spgw, update_system_spgw, ssh_keys ]
+    properties:
+      config:
+        get_resource: ssh_keys
+      server:
+        get_resource: spgw_vm
+
+  install_kernel_spgw:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_spgw, ssh_keys_build, compile_kernel_build, install_kernel ]
+    properties:
+      config:
+        get_resource: install_kernel
+      server:
+        get_resource: spgw_vm
+
+  install_libgtpnl_spgw:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_spgw, ssh_keys_build, compile_openair_cn_build, install_kernel_spgw, install_libgtpnl ]
+    properties:
+      config:
+        get_resource: install_libgtpnl
+      server:
+        get_resource: spgw_vm
+
+  deploy_spgw:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [ ssh_keys_spgw, ssh_keys_build, create_spgw_conf, install_libgtpnl_spgw, vpn_server_spgw, compile_openair_cn_build, install_kernel_spgw, install_spgw ]
+    properties:
+      config:
+        get_resource: install_spgw
+      server:
+        get_resource: spgw_vm
+
+### STACK OUTPUTS
+outputs:
+  public_ip:
+    description: Floating IP address of SPGW instance in external network
+    value: { get_attr: [ floating_ip, floating_ip_address ] }
+  ssh_spgw:
+    description: SSH connect string for SPWG host
+    value:
+      str_replace:
+        template: |
+          ssh -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o User=ubuntu $floating_ip
+        params:
+          $floating_ip : { get_attr: [ floating_ip, floating_ip_address ] }
+  ssh_hss:
+    description: SSH connect string for HSS host
+    value:
+      str_replace:
+        template: |
+          ssh -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o User=ubuntu -o ProxyCommand="ssh -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o User=ubuntu -q $floating_ip nc -q0 $hss_name 22" $floating_ip
+        params:
+          $floating_ip : { get_attr: [ floating_ip, floating_ip_address ] }
+          $hss_name: { get_param: hss_name }
+  ssh_mme:
+    description: SSH connect string for MME host
+    value:
+      str_replace:
+        template: |
+          ssh -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o User=ubuntu -o ProxyCommand="ssh -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o User=ubuntu -q $floating_ip nc -q0 $mme_name 22" $floating_ip
+        params:
+          $floating_ip : { get_attr: [ floating_ip, floating_ip_address ] }
+          $mme_name: { get_param: mme_name }
+  ssh_build:
+    description: SSH connect string for Build host
+    value:
+      str_replace:
+        template: |
+          ssh -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o User=ubuntu -o ProxyCommand="ssh -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o User=ubuntu -q $floating_ip nc -q0 $build_name 22" $floating_ip
+        params:
+          $floating_ip : { get_attr: [ floating_ip, floating_ip_address ] }
+          $build_name: { get_param: build_name }
+
