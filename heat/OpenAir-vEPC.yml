@@ -422,7 +422,7 @@ resources:
 ### PORTS
   build_port:
     type: OS::Neutron::Port
-    depends_on: [ build_secgroup, build_vol ]
+    depends_on: [ build_secgroup, internal_subnet ]
     properties:
       network_id: { get_resource: internal_net }
       fixed_ips:
@@ -431,7 +431,7 @@ resources:
 
   spgw_port:
     type: OS::Neutron::Port
-    depends_on: [ spgw_secgroup, spgw_vol ]
+    depends_on: [ spgw_secgroup, internal_subnet ]
     properties:
       network_id: { get_resource: internal_net }
       fixed_ips:
@@ -440,7 +440,7 @@ resources:
 
   hss_port:
     type: OS::Neutron::Port
-    depends_on: [ hss_secgroup, hss_vol ]
+    depends_on: [ hss_secgroup, internal_subnet ]
     properties:
       network_id: { get_resource: internal_net }
       fixed_ips:
@@ -449,7 +449,7 @@ resources:
 
   mme_port:
     type: OS::Neutron::Port
-    depends_on: [ mme_secgroup, mme_vol ]
+    depends_on: [ mme_secgroup, internal_subnet ]
     properties:
       network_id: { get_resource: internal_net }
       fixed_ips:
@@ -527,7 +527,7 @@ resources:
 
   spgw_vm:
     type: OS::Nova::Server
-    depends_on: [ spgw_port, spgw_vol , router_interface ]
+    depends_on: [ spgw_port, spgw_vol, router_interface ]
     properties:
       name: { get_param: spgw_name }
       flavor: { get_param: run_flavor }
