@@ -46,8 +46,7 @@ function help()
   echo_error "  -D, --daemon                              Build HSS as a daemon."
   echo_error "  -F, --force                               No interactive script for installation of software packages."
   echo_error "  -h, --help                                Print this help."
-  echo_error "  -i, --check-installed-software            Check installed software packages necessary to build and run HSS (support Ubuntu 14.04, 15.10)."
-  echo_error "                                            If filled, then OPc key in table users for all subscribers (IMSI) will be computed/updated."
+  echo_error "  -i, --check-installed-software            Check installed software packages necessary to build and run HSS (support Ubuntu 16.04, 14.04)."
   echo_error "  -v, --verbose                             Build process verbose."
 }
 
@@ -123,6 +122,7 @@ function main()
   if [ $var_check_install_oai_software -gt 0 ];then
     update_package_db
     check_install_hss_software  $force
+    echo "HSS not compiled, to compile it, re-run build_hss without -i option"
     exit 0
   fi
   
@@ -157,7 +157,7 @@ function main()
     mkdir -m 777 -p -v BUILD
   fi
   cd ./BUILD
-  cmake  $cmake_args .. > /dev/null 
+  cmake  $cmake_args .. 
   make $make_args
   chmod -f 777 *
   if [ $daemon -ne 0 ]; then
