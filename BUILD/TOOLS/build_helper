@@ -663,6 +663,7 @@ check_install_hss_software() {
               libapache2-mod-php5
         ;;
      "Ubuntu16.04")
+          $SUDO apt-get install $OPTION \
               apache2 \
               php-mysql \
               php \
