@@ -130,6 +130,11 @@ void *mme_app_thread (
         mme_app_handle_initial_context_setup_failure (&MME_APP_INITIAL_CONTEXT_SETUP_FAILURE (received_message_p));
       }
       break;
+    
+    case S1AP_ENB_INITIATED_RESET_REQ:{
+        mme_app_handle_enb_reset_req (&S1AP_ENB_INITIATED_RESET_REQ (received_message_p));
+      }
+      break;
 
     case TIMER_HAS_EXPIRED:{
         /*

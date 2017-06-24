@@ -178,6 +178,11 @@ s1ap_mme_thread (
         s1ap_handle_mme_ue_id_notification (&MME_APP_S1AP_MME_UE_ID_NOTIFICATION (received_message_p));
       }
       break;
+    
+    case S1AP_ENB_INITIATED_RESET_ACK:{
+        s1ap_handle_enb_initiated_reset_ack (&S1AP_ENB_INITIATED_RESET_ACK (received_message_p));
+      }
+      break;
 
     case TIMER_HAS_EXPIRED:{
         ue_description_t                       *ue_ref_p = NULL;

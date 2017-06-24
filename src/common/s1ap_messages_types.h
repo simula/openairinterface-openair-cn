@@ -35,6 +35,8 @@
 #define S1AP_UE_CONTEXT_RELEASE_COMMAND(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_context_release_command
 #define S1AP_UE_CONTEXT_RELEASE_COMPLETE(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_context_release_complete
 #define S1AP_NAS_DL_DATA_REQ(mSGpTR)        (mSGpTR)->ittiMsg.s1ap_nas_dl_data_req
+#define S1AP_ENB_INITIATED_RESET_REQ(mSGpTR) (mSGpTR)->ittiMsg.s1ap_enb_initiated_reset_req
+#define S1AP_ENB_INITIATED_RESET_ACK(mSGpTR) (mSGpTR)->ittiMsg.s1ap_enb_initiated_reset_ack
 
 typedef struct itti_s1ap_initial_ue_message_s {
   mme_ue_s1ap_id_t     mme_ue_s1ap_id;
@@ -91,6 +93,33 @@ typedef struct itti_s1ap_ue_context_release_req_s {
   enb_ue_s1ap_id_t  enb_ue_s1ap_id:24;
   uint32_t         enb_id;
 } itti_s1ap_ue_context_release_req_t;
+
+typedef enum s1ap_reset_type_e {
+  RESET_ALL = 0,
+  RESET_PARTIAL
+} s1ap_reset_type_t;
+
+typedef struct s1_sig_conn_id_s {
+  mme_ue_s1ap_id_t*  mme_ue_s1ap_id;
+  enb_ue_s1ap_id_t*  enb_ue_s1ap_id;
+} s1_sig_conn_id_t;
+
+typedef struct itti_s1ap_enb_initiated_reset_req_s {
+  uint32_t          sctp_assoc_id;
+  uint16_t          sctp_stream_id;
+  uint32_t          enb_id;
+  s1ap_reset_type_t  s1ap_reset_type;
+  uint32_t          num_ue;
+  s1_sig_conn_id_t  *ue_to_reset_list;
+} itti_s1ap_enb_initiated_reset_req_t;
+
+typedef struct itti_s1ap_enb_initiated_reset_ack_s {
+  uint32_t          sctp_assoc_id;
+  uint16_t          sctp_stream_id;
+  s1ap_reset_type_t  s1ap_reset_type;
+  uint32_t          num_ue;
+  s1_sig_conn_id_t  *ue_to_reset_list;
+} itti_s1ap_enb_initiated_reset_ack_t;
 
 // List of possible causes for MME generated UE context release command towards eNB
 enum s1cause {
