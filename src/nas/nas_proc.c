@@ -48,6 +48,7 @@
 #include "esm_sap.h"
 #include "msc.h"
 #include "s6a_defs.h"
+#include "dynamic_memory_check.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -336,42 +337,53 @@ nas_proc_authentication_info_answer (
   emm_data_context_t                     *ctxt    = NULL;
   OAILOG_FUNC_IN (LOG_NAS_EMM);
 
-   DevAssert (aia);
-   IMSI_STRING_TO_IMSI64 ((char *)aia->imsi, &imsi64);
+  DevAssert (aia);
+  IMSI_STRING_TO_IMSI64 ((char *)aia->imsi, &imsi64);
 
-   OAILOG_DEBUG (LOG_NAS_EMM, "Handling imsi " IMSI_64_FMT "\n", imsi64);
+  OAILOG_DEBUG (LOG_NAS_EMM, "Handling imsi " IMSI_64_FMT "\n", imsi64);
 
-   ctxt = emm_data_context_get_by_imsi (&_emm_data, imsi64);
+  ctxt = emm_data_context_get_by_imsi (&_emm_data, imsi64);
 
-   if (!(ctxt)) {
-     OAILOG_ERROR (LOG_NAS_EMM, "That's embarrassing as we don't know this IMSI\n");
-     MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_AUTH_INFO_ANS Unknown imsi " IMSI_64_FMT, imsi64);
-     OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNerror);
-   }
+  if (!(ctxt)) {
+    OAILOG_ERROR (LOG_NAS_EMM, "That's embarrassing as we don't know this IMSI\n");
+    MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_AUTH_INFO_ANS Unknown imsi " IMSI_64_FMT, imsi64);
+    OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNerror);
+  }
+  /*
+   * Stop timer timer_s6a_auth_info_rsp
+   */
+  if (ctxt->timer_s6a_auth_info_rsp.id != NAS_TIMER_INACTIVE_ID) {
+    OAILOG_DEBUG (LOG_NAS_EMM, "EMM-PROC  - Stop timer timer_s6a_auth_info_rsp (%d) for ue_id %d \n", ctxt->timer_s6a_auth_info_rsp.id, ctxt->ue_id);
+    ctxt->timer_s6a_auth_info_rsp.id = nas_timer_stop (ctxt->timer_s6a_auth_info_rsp.id);
+    if (ctxt->timer_s6a_auth_info_rsp_arg) {
+      free_wrapper (&ctxt->timer_s6a_auth_info_rsp_arg);
+      ctxt->timer_s6a_auth_info_rsp_arg = NULL;
+    }  
+  }
 
-   if ((aia->result.present == S6A_RESULT_BASE)
+  if ((aia->result.present == S6A_RESULT_BASE)
        && (aia->result.choice.base == DIAMETER_SUCCESS)) {
      /*
       * Check that list is not empty and contain at most MAX_EPS_AUTH_VECTORS elements
       */
-     DevCheck(aia->auth_info.nb_of_vectors <= MAX_EPS_AUTH_VECTORS, aia->auth_info.nb_of_vectors, MAX_EPS_AUTH_VECTORS, 0);
-     DevCheck(aia->auth_info.nb_of_vectors > 0, aia->auth_info.nb_of_vectors, 1, 0);
+    DevCheck(aia->auth_info.nb_of_vectors <= MAX_EPS_AUTH_VECTORS, aia->auth_info.nb_of_vectors, MAX_EPS_AUTH_VECTORS, 0);
+    DevCheck(aia->auth_info.nb_of_vectors > 0, aia->auth_info.nb_of_vectors, 1, 0);
 
-     OAILOG_DEBUG (LOG_NAS_EMM, "INFORMING NAS ABOUT AUTH RESP SUCCESS got %u vector(s)\n", aia->auth_info.nb_of_vectors);
-     rc = nas_proc_auth_param_res (ctxt->ue_id, aia->auth_info.nb_of_vectors, aia->auth_info.eutran_vector);
-   } else {
-     OAILOG_ERROR (LOG_NAS_EMM, "INFORMING NAS ABOUT AUTH RESP ERROR CODE\n");
-     MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_AUTH_INFO_ANS S6A Failure imsi " IMSI_64_FMT, imsi64);
+    OAILOG_DEBUG (LOG_NAS_EMM, "INFORMING NAS ABOUT AUTH RESP SUCCESS got %u vector(s)\n", aia->auth_info.nb_of_vectors);
+    rc = nas_proc_auth_param_res (ctxt->ue_id, aia->auth_info.nb_of_vectors, aia->auth_info.eutran_vector);
+  } else {
+    OAILOG_ERROR (LOG_NAS_EMM, "INFORMING NAS ABOUT AUTH RESP ERROR CODE\n");
+    MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_AUTH_INFO_ANS S6A Failure imsi " IMSI_64_FMT, imsi64);
 
-     /*
-      * Inform NAS layer with the right failure
-      */
-     if (aia->result.present == S6A_RESULT_BASE) {
+    /*
+     * Inform NAS layer with the right failure
+     */
+    if (aia->result.present == S6A_RESULT_BASE) {
        rc = nas_proc_auth_param_fail (ctxt->ue_id, s6a_error_2_nas_cause (aia->result.choice.base, 0));
-     } else {
+    } else {
        rc = nas_proc_auth_param_fail (ctxt->ue_id, s6a_error_2_nas_cause (aia->result.choice.experimental, 1));
-     }
-   }
+    }
+  }
 
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }

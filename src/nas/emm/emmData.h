@@ -73,6 +73,8 @@ Description Defines internal private data handled by EPS Mobility
 /************************  G L O B A L    T Y P E S  ************************/
 /****************************************************************************/
 
+#define TIMER_S6A_AUTH_INFO_RSP_DEFAULT_VALUE 2 // two second timeout value to wait for auth_info_rsp message from HSS
+
 /*
  * --------------------------------------------------------------------------
  * EPS NAS security context handled by EPS Mobility Management sublayer in
@@ -245,6 +247,9 @@ typedef struct emm_data_context_s {
   struct nas_timer_t       T3450; /* EMM message retransmission timer */
   struct nas_timer_t       T3460; /* Authentication timer         */
   struct nas_timer_t       T3470; /* Identification timer         */
+  struct nas_timer_t       timer_s6a_auth_info_rsp; // MME<->HSS Authentication Information Rsp Timer over S6a interface
+  void *timer_s6a_auth_info_rsp_arg;
+
 
   esm_data_context_t       esm_data_ctx;
 
@@ -316,6 +321,11 @@ typedef struct emm_data_s {
   hash_table_ts_t    *ctx_coll_imsi;  // key is imsi_t, data is emm ue id (unsigned int)
   obj_hash_table_t   *ctx_coll_guti;  // key is guti, data is emm ue id (unsigned int)
 } emm_data_t;
+
+typedef struct s6a_auth_info_rsp_timer_arg_s {
+  mme_ue_s1ap_id_t                        ue_id;  // UE identifier 
+  bool                                    resync; // Indicates whether the authentication information is requested due to sync failure
+} s6a_auth_info_rsp_timer_arg_t;
 
 mme_ue_s1ap_id_t emm_ctx_get_new_ue_id(emm_data_context_t *ctxt) __attribute__((nonnull));
 

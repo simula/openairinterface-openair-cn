@@ -520,6 +520,9 @@ emm_proc_attach_request (
     new_emm_ctx->T3460.sec = T3460_DEFAULT_VALUE;
     new_emm_ctx->T3470.id = NAS_TIMER_INACTIVE_ID;
     new_emm_ctx->T3470.sec = T3470_DEFAULT_VALUE;
+    new_emm_ctx->timer_s6a_auth_info_rsp.id = NAS_TIMER_INACTIVE_ID;
+    new_emm_ctx->timer_s6a_auth_info_rsp.sec = TIMER_S6A_AUTH_INFO_RSP_DEFAULT_VALUE;
+    new_emm_ctx->timer_s6a_auth_info_rsp_arg = NULL;
     emm_fsm_set_status (ue_id, new_emm_ctx, EMM_DEREGISTERED);
 
     emm_ctx_clear_guti(new_emm_ctx);

@@ -23,15 +23,18 @@
 #include <ctype.h>
 
 #include "conversions.h"
+#include "dynamic_memory_check.h"
 #include "intertask_interface.h"
 #include "msc.h"
 #include "mme_app_ue_context.h"
 #include "nas_itti_messaging.h"
+#include "nas_proc.h"
 #include "secu_defs.h"
-
 
 #define TASK_ORIGIN  TASK_NAS_MME
 
+//   Timer handler
+static void * _s6a_auth_info_rsp_timer_expiry_handler (void *);
 
 static const uint8_t                    emm_message_ids[] = {
   ATTACH_REQUEST,
@@ -307,7 +310,8 @@ void nas_itti_auth_info_req(
   OAILOG_FUNC_IN(LOG_NAS);
   MessageDef                             *message_p = NULL;
   s6a_auth_info_req_t                    *auth_info_req = NULL;
-
+  struct emm_data_context_s              *emm_ctx = NULL;
+  s6a_auth_info_rsp_timer_arg_t          *timer_arg = NULL;
 
   message_p = itti_alloc_new_message (TASK_NAS_MME, S6A_AUTH_INFO_REQ);
   auth_info_req = &message_p->ittiMsg.s6a_auth_info_req;
@@ -335,6 +339,20 @@ void nas_itti_auth_info_req(
       imsi64_P, PLMN_ARG(visited_plmnP), auth_info_req->re_synchronization);
   itti_send_msg_to_task (TASK_S6A, INSTANCE_DEFAULT, message_p);
 
+  //Start timer to wait for Auth Info Response 
+  emm_ctx = emm_data_context_get (&_emm_data, ue_idP);
+  DevAssert (emm_ctx);
+  
+  timer_arg = (s6a_auth_info_rsp_timer_arg_t *) calloc (1, sizeof (s6a_auth_info_rsp_timer_arg_t));
+  DevAssert (timer_arg);
+  emm_ctx->timer_s6a_auth_info_rsp_arg = (void*) timer_arg; 
+  timer_arg->ue_id = emm_ctx->ue_id;
+  timer_arg->resync = (auth_info_req->re_synchronization == 1) ? true : false;
+
+  emm_ctx->timer_s6a_auth_info_rsp.id = nas_timer_start (emm_ctx->timer_s6a_auth_info_rsp.sec, _s6a_auth_info_rsp_timer_expiry_handler, timer_arg); 
+  
+  OAILOG_DEBUG (LOG_NAS_EMM, "EMM-PROC  - Timer timer_s6_auth_info_rsp (%d) started in for UE  " MME_UE_S1AP_ID_FMT " \n ", emm_ctx->timer_s6a_auth_info_rsp.id, timer_arg->ue_id);
+  
   OAILOG_FUNC_OUT(LOG_NAS);
 }
 
@@ -459,3 +477,40 @@ void nas_itti_detach_req(
   itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_OUT(LOG_NAS);
 }
+//***************************************************************************
+static void  *_s6a_auth_info_rsp_timer_expiry_handler (void *args)
+{
+  struct emm_data_context_s              *emm_ctx = NULL;
+  OAILOG_FUNC_IN (LOG_NAS_EMM);
+  s6a_auth_info_rsp_timer_arg_t  *timer_args = (s6a_auth_info_rsp_timer_arg_t *) (args);
+  if (timer_args) {
+    emm_ctx = emm_data_context_get (&_emm_data,timer_args->ue_id);
+    if (emm_ctx) {  
+      emm_ctx->timer_s6a_auth_info_rsp.id = NAS_TIMER_INACTIVE_ID;
+      if (timer_args->resync) {
+        OAILOG_ERROR (LOG_NAS_EMM, 
+            "EMM-PROC  - Timer timer_s6_auth_info_rsp expired. Resync auth procedure was in progress. Aborting attach procedure. UE id %d \n", 
+                                                                                                                                  emm_ctx->ue_id);
+      } else {
+
+        OAILOG_ERROR (LOG_NAS_EMM, 
+              "EMM-PROC  - Timer timer_s6_auth_info_rsp expired. Initial auth procedure was in progress. Aborting attach procedure. UE id %d \n", 
+                                                                                                                                  emm_ctx->ue_id);
+      }
+      // Free timer args
+      free_wrapper (&args);
+      emm_ctx->timer_s6a_auth_info_rsp_arg = NULL;
+      
+      // Send Attach Reject with cause NETWORK FAILURE and delete UE context
+      nas_proc_auth_param_fail (emm_ctx->ue_id, NAS_CAUSE_NETWORK_FAILURE);
+    } else { 
+      free_wrapper (&args);
+      OAILOG_ERROR (LOG_NAS_EMM, "EMM-PROC  - Timer timer_s6_auth_info_rsp expired. Null EMM Context for UE %d\n", timer_args->ue_id);
+    }
+  } else { 
+    OAILOG_ERROR (LOG_NAS_EMM, "EMM-PROC  - Timer timer_s6_auth_info_rsp expired. Null Timer arguments. Ignoring it \n");
+  }
+
+  OAILOG_FUNC_RETURN (LOG_NAS_EMM, NULL);
+}
+//***************************************************************************
