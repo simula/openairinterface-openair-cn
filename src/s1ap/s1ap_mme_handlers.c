@@ -224,6 +224,7 @@ s1ap_mme_generate_s1_setup_failure (
 
   MSC_LOG_TX_MESSAGE (MSC_S1AP_MME, MSC_S1AP_ENB, NULL, 0, "0 S1Setup/unsuccessfulOutcome  assoc_id %u cause %u value %u", assoc_id, cause_type, cause_value);
   bstring b = blk2bstr(buffer_p, length);
+  free(buffer_p);
   rc =  s1ap_mme_itti_send_sctp_request (&b, assoc_id, 0, INVALID_MME_UE_S1AP_ID);
   OAILOG_FUNC_RETURN (LOG_S1AP, rc);
 }
@@ -487,6 +488,7 @@ s1ap_generate_s1_setup_response (
    * Non-UE signalling -> stream 0
    */
   bstring b = blk2bstr(buffer, length);
+  free(buffer);
   rc = s1ap_mme_itti_send_sctp_request (&b, enb_association->sctp_assoc_id, 0, INVALID_MME_UE_S1AP_ID);
 
   free_s1ap_s1setupresponse(s1_setup_response_p);
@@ -785,6 +787,7 @@ s1ap_mme_generate_ue_context_release_command (
           ue_ref_p->enb_ue_s1ap_id, ue_ref_p->mme_ue_s1ap_id);
 
   bstring b = blk2bstr(buffer, length);
+  free(buffer);
   rc = s1ap_mme_itti_send_sctp_request (&b, ue_ref_p->enb->sctp_assoc_id, ue_ref_p->sctp_stream_send, ue_ref_p->mme_ue_s1ap_id);
   ue_ref_p->s1_ue_state = S1AP_UE_WAITING_CRR;
   
