@@ -974,6 +974,7 @@ hashtable_ts_get (
   bstring b = bfromcstr(" ");
   hashtable_ts_dump_content(hashtblP, b);
   PRINT_HASHTABLE (hashtblP, "%s:%s\n", bdata(hashtblP->name), bdata(b));
+  bdestroy(b);
 #endif
   return HASH_TABLE_KEY_NOT_EXISTS;
 }
