@@ -39,6 +39,7 @@ case "$OS_DISTRO" in
 esac
 KERNEL_VERSION=$(uname -r | cut -d '.' -f1)
 KERNEL_MAJOR=$(uname -r | cut -d '.' -f2)
+SUPPORTED_KERNEL_VERSION="4.9.0"
 
 SUDO='sudo -S -E'
 
@@ -75,7 +76,6 @@ echo_warning() { cecho "$*" $yellow       ;}
 echo_success() { cecho "$*" $green        ;}
 echo_info()    { cecho "$*" $blue         ;}
 
-
 ########################
 # distribution helpers #
 ########################
@@ -104,6 +104,16 @@ check_supported_distribution() {
         "centos7")     return 0 ;;
     esac
     return 1
+}
+
+#-------------------------------------------------------------------------------
+# Compare two versions of software. Returns true if $version is greater than $req_version
+# arg1 = version
+# arg2 = req_version
+#
+
+function version_gt() { 
+	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; 
 }
 
 
@@ -581,6 +591,48 @@ install_latest_freediameter_from_source() {
     rm -rf /tmp/freediameter
   fi
 }
+#-------------------------------------------------------------------------------
+install_ovs_from_source(){
+  if [ $1 -eq 0 ]; then
+    OPTION=""
+    read -p "Do you want to install Open vSwitch patched? <y/N> " prompt
+  else
+    prompt='y'
+    OPTION="-y"
+  fi
+  
+  if [[ $prompt =~ [yY](es)* ]]
+  then
+	cd /tmp
+	wget http://187.60.96.23/public/openair/gtp-ovs-170703.tar.gz
+	tar -zxvf gtp-ovs-170703.tar.gz
+	cd gtp-ovs/gtp-v4.9-backport/
+	make
+	make install  
+	modprobe udp_tunnel
+	modprobe ip6_udp_tunnel
+	modprobe gtp
+
+	cd /usr/local
+	git clone https://github.com/openvswitch/ovs.git
+	cd ovs
+	git checkout 31b88c97512b5dca9f1f6f73bb33292618eee88a
+	git am /tmp/gtp-ovs/ovs-patches/0001-datapath-GPRS-Tunneling-Protocol-GTP-support.patch
+	git am /tmp/gtp-ovs/ovs-patches/0002-userspace-GPRS-Tunneling-Protocol-GTP-support.patch
+
+	./boot.sh
+	./configure --with-linux=/lib/modules/`uname -r`/build
+	make -j`nproc`
+	cat /tmp/gtp-ovs/gtp-v4.9-backport/Module.symvers >> datapath/linux/Module.symvers
+	make
+	make modules_install  # this overwrites openvswitch.ko, vport.ko, vport-gtp.ko, etc.
+	make install
+	mkdir -p /usr/local/etc/openvswitch
+	mkdir -p /usr/local/var/run/openvswitch
+	ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema
+  fi
+}
+
 
 #-------------------------------------------------------------------------------
 # arg1 is package name
@@ -929,16 +981,37 @@ check_install_mme_software() {
 #-------------------------------------------------------------------------------
 #arg1 is force (no interactive script)
 check_install_spgw_software() {
+  
+  required_gcc_version=4.9.0
+  
   if ! check_supported_distribution; then
     echo_error "Your distribution $(get_distribution_release) is not supported by openair-cn"
     exit 1
   fi
+  
+  current_kernel_release=`uname -r | cut -d '-' -f1`
+  if [ "$current_kernel_release" != "$SUPPORTED_KERNEL_VERSION" ]; then
+	echo_error "Kernel 4.9 is required. Aborting instalation"
+	exit 1
+  fi
+  
+  gcc_version=`gcc --version | head -n1 | cut -d" " -f4`
+  if ! version_gt $gcc_version $required_gcc_version; then
+	read -p "gcc-4.9 is required. Do you want to upgrade gcc? <y/N> " prompt
+	if [[ $prompt =~ [yY](es)* ]]; then
+		add-apt-repository -y ppa:ubuntu-toolchain-r/test
+		apt-get update
+    else
+	  exit 1
+	fi
+  fi
+    
   if [ $1 -gt 0 ]; then 
     OPTION="-y"
   else
     OPTION=""
   fi
-
+	
   check_enable_epel_repos
 
   # Compilers, generators, ...
@@ -957,7 +1030,9 @@ check_install_spgw_software() {
       gdb \
       git \
       pkg-config \
-      subversion"
+      subversion \
+	  gcc-4.9 \
+	  g++-4.9"
   elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
     PACKAGE_LIST="\
       autoconf \
@@ -978,6 +1053,9 @@ check_install_spgw_software() {
   if [ $? -ne 0 ]; then
     echo_fatal "Failed to install package list $PACKAGE_LIST"
   fi
+  
+  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+  update-alternatives --config gcc
 
   # Libraries
   if [[ $OS_DISTRO == "ubuntu" ]]; then
@@ -1074,6 +1152,7 @@ check_install_spgw_software() {
   fi
 
   install_libgtpnl_from_source $1
+  install_ovs_from_source $1
 }
 
 
