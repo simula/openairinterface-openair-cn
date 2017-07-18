@@ -616,10 +616,10 @@ install_ovs_from_source(){
 	
 	git_username=`git config --get user.name`
 	if [ "$git_username" == "" ]; then
-	  echo "You must provide a git username and e-mail"
-	  echo -n 'git username:' 
+	  echo "You haven't configured your Git yet. Please, provide a name and e-mail address."
+	  echo -n 'Name:' 
 	  read git_username
-	  echo -n 'git e-mail:' 
+	  echo -n 'E-mail:' 
 	  read git_email
 	  git config --global user.name "$git_username"
 	  git config --global user.email "$git_email"
