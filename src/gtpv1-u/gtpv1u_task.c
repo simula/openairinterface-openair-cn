@@ -44,6 +44,16 @@
 #include "gtp_mod_kernel.h"
 #include "sgw.h"
 
+/* TIP */
+#include "NwGtpv2cMsg.h"
+
+#define MSG_TYPE_BYTE      1
+#define ECHO_REQUEST       1
+#define ECHO_RESPONSE      2
+
+static void send_response(int fd1u, char* buffer, int bytesRead, struct sockaddr * peer, int peerLen, char msgResp);
+/* TIP */
+
 extern sgw_app_t                               sgw_app;
 
 
@@ -56,7 +66,45 @@ static void  *gtpv1u_thread (void *args)
   OAILOG_START_USE ();
   MSC_START_USE ();
 
+/* TIP */
+  int     				bytesRead;
+  char   				buffer[1024];
+  struct sockaddr_in	peer;
+  uint32_t              peerLen;
+  int 					msgType;
+
   gtpv1u_data_t * gtpv1u_data = (gtpv1u_data_t*)args;
+
+  while (1) {
+    //Recebendo dados do socket do GTPU
+    bytesRead = recvfrom (gtpv1u_data->fd1u, buffer, 1024, 0, (struct sockaddr *)&peer, (socklen_t *) &peerLen);
+    OAILOG_DEBUG (LOG_GTPV1U ,"TIP ***** Dados recebidos com tamanho de  %d bytes \n", bytesRead);
+
+    /**
+    OAILOG_DEBUG (LOG_GTPV1U ,"TIP ***** Recebido dados de %d porta %d family: %d \n", peer.sin_addr , htons(peer.sin_port), peer.sin_family  );
+    for (int i = 0; i < bytesRead; ++i) {
+    	OAILOG_DEBUG (LOG_GTPV1U ,"Valor: %0x \n", buffer[i]);
+    }
+    **/
+
+    msgType = buffer[MSG_TYPE_BYTE];
+
+    switch (msgType){
+    	case NW_GTP_ECHO_REQ:
+             OAILOG_DEBUG(LOG_GTPV1U , "TIP ***** Mensagem ECHO REQ recebida no GTPU %d \n", msgType);
+             send_response(gtpv1u_data->fd1u, buffer, bytesRead, (struct sockaddr *)&peer, peerLen, NW_GTP_ECHO_RSP);
+             break;
+        case NW_GTP_ERROR_IND:
+             OAILOG_DEBUG(LOG_GTPV1U , "Mensagem ERROR IND recebida no GTPU %d \n", msgType);
+             break;
+        default:
+             OAILOG_ERROR (LOG_GTPV1U , "TIP ***** Mensagem recebida no GTPU desconhecida %d \n", msgType);
+             //send_response(gtpv1u_data->fd1u, buffer, bytesRead, (struct sockaddr *)&peer, peerLen, NW_GTP_ECHO_RSP);
+             break;
+    }
+
+#if 0 
+  //gtpv1u_data_t * gtpv1u_data = (gtpv1u_data_t*)args;
 
   while (1) {
     /*
@@ -71,6 +119,8 @@ static void  *gtpv1u_thread (void *args)
 
     switch (ITTI_MSG_ID (received_message_p)) {
 
+    OAILOG_ERROR (LOG_GTPV1U , "GTP message ID %d:%s\n", ITTI_MSG_ID (received_message_p), ITTI_MSG_NAME (received_message_p));
+
     case TERMINATE_MESSAGE:
       gtpv1u_exit (gtpv1u_data);
       break;
@@ -83,6 +133,7 @@ static void  *gtpv1u_thread (void *args)
 
     itti_free (ITTI_MSG_ORIGIN_ID (received_message_p), received_message_p);
     received_message_p = NULL;
+#endif
   }
 
   return NULL;
@@ -148,3 +199,24 @@ void gtpv1u_exit (gtpv1u_data_t * const gtpv1u_data)
   // END-GTP quick integration only for evaluation purpose
   itti_exit_task ();
 }
+
+ 
+/* TIP */
+static void send_response(int fd1u, char* buffer, int bytesRead, struct sockaddr* peer, int peerLen, char msgResp){
+	int 					sent;
+
+	buffer[MSG_TYPE_BYTE] = msgResp;
+
+	OAILOG_DEBUG(LOG_GTPV1U , "TIP ***** Enviando resposta  %d \n", msgResp);
+	sent = sendto(fd1u, buffer, bytesRead, 0, peer, peerLen);
+
+	if (sent < 0){
+		OAILOG_ERROR (LOG_GTPV1U ,"TIP ***** Erro ao enviar dados no GTUP \n");
+	}else{
+		OAILOG_DEBUG (LOG_GTPV1U ,"TIP ***** Bytes enviados: %d \n", sent);
+	}
+
+}
+/* TIP */
+
+

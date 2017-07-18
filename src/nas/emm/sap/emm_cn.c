@@ -223,10 +223,18 @@ static int _emm_cn_pdn_connectivity_res (emm_cn_pdn_res_t * msg_pP)
 
   OAILOG_FUNC_IN (LOG_NAS_EMM);
   emm_ctx_p = emm_data_context_get (&_emm_data, msg_pP->ue_id);
+  OAILOG_ERROR (LOG_NAS_EMM, "EMMCN-SAP  - " "Tip: UE associated to id " MME_UE_S1AP_ID_FMT "... -Contexto: %p\n", msg_pP->ue_id, emm_ctx_p);
 
   if (emm_ctx_p == NULL) {
     OAILOG_ERROR (LOG_NAS_EMM, "EMMCN-SAP  - " "Failed to find UE associated to id " MME_UE_S1AP_ID_FMT "...\n", msg_pP->ue_id);
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
+  }
+
+  //Tip:
+  if (emm_ctx_p->pdn_type != IPv4)
+  {
+     esm_cause = ESM_CAUSE_SINGLE_ADDRESS_BEARERS_ONLY_ALLOWED;
+     OAILOG_ERROR (LOG_NAS_EMM, "EMMCN-SAP  - Tip: pdn_type <> IPV4 %d - set esm_cause: %d\n", emm_ctx_p->pdn_type, esm_cause);
   }
 
   memset (&esm_msg, 0, sizeof (ESM_msg));

@@ -261,6 +261,7 @@ mme_app_handle_nas_pdn_connectivity_req (
   struct ue_context_s                    *ue_context_p = NULL;
   imsi64_t                                imsi64 = INVALID_IMSI64;
   int                                     rc = RETURNok;
+  struct emm_data_context_s              *emm_ctx_p = NULL; //Tip: 
 
   OAILOG_FUNC_IN (LOG_MME_APP);
   DevAssert (nas_pdn_connectivity_req_pP );
@@ -286,6 +287,18 @@ mme_app_handle_nas_pdn_connectivity_req (
                && (nas_pdn_connectivity_req_pP->imsi_length < 16), "STOP ON IMSI LENGTH %d", nas_pdn_connectivity_req_pP->imsi_length);
   memcpy (ue_context_p->pending_pdn_connectivity_req_imsi, nas_pdn_connectivity_req_pP->imsi, nas_pdn_connectivity_req_pP->imsi_length);
   ue_context_p->pending_pdn_connectivity_req_imsi_length = nas_pdn_connectivity_req_pP->imsi_length;
+
+  // TIP: Store pdn_type 
+  ue_context_p->pdn_type = nas_pdn_connectivity_req_pP->pdn_type;
+  OAILOG_ERROR (LOG_MME_APP, "Tip: Store pdn_type: %d\n", ue_context_p->pdn_type);
+
+  emm_ctx_p = emm_data_context_get (&_emm_data, ue_context_p->mme_ue_s1ap_id);
+  if (emm_ctx_p)
+  {
+     emm_ctx_p->pdn_type = nas_pdn_connectivity_req_pP->pdn_type;
+     OAILOG_ERROR (LOG_MME_APP,"Tip: UE associated to id " MME_UE_S1AP_ID_FMT "... - Contexto: %p - pdn_type: %d\n", ue_context_p->mme_ue_s1ap_id, emm_ctx_p, emm_ctx_p->pdn_type);
+
+  }
 
   // copy
   if (ue_context_p->pending_pdn_connectivity_req_apn) {

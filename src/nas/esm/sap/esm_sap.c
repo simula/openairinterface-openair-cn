@@ -519,8 +519,14 @@ _esm_sap_recv (
         /*
          * Process PDN connectivity request message received from the UE
          */
-        esm_cause = esm_recv_pdn_connectivity_request (ctx, pti, ebi, &esm_msg.pdn_connectivity_request, &ebi, &data);
-
+        if (msg_type > 0)
+        {
+            esm_cause = esm_recv_pdn_connectivity_request (ctx, pti, ebi, &esm_msg.pdn_connectivity_request, &ebi, &data);
+        }
+        else
+        {
+            break;
+        }
         if (esm_cause != ESM_CAUSE_SUCCESS) {
           /*
            * Return reject message

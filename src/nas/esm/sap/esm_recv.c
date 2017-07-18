@@ -217,6 +217,7 @@ esm_recv_pdn_connectivity_request (
   /*
    * Get the value of the PDN type indicator
    */
+  OAILOG_ERROR (LOG_NAS_ESM, "ESM-SAP   - PDN type: %d\n", msg->pdntype);
   if (msg->pdntype == PDN_TYPE_IPV4) {
     esm_data->pdn_type = ESM_PDN_TYPE_IPV4;
   } else if (msg->pdntype == PDN_TYPE_IPV6) {

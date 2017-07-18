@@ -297,6 +297,9 @@ esm_send_activate_default_eps_bearer_context_request (
     msg->esmcause = esm_cause;
   }
 
+  msg->presencemask |= ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+  msg->esmcause = ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+
   if (pco) {
     msg->presencemask |= ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
     copy_protocol_configuration_options(&msg->protocolconfigurationoptions, pco);

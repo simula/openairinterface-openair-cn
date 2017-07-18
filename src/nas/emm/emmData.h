@@ -239,6 +239,7 @@ typedef struct emm_data_context_s {
                                                         native' or of type 'partial native'.     */
 
   int                      emm_cause;    /* EMM failure cause code                          */
+  pdn_type_t               pdn_type;     // TIP: store pdn type
 
   emm_fsm_state_t          _emm_fsm_status;
 

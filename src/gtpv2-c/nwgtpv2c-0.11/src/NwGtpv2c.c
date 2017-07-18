@@ -472,20 +472,29 @@ extern                                  "C" {
     NwGtpv2cTunnelT                        *pTunnel = NULL,
                                            *pCollision = NULL;
 
+    NwGtpv2cTunnelT                        *pLocalTunnel = NULL,
+                                            keyTunnel = {0};
+
     OAILOG_FUNC_IN (LOG_GTPV2C);
     OAILOG_DEBUG (LOG_GTPV2C, "Creating local tunnel with teid '0x%x' and peer IP 0x%x\n", teid, ipv4Remote);
     pTunnel = nwGtpv2cTunnelNew (thiz, teid, ipv4Remote, hUlpTunnel);
+    OAILOG_DEBUG (LOG_GTPV2C, "Tunel Criado: '0x%x'\n", pTunnel);
 
     if (pTunnel) {
       pCollision = RB_INSERT (NwGtpv2cTunnelMap, &(thiz->tunnelMap), pTunnel);
 
+      OAILOG_DEBUG (LOG_GTPV2C, "Tunel Colidido: '0x%x'\n", pCollision);
+
       if (pCollision) {
-        rc = nwGtpv2cTunnelDelete (thiz, pTunnel);
-        NW_ASSERT (NW_OK == rc);
-        *phTunnel = (NwGtpv2cTunnelHandleT) 0;
-        OAILOG_WARNING (LOG_GTPV2C,  "Local tunnel creation failed for teid '0x%x' and peer IP " NW_IPV4_ADDR ". Tunnel already exists!\n", teid, NW_IPV4_ADDR_FORMAT (ipv4Remote));
-        NW_ASSERT (0);
-        OAILOG_FUNC_RETURN (LOG_GTPV2C, NW_OK);
+        //rc = nwGtpv2cTunnelDelete (thiz, pTunnel);
+        //NW_ASSERT (NW_OK == rc);
+        //*phTunnel = (NwGtpv2cTunnelHandleT) 0;
+        OAILOG_DEBUG (LOG_GTPV2C,  "Local tunnel creation failed for teid '0x%x' and peer IP " NW_IPV4_ADDR ". Tunnel already exists!\n", teid, NW_IPV4_ADDR_FORMAT (ipv4Remote));
+        //NW_ASSERT (0);
+        //OAILOG_FUNC_RETURN (LOG_GTPV2C, NW_FAILURE);
+        //*phTunnel = (NwGtpv2cTunnelHandleT) pCollision;
+        //OAILOG_FUNC_RETURN (LOG_GTPV2C, NW_OK);
+	sleep(5);
       }
     } else {
       rc = NW_FAILURE;
@@ -544,7 +553,7 @@ extern                                  "C" {
     if (pTrxn) {
       if (!pUlpReq->apiInfo.initialReqInfo.hTunnel) {
         rc = nwGtpv2cCreateLocalTunnel (thiz, pUlpReq->apiInfo.initialReqInfo.teidLocal, pUlpReq->apiInfo.initialReqInfo.peerIp, pUlpReq->apiInfo.initialReqInfo.hUlpTunnel, &pUlpReq->apiInfo.initialReqInfo.hTunnel);
-        NW_ASSERT (NW_OK == rc);
+        //NW_ASSERT (NW_OK == rc);
       }
 
       pTrxn->pMsg = (NwGtpv2cMsgT *) pUlpReq->hMsg;
@@ -1545,7 +1554,7 @@ extern                                  "C" {
       OAILOG_DEBUG (LOG_GTPV2C, "Stopping active timer 0x%" PRIxPTR " for info 0x%p!\n", timeoutInfo->hTimer, timeoutInfo);
       rc = thiz->tmrMgr.tmrStopCallback (thiz->tmrMgr.tmrMgrHandle, timeoutInfo->hTimer);
       thiz->activeTimerInfo = NULL;
-      NW_ASSERT (NW_OK == rc);
+      //NW_ASSERT (NW_OK == rc);
       OAI_GCC_DIAG_OFF(int-to-pointer-cast);
       timeoutInfo = nwGtpv2cTmrMinHeapPeek ((NwGtpv2cTmrMinHeapT *)thiz->hTmrMinHeap);
       OAI_GCC_DIAG_ON(int-to-pointer-cast);

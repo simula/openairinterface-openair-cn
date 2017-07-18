@@ -193,6 +193,7 @@ typedef struct ue_context_s {
   teid_t                 mme_s11_teid;                // set by mme_app_send_s11_create_session_req
   teid_t                 sgw_s11_teid;                // set by S11 CREATE_SESSION_RESPONSE
   PAA_t                  paa;                         // set by S11 CREATE_SESSION_RESPONSE
+  pdn_type_t             pdn_type;                    // TIP: store pdn type
 
   // temp
   char                   pending_pdn_connectivity_req_imsi[16];

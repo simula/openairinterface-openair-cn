@@ -59,6 +59,7 @@ extern "C" {
 #define NW_GTP_ECHO_REQ                                         (1)
 #define NW_GTP_ECHO_RSP                                         (2)
 #define NW_GTP_VERSION_NOT_SUPPORTED_IND                        (3)
+#define NW_GTP_ERROR_IND                                        (26)
 #define NW_GTP_CREATE_SESSION_REQ                               (32)
 #define NW_GTP_CREATE_SESSION_RSP                               (33)
 #define NW_GTP_MODIFY_BEARER_REQ                                (34)

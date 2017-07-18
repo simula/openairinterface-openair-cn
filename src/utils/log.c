@@ -822,6 +822,41 @@ log_message_start (
       (*messageP)->log_level = log_levelP;
 #endif
       log_get_elapsed_time_since_start(&elapsed_time);
+
+#if 1
+      time_t t = time(0);   // get time now
+      struct tm * now = localtime( & t );
+      char data_hora[32];
+	  
+      sprintf(data_hora, "%04d-%02d-%02d %02d:%02d:%02d", 
+  	     (now->tm_year + 1900), 
+  	     (now->tm_mon + 1), 
+  	     now->tm_mday, 
+ 	     now->tm_hour, 
+  	     now->tm_min, 
+  	     now->tm_sec);
+
+    filename_length = strlen(source_fileP);
+    if (filename_length > LOG_DISPLAYED_FILENAME_MAX_LENGTH) {
+      rv = bformata ((*messageP)->bstr, "%06" PRIu64 " %s %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
+          __sync_fetch_and_add (&g_oai_log.log_message_number, 1), data_hora,
+          thread_ctxt->tid,
+          LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, &g_oai_log.log_level2str[log_levelP][0],
+          LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, &g_oai_log.log_proto2str[protoP][0],
+          LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, &source_fileP[filename_length-LOG_DISPLAYED_FILENAME_MAX_LENGTH], line_numP,
+          thread_ctxt->indent, " ");
+    } else {
+      rv = bformata ((*messageP)->bstr, "%06" PRIu64 " %s %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
+          __sync_fetch_and_add (&g_oai_log.log_message_number, 1), data_hora,
+          thread_ctxt->tid,
+          LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, &g_oai_log.log_level2str[log_levelP][0],
+          LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, &g_oai_log.log_proto2str[protoP][0],
+          LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, source_fileP, line_numP,
+          thread_ctxt->indent, " ");
+    }
+#endif
+
+#if 0 
       filename_length = strlen(source_fileP);
       if (filename_length > LOG_DISPLAYED_FILENAME_MAX_LENGTH) {
         rv = bformata ((*messageP)->bstr, "%06" PRIu64 " %05ld:%06ld %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
@@ -840,6 +875,7 @@ log_message_start (
             LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, source_fileP, line_numP,
             thread_ctxt->indent, " ");
       }
+#endif
 
       if (BSTR_ERR == rv) {
         OAI_FPRINTF_ERR("Error while logging message : %s", &g_oai_log.log_proto2str[protoP][0]);
@@ -973,6 +1009,41 @@ log_message (
     if (1 == rv) {
       struct timeval elapsed_time;
       log_get_elapsed_time_since_start(&elapsed_time);
+
+#if 1
+      time_t t = time(0);   // get time now
+      struct tm * now = localtime( & t );
+      char data_hora[32];
+	  
+      sprintf(data_hora, "%04d-%02d-%02d %02d:%02d:%02d", 
+  	     (now->tm_year + 1900), 
+  	     (now->tm_mon + 1), 
+  	     now->tm_mday, 
+             now->tm_hour, 
+  	     now->tm_min, 
+  	     now->tm_sec);
+	
+    filename_length = strlen(source_fileP);
+    if (filename_length > LOG_DISPLAYED_FILENAME_MAX_LENGTH) {
+      rv = bassignformat (new_item_p->bstr, "%06" PRIu64 " %s %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
+          __sync_fetch_and_add (&g_oai_log.log_message_number, 1), data_hora,
+          thread_ctxt->tid,
+          LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, &g_oai_log.log_level2str[log_levelP][0],
+          LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, &g_oai_log.log_proto2str[protoP][0],
+          LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, &source_fileP[filename_length-LOG_DISPLAYED_FILENAME_MAX_LENGTH], line_numP,
+          thread_ctxt->indent, " ");
+    } else {
+      rv = bassignformat (new_item_p->bstr, "%06" PRIu64 " %s %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
+          __sync_fetch_and_add (&g_oai_log.log_message_number, 1), data_hora,
+          thread_ctxt->tid,
+          LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, &g_oai_log.log_level2str[log_levelP][0],
+          LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, &g_oai_log.log_proto2str[protoP][0],
+          LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, source_fileP, line_numP,
+          thread_ctxt->indent, " ");
+    }
+#endif
+
+#if 0
       filename_length = strlen(source_fileP);
       if (filename_length > LOG_DISPLAYED_FILENAME_MAX_LENGTH) {
         rv = bassignformat (new_item_p->bstr, "%06" PRIu64 " %05ld:%06ld %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
@@ -991,7 +1062,7 @@ log_message (
             LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, source_fileP, line_numP,
             thread_ctxt->indent, " ");
       }
-
+#endif
       if (BSTR_ERR == rv) {
         OAI_FPRINTF_ERR("Error while logging LOG message : %s", &g_oai_log.log_proto2str[protoP][0]);
         goto error_event;
