@@ -613,6 +613,18 @@ install_ovs_from_source(){
 	modprobe ip6_udp_tunnel
 	modprobe gtp
 
+	
+	git_username=`git config --get user.name`
+	if [ "$git_username" == "" ]; then
+	  echo "You must provide a git username and e-mail"
+	  echo -n 'git username:' 
+	  read git_username
+	  echo -n 'git e-mail:' 
+	  read git_email
+	  git config --global user.name "$git_username"
+	  git config --global user.email "$git_email"
+    fi
+	
 	cd /usr/local
 	git clone https://github.com/openvswitch/ovs.git
 	cd ovs
