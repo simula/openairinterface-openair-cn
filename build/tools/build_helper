@@ -106,7 +106,6 @@ check_supported_distribution() {
     return 1
 }
 
-
 ###########################
 # Cleaners
 ###########################
@@ -132,7 +131,7 @@ clean_kernel() {
 clean_all_files() {
  set_openair_env
  dir=$OPENAIRCN_DIR/build
- rm -rf $dir/log $OPENAIR_DIR/targets/bin/*
+ rm -rf $dir/log 
  rm -rf $dir/epc/build $dir/epc/CMakeLists.txt
  rm -rf $dir/mme/build $dir/mme/CMakeLists.txt
  rm -rf $dir/hss/build
@@ -142,7 +141,7 @@ clean_all_files() {
 #-------------------------------------------------------------------------------
 # Remove Nettle installation which was done from sources (only done for Ubuntu distro)
 remove_nettle_from_source() {
-    nettle_uninstall_log=$OPENAIRCN_DIR/BUILD/LOG/nettle_uninstall_log.txt
+    nettle_uninstall_log=$OPENAIRCN_DIR/build/log/nettle_uninstall_log.txt
     echo_info "\nUn-Installing Nettle from sources. The log file for nettle un-installation is here: $nettle_uninstall_log "
     (
     $SUDO apt-get remove -y nettle-dev nettle-bin 
@@ -168,7 +167,7 @@ remove_nettle_from_source() {
 #-------------------------------------------------------------------------------
 # Remove Gnutls from source (only done for Ubuntu distro)
 remove_gnutls_from_source(){
-    gnutls_uninstall_log=$OPENAIRCN_DIR/BUILD/LOG/gnutls_uninstall_log.txt
+    gnutls_uninstall_log=$OPENAIRCN_DIR/build/log/gnutls_uninstall_log.txt
     echo_info "\nUn-Installing Gnutls. The log file for Gnutls un-installation is here: $gnutls_uninstall_log "
     (
     $SUDO apt-get remove -y libgnutls-dev
@@ -189,6 +188,8 @@ remove_gnutls_from_source(){
     )>& $gnutls_uninstall_log
 }
 
+
+
 ###################################
 # Compilers
 ###################################
@@ -197,16 +198,17 @@ remove_gnutls_from_source(){
 # arg 3 Executable name (no path)
 # arg 4 Verbose         (1 or 0)
 compilations() {
+  echo_info "Compilation log for $3 is here: $dlog/$2.txt"
   cd $OPENAIRCN_DIR/build/$1/build
-  if [ "a$4" == "a1" ]; then
+  if [ "a$4" == "a1" ]; then 
     {
       rm -f $3
-      make $make_args
-    } | tee $dlog/$2.txt
+      make $make_args $2
+    } | tee $dlog/$2.txt 
   else
     {
       rm -f $3
-      make $make_args
+      make $make_args $2
     } > $dlog/$2.txt 2>&1
   fi
   if [ -s $3 ] ; then
@@ -339,6 +341,7 @@ install_netmap() {
   fi
 }
 #-------------------------------------------------------------------------------
+
 install_libgtpnl_from_source() {
   if [ $1 -gt 0 ]; then
     OPTION="-y"
@@ -378,14 +381,48 @@ install_libgtpnl_from_source() {
     $SUDO rm -rf /tmp/libgtpnl*
     git clone git://git.osmocom.org/libgtpnl
     cd libgtpnl
+    git reset --hard 345d687
+    patch --verbose -p1  < $OPENAIRCN_DIR/build/tools/libgtpnl.LTE_dedicated_bearer.v0.patch 
     autoreconf -fi
     ./configure
-    echo "Compiling nettle"
+    echo "Compiling libgtpnl"
     make -j`nproc`
     $SUDO make install
     $SUDO ldconfig
     cd /tmp
     $SUDO rm -rf /tmp/libgtpnl*
+  fi
+}
+
+#-------------------------------------------------------------------------------
+install_liblfds7.1.0_from_source() {
+  if [ $1 -gt 0 ]; then
+    OPTION="-y"
+  else
+    OPTION=""
+  fi
+
+  # Compilers, generators, ...
+  $SUDO apt-get install $OPTION \
+    build-essential 
+
+  if [ $1 -eq 0 ]; then
+    read -p "Do you want to install liblfds7.1.0 ? <y/N> " prompt
+  else
+    prompt='y'
+  fi
+  if [[ $prompt =~ [yY](es)* ]]
+  then
+    cd /tmp
+    echo "Downloading liblfds7.1.0 archive"
+    $SUDO rm -rf /tmp/liblfds*
+    git clone https://github.com/liblfds/liblfds.git
+    cd liblfds/liblfds/liblfds7.1.0/liblfds710/build/gcc_gnumake
+    #make so_rel # do a selector
+    make so_dbg
+    $SUDO rm -f /usr/local/lib//liblfds710.so
+    $SUDO make so_install
+    $SUDO rm -rf /tmp/liblfds*
   fi
 }
 
@@ -722,7 +759,7 @@ check_install_hss_software() {
   fi
 
   install_freediameter_from_source $1
-    
+
   case "$(get_distribution_release)" in
     "ubuntu14.04")
       PACKAGE_LIST="\
@@ -752,7 +789,16 @@ check_install_hss_software() {
       echo_fatal "$OS_DISTRO is not a supported distribution."
       ;;
   esac
+<<<<<<< HEAD
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST 
+=======
+
+  $SUDO apt-get install $OPTION \
+    phpmyadmin \
+    python-pexpect \
+    libapache2-mod-php* 
+
+>>>>>>> devel_back_y16w38_y17w18
 }
 
 #-------------------------------------------------------------------------------
@@ -857,8 +903,10 @@ check_install_mme_software() {
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
   if [ $? -ne 0 ]; then
     echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi
+  fi 
 
+
+<<<<<<< HEAD
   if [[ $OS_DISTRO == 'ubuntu' ]]; then
     #Remove old gnutls/nettle installation that was done from sources
     remove_nettle_from_source
@@ -867,8 +915,17 @@ check_install_mme_software() {
     $SUDO apt-get install -y libgnutls-dev
   fi
   
+=======
+  #Remove old gnutls/nettle installation that was done from sources
+  remove_nettle_from_source
+  remove_gnutls_from_source
+  $SUDO apt-get install -y nettle-dev nettle-bin
+  $SUDO apt-get install -y libgnutls-dev
+
+>>>>>>> devel_back_y16w38_y17w18
   install_freediameter_from_source $1
   install_asn1c_from_source $1
+  install_liblfds7.1.0_from_source $1
 
   install_libgtpnl_from_source $1
 
@@ -893,6 +950,7 @@ check_install_mme_software() {
     echo_fatal "Failed to install package list $PACKAGE_LIST"
   fi
 
+<<<<<<< HEAD
   if [[ "$OS_DISTRO" == "ubuntu" ]]; then
     PACKAGE_LIST="\
       check \
@@ -921,6 +979,14 @@ check_install_mme_software() {
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
+=======
+  PACKAGE_LIST="\
+    check \
+    python-dev \
+    python-pexpect \
+    unzip"
+  $SUDO apt-get install $OPTION $PACKAGE_LIST
+>>>>>>> devel_back_y16w38_y17w18
   if [ $? -ne 0 ]; then
     echo_fatal "Failed to install package list $PACKAGE_LIST"
   fi
@@ -1074,6 +1140,7 @@ check_install_spgw_software() {
   fi
 
   install_libgtpnl_from_source $1
+  install_liblfds7.1.0_from_source $1
 }
 
 
@@ -1114,7 +1181,7 @@ install_asn1c_from_source(){
   then
     $SUDO rm -rf /tmp/asn1c
     mkdir -p /tmp/asn1c
-    git clone https://gitlab.eurecom.fr/oai/asn1c.git /tmp/asn1c
+    GIT_SSL_NO_VERIFY=true git clone https://gitlab.eurecom.fr/oai/asn1c.git /tmp/asn1c
     cd /tmp/asn1c
     ./configure
     make > /tmp/log_compile_asn1c 2>&1
