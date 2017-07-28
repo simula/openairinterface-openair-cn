@@ -302,6 +302,14 @@ static int _emm_cn_pdn_connectivity_res (emm_cn_pdn_res_t * msg_pP)
    */
   /**************************************************************************/
   OAILOG_INFO (LOG_NAS_EMM, "EMM  -  APN = %s\n", (char *)bdata(msg_pP->apn));
+
+  //Tip:
+  if (emm_ctx_p->emm_cause != ESM_CAUSE_SUCCESS)
+  {
+     esm_cause = emm_ctx_p->emm_cause;
+     OAILOG_ERROR (LOG_NAS_EMM, "EMMCN-SAP  - Tip: pdn_type <> IPV4 %d - set esm_cause: %d\n", emm_ctx_p->pdn_type, esm_cause);
+  }
+
   /*************************************************************************/
   /*
    * CODE THAT WAS IN esm_sap.c/_esm_sap_recv()
@@ -314,7 +322,7 @@ static int _emm_cn_pdn_connectivity_res (emm_cn_pdn_res_t * msg_pP)
                                                              &esm_msg.activate_default_eps_bearer_context_request,
                                                              msg_pP->apn, &msg_pP->pco,
                                                              esm_pdn_type, msg_pP->pdn_addr,
-                                                             &qos, ESM_CAUSE_SUCCESS);
+                                                             &qos, esm_cause); //Tip:
   clear_protocol_configuration_options(&msg_pP->pco);
   if (rc != RETURNerror) {
     /*

@@ -217,6 +217,7 @@ esm_recv_pdn_connectivity_request (
   /*
    * Get the value of the PDN type indicator
    */
+  OAILOG_ERROR (LOG_NAS_ESM, "Tip: ESM-SAP   - PDN type: %d\n", msg->pdntype);
   if (msg->pdntype == PDN_TYPE_IPV4) {
     esm_data->pdn_type = ESM_PDN_TYPE_IPV4;
   } else if (msg->pdntype == PDN_TYPE_IPV6) {
@@ -267,6 +268,44 @@ esm_recv_pdn_connectivity_request (
     esm_data->pco.protocol_or_container_ids[i].id     = msg->protocolconfigurationoptions.protocol_or_container_ids[i].id;
     esm_data->pco.protocol_or_container_ids[i].length = msg->protocolconfigurationoptions.protocol_or_container_ids[i].length;
     esm_data->pco.protocol_or_container_ids[i].contents = bstrcpy(msg->protocolconfigurationoptions.protocol_or_container_ids[i].contents);
+  }
+
+  // TIP - Check pdn_type
+  OAILOG_INFO (LOG_NAS_ESM, "ESM-PROC  - _esm_data.conf.features %08x\n", _esm_data.conf.features);
+  ctx->emm_cause = ESM_CAUSE_SUCCESS;
+  switch (_esm_data.conf.features & (MME_API_IPV4 | MME_API_IPV6)) {
+    case (MME_API_IPV4 | MME_API_IPV6):
+    /*
+     * The network supports both IPv4 and IPv6 connection
+     */
+      if ((esm_data->pdn_type == ESM_PDN_TYPE_IPV4V6) && (_esm_data.conf.features & MME_API_SINGLE_ADDR_BEARERS)) {
+        /*
+         * The network supports single IP version bearers only
+         */
+        ctx->emm_cause = ESM_CAUSE_SINGLE_ADDRESS_BEARERS_ONLY_ALLOWED;
+      }
+      break;
+
+    case MME_API_IPV6:
+      /*
+       * The network supports connection to IPv6 only
+       */
+      if (esm_data->pdn_type != ESM_PDN_TYPE_IPV6) {
+        ctx->emm_cause = ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+      }
+      break;
+
+    case MME_API_IPV4:
+      /*
+       * The network supports connection to IPv4 only
+       */
+      if (esm_data->pdn_type != ESM_PDN_TYPE_IPV4) {
+        ctx->emm_cause = ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+      }
+      break;
+
+    default:
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM-PROC  - _esm_data.conf.features incorrect value (no IPV4 or IPV6 ) %X\n", _esm_data.conf.features);
   }
 
 #if ORIGINAL_CODE
