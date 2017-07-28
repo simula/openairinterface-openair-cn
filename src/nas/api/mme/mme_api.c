@@ -61,9 +61,6 @@ extern mme_app_desc_t                   mme_app_desc;
 /* Maximum number of PDN connections the MME may simultaneously support */
 #define MME_API_PDN_MAX         10
 
-static mme_api_ip_version_t             _mme_api_ip_capability = MME_API_IPV4_ADDR;
-
-
 /* Subscribed QCI */
 #define MME_API_QCI     3
 
@@ -194,11 +191,11 @@ mme_api_get_esm_config (
 {
   OAILOG_FUNC_IN (LOG_NAS);
 
-  if (_mme_api_ip_capability == MME_API_IPV4_ADDR) {
+  if (strcmp((const char *)mme_config.ip_capability->data, "IPV4") == 0) {
     config->features = MME_API_IPV4;
-  } else if (_mme_api_ip_capability == MME_API_IPV6_ADDR) {
+  } else if (strcmp((const char *)mme_config.ip_capability->data, "IPV6") == 0) {
     config->features = MME_API_IPV6;
-  } else if (_mme_api_ip_capability == MME_API_IPV4V6_ADDR) {
+  } else if (strcmp((const char *)mme_config.ip_capability->data, "IPV4V6") == 0) {
     config->features = MME_API_IPV4 | MME_API_IPV6;
   } else {
     config->features = 0;

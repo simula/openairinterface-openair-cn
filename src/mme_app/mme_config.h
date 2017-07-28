@@ -50,6 +50,8 @@
 #define MME_CONFIG_STRING_RELATIVE_CAPACITY              "RELATIVE_CAPACITY"
 #define MME_CONFIG_STRING_STATISTIC_TIMER                "MME_STATISTIC_TIMER"
 
+#define MME_CONFIG_STRING_IP_CAPABILITY            "IP_CAPABILITY"
+
 #define MME_CONFIG_STRING_EMERGENCY_ATTACH_SUPPORTED     "EMERGENCY_ATTACH_SUPPORTED"
 #define MME_CONFIG_STRING_UNAUTHENTICATED_IMSI_SUPPORTED "UNAUTHENTICATED_IMSI_SUPPORTED"
 
@@ -129,6 +131,8 @@ typedef struct mme_config_s {
   uint8_t relative_capacity;
 
   uint32_t mme_statistic_timer;
+
+  bstring ip_capability;
 
   uint8_t unauthenticated_imsi_supported;
 

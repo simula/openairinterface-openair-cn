@@ -320,6 +320,10 @@ static int mme_config_parse_file (mme_config_t * config_pP)
       config_pP->mme_statistic_timer = (uint32_t) aint;
     }
 
+    if ((config_setting_lookup_string (setting_mme, MME_CONFIG_STRING_IP_CAPABILITY, (const char **)&astring))) {
+      config_pP->ip_capability = bfromcstr (astring);
+    }
+	
     if ((config_setting_lookup_string (setting_mme, EPS_NETWORK_FEATURE_SUPPORT_EMERGENCY_BEARER_SERVICES_IN_S1_MODE, (const char **)&astring))) {
       if (strcasecmp (astring, "yes") == 0)
         config_pP->eps_network_feature_support.emergency_bearer_services_in_s1_mode = 1;
@@ -711,7 +715,8 @@ static void mme_config_display (mme_config_t * config_pP)
   OAILOG_INFO (LOG_CONFIG, "- Extended service request .............: %s\n", config_pP->eps_network_feature_support.extended_service_request == 0 ? "false" : "true");
   OAILOG_INFO (LOG_CONFIG, "- Unauth IMSI support ..................: %s\n", config_pP->unauthenticated_imsi_supported == 0 ? "false" : "true");
   OAILOG_INFO (LOG_CONFIG, "- Relative capa ........................: %u\n", config_pP->relative_capacity);
-  OAILOG_INFO (LOG_CONFIG, "- Statistics timer .....................: %u (seconds)\n\n", config_pP->mme_statistic_timer);
+  OAILOG_INFO (LOG_CONFIG, "- Statistics timer .....................: %u (seconds)\n", config_pP->mme_statistic_timer);
+  OAILOG_INFO (LOG_CONFIG, "- IP Capability ........................: %s\n\n", bdata(config_pP->ip_capability));
   OAILOG_INFO (LOG_CONFIG, "- S1-MME:\n");
   OAILOG_INFO (LOG_CONFIG, "    port number ......: %d\n", config_pP->s1ap_config.port_number);
   OAILOG_INFO (LOG_CONFIG, "- IP:\n");
