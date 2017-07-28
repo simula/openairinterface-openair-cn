@@ -52,12 +52,11 @@
 #include "sgw_handlers.h"
 #include "sgw_context_manager.h"
 #include "sgw.h"
-#include "pgw_lite_paa.h"
 #include "pgw_pco.h"
 #include "spgw_config.h"
 #include "ProtocolConfigurationOptions.h"
-
 #include "gtp_mod_kernel.h"
+#include "pgw_ue_ip_address_alloc.h"
 
 extern sgw_app_t                        sgw_app;
 extern spgw_config_t                    spgw_config;
@@ -347,6 +346,7 @@ sgw_handle_gtpv1uCreateTunnelResp (
   //struct in6_addr                         in6addr = IN6ADDR_ANY_INIT;
   itti_sgi_create_end_point_response_t    sgi_create_endpoint_resp = {0};
   int                                     rv = RETURNok;
+  char                                   *imsi = NULL;
   SGWCause_t                              cause = REQUEST_ACCEPTED;
   OAILOG_FUNC_IN(LOG_SPGW_APP);
 
@@ -384,6 +384,7 @@ sgw_handle_gtpv1uCreateTunnelResp (
     // TO DO NOW
     sgi_create_endpoint_resp.paa.pdn_type = new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.saved_message.pdn_type;
 
+    imsi = (char *) new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.imsi.digit;
     switch (sgi_create_endpoint_resp.paa.pdn_type) {
     case IPv4:
       // Use NAS by default if no preference is set.
@@ -407,12 +408,12 @@ sgw_handle_gtpv1uCreateTunnelResp (
       // and using them here in conditional logic. We will also want to
       // implement different logic between the PDN types.
       if (!pco_ids.ci_ipv4_address_allocation_via_dhcpv4) {
-        if (pgw_get_free_ipv4_paa_address (&inaddr) == 0) {
+        if (allocate_ue_ipv4_address (imsi, &inaddr) == 0) {
           IN_ADDR_TO_BUFFER (inaddr, sgi_create_endpoint_resp.paa.ipv4_address);
           sgi_create_endpoint_resp.status = SGI_STATUS_OK;
         } else {
           OAILOG_ERROR (LOG_SPGW_APP, "Failed to allocate IPv4 PAA for PDN type IPv4\n");
-          //TODO Check the error code returned by "IP address allocator" and handle it accordingly
+          //Check the error code returned by "IP address allocator" and handle it accordingly
           sgi_create_endpoint_resp.status = SGI_STATUS_ERROR_ALL_DYNAMIC_ADDRESSES_OCCUPIED;
         }
       }
@@ -426,7 +427,7 @@ sgw_handle_gtpv1uCreateTunnelResp (
       break;
 
     case IPv4_AND_v6:
-      if (!pgw_get_free_ipv4_paa_address (&inaddr)) {
+      if (0 == allocate_ue_ipv4_address(imsi, &inaddr)) {
         IN_ADDR_TO_BUFFER (inaddr, sgi_create_endpoint_resp.paa.ipv4_address);
         sgi_create_endpoint_resp.status = SGI_STATUS_OK;
       } else {
@@ -693,6 +694,8 @@ sgw_handle_sgi_endpoint_deleted (
   sgw_eps_bearer_entry_t                 *eps_bearer_entry_p = NULL;
   hashtable_rc_t                          hash_rc = HASH_TABLE_OK;
   int                                     rv = RETURNok;
+  char                                   *imsi = NULL;
+  struct in_addr                          inaddr;
 
   OAILOG_FUNC_IN(LOG_SPGW_APP);
 
@@ -716,11 +719,37 @@ sgw_handle_sgi_endpoint_deleted (
       if (rv < 0) {
         OAILOG_ERROR (LOG_SPGW_APP, "ERROR in deleting TUNNEL\n");
       }
+      imsi = (char *) new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.imsi.digit;
+      switch (resp_pP->paa.pdn_type) {
+        case IPv4:
+          BUFFER_TO_IN_ADDR(resp_pP->paa.ipv4_address, inaddr);
+          if (!release_ue_ipv4_address(imsi, &inaddr)) {
+            OAILOG_DEBUG (LOG_SPGW_APP, "Released IPv4 PAA for PDN type IPv4\n");
+          } else {
+            OAILOG_ERROR (LOG_SPGW_APP, "Failed to release IPv4 PAA for PDN type IPv4\n");
+          }
+          break;
+
+        case IPv6:
+          OAILOG_ERROR (LOG_SPGW_APP, "Failed to release IPv6 PAA for PDN type IPv6\n");
+          break;
+
+        case IPv4_AND_v6:
+          BUFFER_TO_IN_ADDR(resp_pP->paa.ipv4_address, inaddr);
+          if (!release_ue_ipv4_address(imsi, &inaddr)) {
+            OAILOG_DEBUG (LOG_SPGW_APP, "Released IPv4 PAA for PDN type IPv4_AND_v6\n");
+          } else {
+            OAILOG_ERROR (LOG_SPGW_APP, "Failed to release IPv4 PAA for PDN type IPv4_AND_v6\n");
+          }
+          break;
+
+        default:
+          AssertFatal (0, "Bad paa.pdn_type %d", resp_pP->paa.pdn_type);
+          break;
+      }
+      OAILOG_FUNC_RETURN(LOG_SPGW_APP, rv);
     }
 
-//    MSC_LOG_TX_MESSAGE (MSC_SP_GWAPP_MME, MSC_S11_MME, NULL, 0, "0 S11_MODIFY_BEARER_RESPONSE ebi %u  trxn %u", modify_response_p->bearer_choice.bearer_contexts_modified.eps_bearer_id, modify_response_p->trxn);
-//    rv = itti_send_msg_to_task (to_task, INSTANCE_DEFAULT, message_p);
-    OAILOG_FUNC_RETURN(LOG_SPGW_APP, rv);
   } else {
     OAILOG_DEBUG (LOG_SPGW_APP, "Rx SGI_DELETE_ENDPOINT_RESPONSE: CONTEXT_NOT_FOUND (S11 context)\n");
 /*    modify_response_p->teid = resp_pP->context_teid;    // TO BE CHECKED IF IT IS THIS TEID

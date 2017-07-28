@@ -49,7 +49,7 @@
 #include "sgw_handlers.h"
 #include "sgw.h"
 #include "spgw_config.h"
-#include "pgw_lite_paa.h"
+#include "pgw_ue_ip_address_alloc.h"
 
 spgw_config_t                           spgw_config;
 sgw_app_t                               sgw_app;
@@ -152,7 +152,7 @@ int sgw_init (spgw_config_t *spgw_config_pP)
     return RETURNerror;
   }
 
-  pgw_load_pool_ip_addresses ();
+  pgw_ip_address_pool_init (); 
 
   bstring b = bfromcstr("sgw_s11teid2mme_hashtable");
   sgw_app.s11teid2mme_hashtable = hashtable_ts_create (512, NULL, NULL, b);

@@ -527,6 +527,7 @@ add_library (SGW
   ${SGW_DIR}/sgw_context_manager.c
   ${SGW_DIR}/pgw_lite_paa.c
   ${SGW_DIR}/pgw_pco.c
+  ${SGW_DIR}/pgw_ue_ip_address_alloc.c
   )
 
 set(MME_DIR ${OPENAIRCN_DIR}/src/mme_app)
