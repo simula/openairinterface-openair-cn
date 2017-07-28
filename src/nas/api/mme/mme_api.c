@@ -61,7 +61,7 @@ extern mme_app_desc_t                   mme_app_desc;
 /* Maximum number of PDN connections the MME may simultaneously support */
 #define MME_API_PDN_MAX         10
 
-static mme_api_ip_version_t             _mme_api_ip_capability = MME_API_IPV4;
+static mme_api_ip_version_t             _mme_api_ip_capability = MME_API_IPV4_ADDR;
 
 
 /* Subscribed QCI */
