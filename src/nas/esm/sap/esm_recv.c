@@ -217,7 +217,6 @@ esm_recv_pdn_connectivity_request (
   /*
    * Get the value of the PDN type indicator
    */
-  OAILOG_ERROR (LOG_NAS_ESM, "Tip: ESM-SAP   - PDN type: %d\n", msg->pdntype);
   if (msg->pdntype == PDN_TYPE_IPV4) {
     esm_data->pdn_type = ESM_PDN_TYPE_IPV4;
   } else if (msg->pdntype == PDN_TYPE_IPV6) {
@@ -270,7 +269,6 @@ esm_recv_pdn_connectivity_request (
     esm_data->pco.protocol_or_container_ids[i].contents = bstrcpy(msg->protocolconfigurationoptions.protocol_or_container_ids[i].contents);
   }
 
-  // TIP - Check pdn_type
   OAILOG_INFO (LOG_NAS_ESM, "ESM-PROC  - _esm_data.conf.features %08x\n", _esm_data.conf.features);
   ctx->emm_cause = ESM_CAUSE_SUCCESS;
   switch (_esm_data.conf.features & (MME_API_IPV4 | MME_API_IPV6)) {
