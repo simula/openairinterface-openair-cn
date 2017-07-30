@@ -10,16 +10,13 @@
 #include <libgtpnl/gtpnl.h>
 #include <libmnl/libmnl.h>
 #include <errno.h>
-#include <time.h>
 
 #include "log.h"
-#include "hashtable.h"
-#include "common_types.h"
 #include "common_defs.h"
-#include "spgw_config.h"
+#include "gtpv1u.h"
 #include "gtpv1u_sgw_defs.h"
-#include "gtp_mod_kernel.h"
 
+extern struct gtp_tunnel_ops gtp_tunnel_ops;
 
 static struct {
   int                 genl_id;
@@ -30,8 +27,7 @@ static struct {
 
 #define GTP_DEVNAME "gtp0"
 
-//------------------------------------------------------------------------------
-int gtp_mod_kernel_init(int *fd0, int *fd1u, struct in_addr *ue_net, int mask, int gtp_dev_mtu)
+int libgtpnl_init(struct in_addr *ue_net, uint32_t mask, int mtu, int *fd0, int *fd1u)
 {
   // we don't need GTP v0, but interface with kernel requires 2 file descriptors
   *fd0 = socket(AF_INET, SOCK_DGRAM, 0);
@@ -80,7 +76,7 @@ int gtp_mod_kernel_init(int *fd0, int *fd1u, struct in_addr *ue_net, int mask, i
   }
   OAILOG_NOTICE (LOG_GTPV1U, "Using the GTP kernel mode (genl ID is %d)\n", gtp_nl.genl_id);
 
-  bstring system_cmd = bformat ("ip link set dev %s mtu %u", GTP_DEVNAME, gtp_dev_mtu);
+  bstring system_cmd = bformat ("ip link set dev %s mtu %u", GTP_DEVNAME, mtu);
   int ret = system ((const char *)system_cmd->data);
   if (ret) {
     OAILOG_ERROR (LOG_GTPV1U, "ERROR in system command %s: %d at %s:%u\n", bdata(system_cmd), ret, __FILE__, __LINE__);
@@ -113,17 +109,23 @@ int gtp_mod_kernel_init(int *fd0, int *fd1u, struct in_addr *ue_net, int mask, i
   return RETURNok;
 }
 
-//------------------------------------------------------------------------------
-void gtp_mod_kernel_stop(void)
+int libgtpnl_uninit(void)
 {
   if (!gtp_nl.is_enabled)
-    return;
+    return -1;
 
-  gtp_dev_destroy(GTP_DEVNAME);
+  return gtp_dev_destroy(GTP_DEVNAME);
 }
 
-//------------------------------------------------------------------------------
-int gtp_mod_kernel_tunnel_add(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei)
+int libgtpnl_reset(void)
+{
+  int rv = 0;
+  rv = system ("rmmod gtp");
+  rv = system ("modprobe gtp");
+  return rv;
+}
+
+int libgtpnl_add_tunnel(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei)
 {
   struct gtp_tunnel *t;
   int ret;
@@ -149,8 +151,7 @@ int gtp_mod_kernel_tunnel_add(struct in_addr ue, struct in_addr enb, uint32_t i_
   return ret;
 }
 
-//------------------------------------------------------------------------------
-int gtp_mod_kernel_tunnel_del(uint32_t i_tei, uint32_t o_tei)
+int libgtpnl_del_tunnel(uint32_t i_tei, uint32_t o_tei)
 {
   struct gtp_tunnel *t;
   int ret;
@@ -175,8 +176,14 @@ int gtp_mod_kernel_tunnel_del(uint32_t i_tei, uint32_t o_tei)
   return ret;
 }
 
-//------------------------------------------------------------------------------
-bool gtp_mod_kernel_enabled(void)
-{
-  return gtp_nl.is_enabled;
+static const struct gtp_tunnel_ops libgtpnl_ops = {
+  .init         = libgtpnl_init,
+  .uninit       = libgtpnl_uninit,
+  .reset        = libgtpnl_reset,
+  .add_tunnel   = libgtpnl_add_tunnel,
+  .del_tunnel   = libgtpnl_del_tunnel,
+};
+
+const struct gtp_tunnel_ops *gtp_tunnel_ops_init(void) {
+  return &libgtpnl_ops;
 }

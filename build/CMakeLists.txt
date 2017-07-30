@@ -461,7 +461,7 @@ set(GTPV1U_DIR ${OPENAIRCN_DIR}/src/gtpv1-u)
 set (GTPV1U_SRC
   ${GTPV1U_DIR}/gtpv1u_task.c
   ${GTPV1U_DIR}/gtpv1u_teid_pool.c
-  ${GTPV1U_DIR}/gtp_mod_kernel.c
+  ${GTPV1U_DIR}/gtp_tunnel_libgtpnl.c
 )
 add_library(GTPV1U ${GTPV1U_SRC})
 
