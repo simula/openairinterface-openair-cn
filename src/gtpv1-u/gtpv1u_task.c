@@ -80,8 +80,6 @@ static void  *gtpv1u_thread (void *args)
 int gtpv1u_init (spgw_config_t *spgw_config)
 {
   int rv = 0;
-  struct in_addr netaddr;
-  uint32_t netmask;
 
   OAILOG_DEBUG (LOG_GTPV1U , "Initializing GTPV1U interface\n");
   memset (&sgw_app.gtpv1u_data, 0, sizeof (sgw_app.gtpv1u_data));
@@ -102,11 +100,13 @@ int gtpv1u_init (spgw_config_t *spgw_config)
     OAILOG_CRITICAL (LOG_GTPV1U, "ERROR clean existing gtp states.\n");
     return -1;
   }
-
-  // GTP device uses the same MTU as SGi.
-  gtp_tunnel_ops->init(&netaddr, netmask, spgw_config->pgw_config.ipv4.mtu_SGI,
-      &sgw_app.gtpv1u_data.fd0, &sgw_app.gtpv1u_data.fd1u);
-
+  AssertFatal(spgw_config->pgw_config.num_ue_pool == 1, "No more than 1 UE pool allowed actually");
+  for (int i = 0; i < spgw_config->pgw_config.num_ue_pool; i++) {
+    // GTP device uses the same MTU as SGi.
+    gtp_tunnel_ops->init(&spgw_config->pgw_config.ue_pool_addr[i],
+                         spgw_config->pgw_config.ue_pool_mask[i], spgw_config->pgw_config.ipv4.mtu_SGI,
+                         &sgw_app.gtpv1u_data.fd0, &sgw_app.gtpv1u_data.fd1u);
+  }
   // END-GTP quick integration only for evaluation purpose
 
   if (itti_create_task (TASK_GTPV1_U, &gtpv1u_thread, &sgw_app.gtpv1u_data) < 0) {
