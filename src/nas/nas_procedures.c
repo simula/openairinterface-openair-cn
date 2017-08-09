@@ -315,28 +315,23 @@ void nas_delete_common_procedure(struct emm_context_s *emm_context, nas_emm_comm
     // free proc content
     switch ((*proc)->type) {
       case EMM_COMM_PROC_GUTI:
-        OAILOG_TRACE (LOG_NAS_EMM, "Delete GUTI procedure %"PRIx64"\n", (*proc)->emm_proc.base_proc.nas_puid);
         break;
       case EMM_COMM_PROC_AUTH: {
           nas_emm_auth_proc_t *auth_info_proc = (nas_emm_auth_proc_t *)(*proc);
-          OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete AUTH procedure\n", auth_info_proc->ue_id);
           if (auth_info_proc->unchecked_imsi) {
             free_wrapper((void**)&auth_info_proc->unchecked_imsi);
           }
         }
         break;
       case EMM_COMM_PROC_SMC: {
-        OAILOG_TRACE (LOG_NAS_EMM, "Delete SMC procedure %"PRIx64"\n", (*proc)->emm_proc.base_proc.nas_puid);
           //nas_emm_smc_proc_t *smc_proc = (nas_emm_smc_proc_t *)(*proc);
         }
         break;
       case EMM_COMM_PROC_IDENT: {
-        OAILOG_TRACE (LOG_NAS_EMM, "Delete IDENT procedure %"PRIx64"\n", (*proc)->emm_proc.base_proc.nas_puid);
           //nas_emm_ident_proc_t *ident_proc = (nas_emm_ident_proc_t *)(*proc);
         }
         break;
       case EMM_COMM_PROC_INFO:
-        OAILOG_TRACE (LOG_NAS_EMM, "Delete INFO procedure %"PRIx64"\n", (*proc)->emm_proc.base_proc.nas_puid);
         break;
       default: ;
     }
@@ -380,28 +375,23 @@ static void nas_delete_common_procedures(struct emm_context_s *emm_context)
 
       switch (p1->proc->type) {
         case EMM_COMM_PROC_GUTI:
-          OAILOG_TRACE (LOG_NAS_EMM, "Delete GUTI procedure %"PRIx64"\n", p1->proc->emm_proc.base_proc.nas_puid);
           break;
         case EMM_COMM_PROC_AUTH: {
             nas_emm_auth_proc_t *auth_info_proc = (nas_emm_auth_proc_t *)p1->proc;
-            OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete AUTH procedure\n", auth_info_proc->ue_id);
             if (auth_info_proc->unchecked_imsi) {
               free_wrapper((void**)&auth_info_proc->unchecked_imsi);
             }
           }
           break;
         case EMM_COMM_PROC_SMC: {
-          OAILOG_TRACE (LOG_NAS_EMM, "Delete SMC procedure %"PRIx64"\n", p1->proc->emm_proc.base_proc.nas_puid);
             //nas_emm_smc_proc_t *smc_proc = (nas_emm_smc_proc_t *)(*proc);
           }
           break;
         case EMM_COMM_PROC_IDENT: {
-          OAILOG_TRACE (LOG_NAS_EMM, "Delete IDENT procedure %"PRIx64"\n", p1->proc->emm_proc.base_proc.nas_puid);
             //nas_emm_ident_proc_t *ident_proc = (nas_emm_ident_proc_t *)(*proc);
           }
           break;
         case EMM_COMM_PROC_INFO:
-          OAILOG_TRACE (LOG_NAS_EMM, "Delete INFO procedure %"PRIx64"\n", p1->proc->emm_proc.base_proc.nas_puid);
           break;
         default: ;
       }
@@ -423,7 +413,6 @@ void nas_delete_attach_procedure(struct emm_context_s *emm_context)
   if (proc) {
     // free content
     mme_ue_s1ap_id_t      ue_id = PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context)->mme_ue_s1ap_id;
-    OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete ATTACH procedure\n", ue_id);
     void *unused = NULL;
     nas_stop_T3450(ue_id, &proc->T3450, unused);
     if (proc->ies) {
@@ -446,7 +435,6 @@ void nas_delete_tau_procedure(struct emm_context_s *emm_context)
   if (proc) {
     // free content
     mme_ue_s1ap_id_t      ue_id = PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context)->mme_ue_s1ap_id;
-    OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete TAU procedure\n", ue_id);
     void *unused = NULL;
     nas_stop_T3450(ue_id, &proc->T3450, unused);
     if (proc->ies) {
@@ -467,7 +455,6 @@ void nas_delete_detach_procedure(struct emm_context_s *emm_context)
 {
   nas_emm_detach_proc_t     *proc = get_nas_specific_procedure_detach(emm_context);
   if (proc) {
-    OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete DETACH procedure\n", PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context)->mme_ue_s1ap_id);
     // free content
     if (proc->ies) {
       free_emm_detach_request_ies(&proc->ies);
@@ -485,8 +472,7 @@ void nas_delete_detach_procedure(struct emm_context_s *emm_context)
 static void nas_delete_auth_info_procedure(struct emm_context_s *emm_context, nas_auth_info_proc_t ** auth_info_proc)
 {
   if (*auth_info_proc) {
-   OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete AUTH INFO procedure\n", PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context)->mme_ue_s1ap_id);
-   if ((*auth_info_proc)->cn_proc.base_proc.parent) {
+    if ((*auth_info_proc)->cn_proc.base_proc.parent) {
       (*auth_info_proc)->cn_proc.base_proc.parent->child = NULL;
     }
     free_wrapper((void**)auth_info_proc);
@@ -512,7 +498,6 @@ void nas_delete_cn_procedure(struct emm_context_s *emm_context, nas_cn_proc_t * 
             break;
           default:;
         }
-        OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete CN procedure %p\n", PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context)->mme_ue_s1ap_id, p1->proc);
         LIST_REMOVE(p1, entries);
         free_wrapper((void**)&p1);
         return;
@@ -595,7 +580,6 @@ nas_emm_attach_proc_t* nas_new_attach_procedure(struct emm_context_s * const emm
 
   nas_emm_attach_proc_t * proc = (nas_emm_attach_proc_t*)emm_context->emm_procedures->emm_specific_proc;
 
-  proc->ue_id           = PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context)->mme_ue_s1ap_id;
   proc->T3450.sec       = mme_config.nas_config.t3450_sec;
   proc->T3450.id        = NAS_TIMER_INACTIVE_ID;
 
@@ -621,7 +605,6 @@ nas_emm_tau_proc_t *nas_new_tau_procedure(struct emm_context_s * const emm_conte
 
   nas_emm_tau_proc_t * proc = (nas_emm_tau_proc_t*)emm_context->emm_procedures->emm_specific_proc;
 
-  proc->ue_id           = PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context)->mme_ue_s1ap_id;
   proc->T3450.sec       = mme_config.nas_config.t3450_sec;
   proc->T3450.id        = NAS_TIMER_INACTIVE_ID;
 
@@ -753,7 +736,7 @@ nas_auth_info_proc_t *nas_new_cn_auth_info_procedure(struct emm_context_s * cons
   if (wrapper) {
     wrapper->proc = &auth_info_proc->cn_proc;
     LIST_INSERT_HEAD(&emm_context->emm_procedures->cn_procs, wrapper, entries);
-    OAILOG_TRACE (LOG_NAS_EMM, "New CN_PROC_AUTH_INFO\n");
+    OAILOG_TRACE (LOG_NAS_EMM, "New EMM_COMM_PROC_SMC\n");
     return auth_info_proc;
   } else {
     free_wrapper((void**)&auth_info_proc);
