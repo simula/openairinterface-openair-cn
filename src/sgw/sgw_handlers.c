@@ -642,12 +642,8 @@ sgw_handle_sgi_endpoint_updated (
       }
 
       if (TRAFFIC_FLOW_TEMPLATE_NB_PACKET_FILTERS_MAX > eps_bearer_ctxt_p->num_sdf) {
-        int i = 0;
-        while ((i < eps_bearer_ctxt_p->num_sdf) && (SDF_ID_NGBR_DEFAULT != eps_bearer_ctxt_p->sdf_id[i])) i++;
-        if (i >= eps_bearer_ctxt_p->num_sdf) {
-          eps_bearer_ctxt_p->sdf_id[eps_bearer_ctxt_p->num_sdf] = SDF_ID_NGBR_DEFAULT;
-          eps_bearer_ctxt_p->num_sdf += 1;
-        }
+        eps_bearer_ctxt_p->sdf_id[eps_bearer_ctxt_p->num_sdf] = SDF_ID_NGBR_DEFAULT;
+        eps_bearer_ctxt_p->num_sdf += 1;
       }
     }
 
