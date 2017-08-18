@@ -11,3 +11,6 @@ openair-cn.creator
 openair-cn.creator.user
 openair-cn.files
 openair-cn.includes
+src/.idea/
+src/cmake-build-debug
+src/CMakeLists.txt
