@@ -478,6 +478,9 @@ s6a_parse_subscription_data (
       subscription_data->rau_tau_timer = hdr->avp_value->u32;
       break;
 
+    case AVP_CODE_APN_OI_REPLACEMENT:
+      break;
+
     default:
       return RETURNerror;
     }

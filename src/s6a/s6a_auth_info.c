@@ -141,6 +141,9 @@ s6a_parse_e_utran_vector (
       ret &= ~0x08;
       break;
 
+    case AVP_CODE_ITEM_NUMBER:
+      break;
+
     default:
       /*
        * Unexpected AVP
