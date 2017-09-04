@@ -252,11 +252,13 @@ s6a_generate_update_location (
    */
   {
     uint8_t                                 plmn[3];
+    plmn_t                                  plmn_mme;
 
+    plmn_mme = mme_config.gummei.gummei[0].plmn;
     CHECK_FCT (fd_msg_avp_new (s6a_fd_cnf.dataobj_s6a_visited_plmn_id, 0, &avp_p));
-    PLMN_T_TO_TBCD (ulr_pP->visited_plmn,
+    PLMN_T_TO_TBCD (plmn_mme,
                     plmn,
-                    mme_config_find_mnc_length (ulr_pP->visited_plmn.mcc_digit1, ulr_pP->visited_plmn.mcc_digit2, ulr_pP->visited_plmn.mcc_digit3, ulr_pP->visited_plmn.mnc_digit1, ulr_pP->visited_plmn.mnc_digit2, ulr_pP->visited_plmn.mnc_digit3)
+                    mme_config_find_mnc_length (plmn_mme.mcc_digit1, plmn_mme.mcc_digit2, plmn_mme.mcc_digit3, plmn_mme.mnc_digit1, plmn_mme.mnc_digit2, plmn_mme.mnc_digit3)
       );
     value.os.data = plmn;
     value.os.len = 3;
