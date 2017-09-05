@@ -149,7 +149,6 @@ int mme_app_handle_s6a_update_location_ans (
   //ue_mm_context->subscribed_ambr.br_dl = ue_mm_context->subscribed_ambr.br_dl; // Setting it to 200 Mbps
 
   ue_mm_context->msisdn = blk2bstr(ula_pP->subscription_data.msisdn, ula_pP->subscription_data.msisdn_length);
-  AssertFatal (ula_pP->subscription_data.msisdn_length != 0, "MSISDN LENGTH IS 0");
   AssertFatal (ula_pP->subscription_data.msisdn_length <= MSISDN_LENGTH, "MSISDN LENGTH is too high %u", MSISDN_LENGTH);
 
   ue_mm_context->rau_tau_timer = ula_pP->subscription_data.rau_tau_timer;
