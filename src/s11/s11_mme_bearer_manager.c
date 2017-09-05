@@ -292,6 +292,12 @@ s11_mme_handle_modify_bearer_response (
       &resp_p->cause);
   DevAssert (NW_OK == rc);
   /*
+   * Bearer Context IE
+   */
+  rc = nwGtpv2cMsgParserAddIe (pMsgParser, NW_GTPV2C_IE_BEARER_CONTEXT, NW_GTPV2C_IE_INSTANCE_ZERO, NW_GTPV2C_IE_PRESENCE_MANDATORY,
+      s11_bearer_context_to_be_modified_ie_get, &resp_p->bearer_contexts_modified);
+  DevAssert (NW_OK == rc);
+  /*
    * Recovery IE
    */
   /*rc = nwGtpv2cMsgParserAddIe (pMsgParser, NW_GTPV2C_IE_RECOVERY, NW_GTPV2C_IE_INSTANCE_ZERO, NW_GTPV2C_IE_PRESENCE_OPTIONAL, s11_fteid_ie_get,

@@ -953,6 +953,9 @@ gtpv2c_bearer_context_to_be_modified_within_modify_bearer_request_ie_get (
       rc = gtpv2c_fteid_ie_get (ie_p->t, ntohs (ie_p->l), ie_p->i, &ieValue[read + sizeof (nw_gtpv2c_ie_tlv_t)], &bearer_context->s1_eNB_fteid);
       break;
 
+    case NW_GTPV2C_IE_CAUSE:
+      break;
+
     default:
       OAILOG_ERROR (LOG_S11, "Received unexpected IE %u\n", ie_p->t);
       return NW_GTPV2C_IE_INCORRECT;
