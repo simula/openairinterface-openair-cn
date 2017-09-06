@@ -90,6 +90,8 @@ s11_mme_create_session_request (
   gtpv2c_imsi_ie_set (&(ulp_req.hMsg), &req_p->imsi);
   gtpv2c_rat_type_ie_set (&(ulp_req.hMsg), &req_p->rat_type);
   gtpv2c_pdn_type_ie_set (&(ulp_req.hMsg), &req_p->pdn_type);
+  gtpv2c_paa_ie_set (&(ulp_req.hMsg), &req_p->paa);
+
   /*
    * Sender F-TEID for Control Plane (MME S11)
    */
