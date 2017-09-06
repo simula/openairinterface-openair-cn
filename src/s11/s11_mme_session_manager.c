@@ -91,6 +91,7 @@ s11_mme_create_session_request (
   gtpv2c_rat_type_ie_set (&(ulp_req.hMsg), &req_p->rat_type);
   gtpv2c_pdn_type_ie_set (&(ulp_req.hMsg), &req_p->pdn_type);
   gtpv2c_paa_ie_set (&(ulp_req.hMsg), &req_p->paa);
+  gtpv2c_apn_restriction_ie_set(&(ulp_req.hMsg), 0x01);
 
   /*
    * Sender F-TEID for Control Plane (MME S11)
@@ -110,7 +111,7 @@ s11_mme_create_session_request (
                               req_p->pgw_address_for_cp.ipv4 ? &req_p->pgw_address_for_cp.ipv4_address : 0,
                               req_p->pgw_address_for_cp.ipv6 ? &req_p->pgw_address_for_cp.ipv6_address : NULL);
 */
-  gtpv2c_apn_ie_set (&(ulp_req.hMsg), req_p->apn);
+  gtpv2c_apn_plmn_ie_set (&(ulp_req.hMsg), req_p->apn, &req_p->serving_network);
   gtpv2c_serving_network_ie_set (&(ulp_req.hMsg), &req_p->serving_network);
   gtpv2c_pco_ie_set (&(ulp_req.hMsg), &req_p->pco);
 
