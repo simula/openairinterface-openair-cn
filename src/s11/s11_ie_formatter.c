@@ -1529,7 +1529,6 @@ gtpv2c_apn_plmn_ie_set (
   uint8_t                                 apn_length;
   uint8_t                                *last_size;
 
-  //ServingNetwork_t                       *serving_network = (ServingNetwork_t *) arg;
   DevAssert (serving_network );
 
   DevAssert (apn );
@@ -1537,17 +1536,27 @@ gtpv2c_apn_plmn_ie_set (
   apn_length = strlen (apn);
   value = calloc (apn_length + 20, sizeof (uint8_t)); //"default" + neu: ".mncXXX.mccXXX.gprs"
   last_size = &value[0];
+  bool mnc_short;
 
   memcpy(&value[1], apn, apn_length);
   memcpy(&value[apn_length + 1], ".mnc", 4);
-  value[apn_length + 7] = serving_network->mnc[0] != 0x0f ? serving_network->mnc[0] + '0' : '0';
-  value[apn_length + 6] = serving_network->mnc[1] != 0x0f ? serving_network->mnc[0] + '0' : '0';
-  value[apn_length + 5] = serving_network->mnc[2] != 0x0f ? serving_network->mnc[0] + '0' : '0';
   memcpy(&value[apn_length + 8], ".mcc", 4);
-  value[apn_length + 14] = serving_network->mcc[0] != 0x0f ? serving_network->mcc[0] + '0' : '0';
-  value[apn_length + 13] = serving_network->mcc[1] != 0x0f ? serving_network->mcc[0] + '0' : '0';
-  value[apn_length + 12] = serving_network->mcc[2] != 0x0f ? serving_network->mcc[0] + '0' : '0';
   memcpy(&value[apn_length + 15], ".gprs", 5);
+  if (serving_network->mnc[2] == 0x0F) {
+    /*
+     * Two digits MNC
+     */
+    value[apn_length + 5] = '0';
+    value[apn_length + 6] = serving_network->mnc[0] + '0';
+    value[apn_length + 7] = serving_network->mnc[1] + '0';
+  } else {
+    value[apn_length + 5] = serving_network->mnc[0] + '0';
+    value[apn_length + 6] = serving_network->mnc[1] + '0';
+    value[apn_length + 7] = serving_network->mnc[2] + '0';
+  }
+  value[apn_length + 12] = serving_network->mcc[0] + '0';
+  value[apn_length + 13] = serving_network->mcc[1] + '0';
+  value[apn_length + 14] = serving_network->mcc[2] + '0';
 
   *last_size = apn_length + 19;
   rc = nwGtpv2cMsgAddIe (*msg, NW_GTPV2C_IE_APN, apn_length + 20, 0, value);
