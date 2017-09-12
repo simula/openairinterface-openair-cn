@@ -149,10 +149,8 @@ s6a_ula_cb (
     /*
      * ULA-Flags is absent while the error code indicates DIAMETER_SUCCESS:
      * * * * this is not a compliant behaviour...
-     * * * * TODO: handle this case.
      */
-    OAILOG_ERROR (LOG_S6A, "ULA-Flags AVP is absent while result code indicates " "DIAMETER_SUCCESS\n");
-    goto err;
+    OAILOG_WARNING (LOG_S6A, "ULA-Flags AVP is absent while result code indicates " "DIAMETER_SUCCESS" " Ignoring\n");
   }
 
   CHECK_FCT (fd_msg_search_avp (ans_p, s6a_fd_cnf.dataobj_s6a_subscription_data, &avp_p));
