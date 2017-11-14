@@ -429,6 +429,7 @@ typedef struct bearer_contexts_marked_for_removal_s {
 typedef struct bearer_context_to_be_modified_s {
   uint8_t eps_bearer_id;      ///< EPS Bearer ID
   fteid_t s1_eNB_fteid;       ///< S1 eNodeB F-TEID
+  fteid_t s1u_sgw_fteid;      ///< S1-U SGW F-TEID
 } bearer_context_to_be_modified_t;
 
 typedef struct bearer_contexts_to_be_modified_s {
