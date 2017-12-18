@@ -43,6 +43,7 @@
 
 #define AUTH_MAX_EUTRAN_VECTORS 6
 
+extern hss_config_t hss_config;
 int
 s6a_auth_info_cb (
   struct msg **msg,
@@ -297,6 +298,10 @@ s6a_auth_info_cb (
       /*
        * Generate authentication vector
        */
+      uint8_t                                 opc[16];
+      print_buffer ("opp      : ", hss_config.operator_key_bin, 16);
+      ComputeOPc (auth_info_resp.key, hss_config.operator_key_bin, auth_info_resp.opc);
+      print_buffer ("opc      : ", auth_info_resp.opc, 16);
       generate_vector (auth_info_resp.opc, imsi, auth_info_resp.key, hdr->avp_value->os.data, sqn, &vector[i]);
     }
     hss_mysql_push_rand_sqn (auth_info_req.imsi, vector[num_vectors-1].rand, sqn);
