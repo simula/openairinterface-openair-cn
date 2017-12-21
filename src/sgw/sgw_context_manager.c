@@ -259,7 +259,9 @@ void sgw_cm_free_pdn_connection (sgw_pdn_connection_t * pdn_connectionP)
       free_wrapper((void**)&pdn_connectionP->apn_in_use);
     }
     for (int ebix = 0; ebix < BEARERS_PER_UE; ebix++) {
-      sgw_free_sgw_eps_bearer_context(&pdn_connectionP->sgw_eps_bearers_array[ebix]);
+      if (pdn_connectionP->sgw_eps_bearers_array[ebix]) { 
+        sgw_free_sgw_eps_bearer_context(&pdn_connectionP->sgw_eps_bearers_array[ebix]);
+      }
     }
   }
 }

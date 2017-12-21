@@ -957,9 +957,6 @@ sgw_handle_delete_session_request (
        * Remove eps bearer context, S11 bearer context and s11 tunnel
        */
 
-      sgw_cm_remove_eps_bearer_entry(
-            &ctx_p->sgw_eps_bearer_context_information.pdn_connection,
-            delete_session_req_pP->lbi);
       sgw_cm_remove_bearer_context_information(delete_session_req_pP->teid);
       sgw_cm_remove_s11_tunnel(delete_session_req_pP->teid);
     }
