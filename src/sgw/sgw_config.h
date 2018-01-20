@@ -44,6 +44,9 @@
 #define SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S5_S8_UP         "SGW_IPV4_ADDRESS_FOR_S5_S8_UP"
 #define SGW_CONFIG_STRING_SGW_INTERFACE_NAME_FOR_S11            "SGW_INTERFACE_NAME_FOR_S11"
 #define SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S11              "SGW_IPV4_ADDRESS_FOR_S11"
+#define SGW_CONFIG_STRING_SGW_REMOTE_CONTROLLER_ENABLED         "SGW_REMOTE_CONTROLLER_ENABLED"
+#define SGW_CONFIG_STRING_SGW_REMOTE_CONTROLLER_IPV4_ADDRESS    "SGW_REMOTE_CONTROLLER_IPV4_ADDRESS"
+#define SGW_CONFIG_STRING_SGW_REMOTE_CONTROLLER_PORT            "SGW_REMOTE_CONTROLLER_PORT"
 
 #define SPGW_ABORT_ON_ERROR true
 #define SPGW_WARN_ON_ERROR false
@@ -69,10 +72,14 @@ typedef struct sgw_config_s {
     bstring        if_name_S11;
     struct in_addr S11;
     int            netmask_S11;
+
+    struct in_addr remote_controller;
   } ipv4;
   uint16_t     udp_port_S1u_S12_S4_up;
+  uint16_t     remote_controller_port;
 
   bool         local_to_eNB;
+  bool         is_remote_controller_enabled;
 
   log_config_t log_config;
 

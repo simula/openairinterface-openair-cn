@@ -87,7 +87,10 @@ int sgw_config_parse_file (sgw_config_t * config_pP)
   char                                   *S5_S8_up = NULL;
   char                                   *sgw_if_name_S11 = NULL;
   char                                   *S11 = NULL;
+  char                                   *remote_controller_enabled = NULL;
+  char                                   *remote_controller = NULL;
   libconfig_int                           sgw_udp_port_S1u_S12_S4_up = 2152;
+  libconfig_int                           remote_controller_port = 9999;
   config_setting_t                       *subsetting = NULL;
   const char                             *astring = NULL;
   bstring                                 address = NULL;
@@ -248,11 +251,35 @@ int sgw_config_parse_file (sgw_config_t * config_pP)
             inet_ntoa (in_addr_var), config_pP->ipv4.netmask_S11, bdata(config_pP->ipv4.if_name_S11));
       }
 
+      if (config_setting_lookup_string (subsetting, SGW_CONFIG_STRING_SGW_REMOTE_CONTROLLER_ENABLED, (const char **)&remote_controller_enabled)) {
+        if (remote_controller_enabled != NULL) {
+          if (strcasecmp (remote_controller_enabled, "yes") == 0) {
+            config_pP->is_remote_controller_enabled = true;
+          } else {
+            config_pP->is_remote_controller_enabled = false;
+          }
+        }
+        OAILOG_INFO (LOG_SPGW_APP, "Parsing configuration file found remote controller enabled: %s\n", config_pP->is_remote_controller_enabled ? "yes" : "no");
+      }
+
+      if (config_pP->is_remote_controller_enabled && config_setting_lookup_string (subsetting, SGW_CONFIG_STRING_SGW_REMOTE_CONTROLLER_IPV4_ADDRESS, (const char **)&remote_controller)) {
+        cidr = bfromcstr(remote_controller);
+        IPV4_STR_ADDR_TO_INADDR (bdata(cidr), config_pP->ipv4.remote_controller, "BAD IP ADDRESS FORMAT FOR REMOTE CONTROLLER !\n");
+        in_addr_var.s_addr = config_pP->ipv4.remote_controller.s_addr;
+        OAILOG_INFO (LOG_SPGW_APP, "Parsing configuration file found remote controller: %s\n", inet_ntoa (in_addr_var));
+      }
+
       if (config_setting_lookup_int (subsetting, SGW_CONFIG_STRING_SGW_PORT_FOR_S1U_S12_S4_UP, &sgw_udp_port_S1u_S12_S4_up)
         ) {
         config_pP->udp_port_S1u_S12_S4_up = sgw_udp_port_S1u_S12_S4_up;
       } else {
         config_pP->udp_port_S1u_S12_S4_up = sgw_udp_port_S1u_S12_S4_up;
+      }
+
+      if (config_pP->is_remote_controller_enabled && config_setting_lookup_int (subsetting, SGW_CONFIG_STRING_SGW_REMOTE_CONTROLLER_PORT, &remote_controller_port)) {
+        config_pP->remote_controller_port = remote_controller_port;
+      } else {
+        config_pP->remote_controller_port = remote_controller_port;
       }
     }
   }
