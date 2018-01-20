@@ -641,6 +641,17 @@ sgw_handle_sgi_endpoint_updated (
       struct in_addr ue = {.s_addr = 0};
       ue.s_addr = eps_bearer_ctxt_p->paa.ipv4_address.s_addr;
 
+      if (spgw_config.sgw_config.is_remote_controller_enabled) {
+        struct in_addr remote_controller = {.s_addr = 0};
+        remote_controller.s_addr = spgw_config.sgw_config.ipv4.remote_controller.s_addr;
+
+        char command[500];
+        snprintf(command, 500, "curl -d '{\"eps_bearer_id\":%u, \"imsi\":\"%s\", \"s1_ul_teid\":\"0x%x\", \"s1_dl_teid\":\"0x%x\", \"ue_ip\":\"%s\", \"enb_ip\":\"%s\"}' -X POST http://%s:%d/ue", eps_bearer_ctxt_p->eps_bearer_id, new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.imsi.u.value, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u, inet_ntoa(ue), inet_ntoa(enb), inet_ntoa(remote_controller), spgw_config.sgw_config.remote_controller_port);
+        system(command);
+        OAILOG_DEBUG (LOG_SPGW_APP, "Send add bearer context request to remote controller\n");
+        OAILOG_DEBUG (LOG_SPGW_APP, "%s\n", command);
+      }
+
       if (spgw_config.pgw_config.use_gtp_kernel_module) {
         rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
         if (rv < 0) {
