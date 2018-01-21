@@ -753,6 +753,18 @@ sgw_handle_sgi_endpoint_deleted (
       // if default bearer
       //#pragma message  "TODO define constant for default eps_bearer id"
       rv = gtp_tunnel_ops->del_tunnel(eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
+
+      if (spgw_config.sgw_config.is_remote_controller_enabled) {
+        struct in_addr remote_controller = {.s_addr = 0};
+        remote_controller.s_addr = spgw_config.sgw_config.ipv4.remote_controller.s_addr;
+
+        char command[500];
+        snprintf(command, 500, "curl -X DELETE http://%s:%d/ue/%u", inet_ntoa(remote_controller), spgw_config.sgw_config.remote_controller_port, eps_bearer_ctxt_p->eps_bearer_id);
+        system(command);
+        OAILOG_DEBUG (LOG_SPGW_APP, "Send delete bearer context request to remote controller\n");
+        OAILOG_DEBUG (LOG_SPGW_APP, "%s\n", command);
+      }
+
       if (rv < 0) {
         OAILOG_ERROR (LOG_SPGW_APP, "ERROR in deleting TUNNEL\n");
       }
