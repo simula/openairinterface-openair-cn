@@ -349,10 +349,10 @@ int log_get_start_time_sec (void);
 #    define OAILOG_FUNC_IN(...)                                         {void;}
 #  endif
 #  if !defined(OAILOG_FUNC_OUT)
-#    define OAILOG_FUNC_OUT(pRoTo)                                      do{ return;} while 0
+#    define OAILOG_FUNC_OUT(pRoTo)                                      do{ return;} while (0)
 #  endif
 #  if !defined(OAILOG_FUNC_RETURN)
-#    define OAILOG_FUNC_RETURN(pRoTo, rEtUrNcOdE)                       do{ return rEtUrNcOdE;} while 0
+#    define OAILOG_FUNC_RETURN(pRoTo, rEtUrNcOdE)                       do{ return rEtUrNcOdE;} while (0)
 #  endif
 #  if !defined(OAILOG_STREAM_HEX)
 #    define OAILOG_STREAM_HEX(...)                                      {void;}

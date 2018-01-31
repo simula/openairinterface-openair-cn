@@ -70,7 +70,7 @@ int lockfile(int fd, int lock_type)
 //------------------------------------------------------------------------------
 bool is_pid_file_lock_success(char const *pid_file_name)
 {
-  char       pid_dec[32] = {0};
+  char       pid_dec[64] = {0};
 
   g_fd_pid_file = open(pid_file_name,
                        O_RDWR | O_CREAT,

@@ -169,12 +169,9 @@ function main()
   $SUDO cp -upv  $OPENAIRCN_DIR/src/test/scenarios/play_scenario.xsl    /usr/share/oai/xsl
   $SUDO cp -upv  $OPENAIRCN_DIR/src/test/scenarios/generic_scenario.xsl /usr/share/oai/xsl
   
-
-
   if [[ $verbose -eq 1 ]]; then
     cecho "OPENAIRCN_DIR    = $OPENAIRCN_DIR" $green
   fi
-  
 
   local dlog=$OPENAIRCN_DIR/build/log
   
@@ -185,14 +182,22 @@ function main()
   fi
   
   ##############################################################################
+  # Create mme_Spgw directory as place holder for dependent libraries
+  ##############################################################################
+  cd $OPENAIRCN_DIR/build
+  if [ ! -d ./mme_spgw ]; then
+    mkdir -m 777 -p -v mme_spgw
+  fi
+ 
+  ##############################################################################
   # Clean
   ##############################################################################
-  cd $OPENAIRCN_DIR/build/mme
+  cd $OPENAIRCN_DIR/build/mme_spgw
   if [ $clean -ne 0 ]; then
     if [[ $verbose -eq 1 ]]; then
-      echo "Cleaning MME: generated configuration files, obj files, mme executable"
+      echo "Cleaning MME and SPGW: generated configuration files, obj files, mme and spgw executable"
     fi
-    rm -Rf $OPENAIRCN_DIR/build/mme/build  2>&1
+    rm -Rf $OPENAIRCN_DIR/build/mme_spgw/build  2>&1
     mkdir -m 777 -p -v build
   fi
 
@@ -200,31 +205,27 @@ function main()
   ##############################################################################
   # Compile MME
   ##############################################################################
-  cd $OPENAIRCN_DIR/build/mme
+  cd $OPENAIRCN_DIR/build/mme_spgw
   if [ ! -d ./build ]; then
     mkdir -m 777 -p -v build
   fi
-  cmake_file=./CMakeLists.txt
-  cp $OPENAIRCN_DIR/build/mme/CMakeLists.template $cmake_file
-  echo 'include(${CMAKE_CURRENT_SOURCE_DIR}/../CMakeLists.txt)' >> $cmake_file
   
   cd ./build
-  $CMAKE $cmake_args .. > /dev/null 
-  
+  $CMAKE $cmake_args $OPENAIRCN_DIR/src/ > /dev/null
 
-  compilations mme mme mme $verbose
+  compilations mme_spgw mme $OPENAIRCN_DIR/build/mme_spgw/build/mme_app $verbose
 
   if [ $unit_tests -ne 0 ]; then
-    make_test mme mme mme $verbose
+    make_test mme_spgw mme $OPENAIRCN_DIR/build/mme_spgw/build/mme_app $verbose
   fi 
 
   if [ $daemon -ne 0 ]; then
     # TODO /usr/sbin ?
     do_stop_daemon
-    $SUDO cp -upv $OPENAIRCN_DIR/build/mme/build/mme /usr/sbin/mmed && echo_success "mmed installed"
+    $SUDO cp -upv $OPENAIRCN_DIR/build/mme_spgw/build/mme_app/mme /usr/sbin/mmed && echo_success "mmed installed"
   else
     $SUDO killall -q mme
-    $SUDO cp -upv $OPENAIRCN_DIR/build/mme/build/mme /usr/local/bin && echo_success "mme installed" 
+    $SUDO cp -upv $OPENAIRCN_DIR/build/mme_spgw/build/mme_app/mme /usr/local/bin && echo_success "mme installed" 
   fi 
 }
 
