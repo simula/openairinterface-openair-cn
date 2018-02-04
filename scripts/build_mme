@@ -182,22 +182,22 @@ function main()
   fi
   
   ##############################################################################
-  # Create mme_Spgw directory as place holder for dependent libraries
+  # Create mme
   ##############################################################################
   cd $OPENAIRCN_DIR/build
-  if [ ! -d ./mme_spgw ]; then
-    mkdir -m 777 -p -v mme_spgw
+  if [ ! -d ./mme ]; then
+    mkdir -m 777 -p -v mme
   fi
  
   ##############################################################################
   # Clean
   ##############################################################################
-  cd $OPENAIRCN_DIR/build/mme_spgw
+  cd $OPENAIRCN_DIR/build/mme
   if [ $clean -ne 0 ]; then
     if [[ $verbose -eq 1 ]]; then
-      echo "Cleaning MME and SPGW: generated configuration files, obj files, mme and spgw executable"
+      echo "Cleaning MME: generated configuration files, obj files, mme executable"
     fi
-    rm -Rf $OPENAIRCN_DIR/build/mme_spgw/build  2>&1
+    rm -Rf $OPENAIRCN_DIR/build/mme/build  2>&1
     mkdir -m 777 -p -v build
   fi
 
@@ -205,27 +205,28 @@ function main()
   ##############################################################################
   # Compile MME
   ##############################################################################
-  cd $OPENAIRCN_DIR/build/mme_spgw
+  cd $OPENAIRCN_DIR/build/mme
   if [ ! -d ./build ]; then
     mkdir -m 777 -p -v build
   fi
-  
+
+  cp -rf $OPENAIRCN_DIR/build/CMakeLists.txt $OPENAIRCN_DIR/src/ 
   cd ./build
   $CMAKE $cmake_args $OPENAIRCN_DIR/src/ > /dev/null
 
-  compilations mme_spgw mme $OPENAIRCN_DIR/build/mme_spgw/build/mme_app $verbose
+  compilations mme mme $OPENAIRCN_DIR/build/mme/build/mme_app $verbose
 
   if [ $unit_tests -ne 0 ]; then
-    make_test mme_spgw mme $OPENAIRCN_DIR/build/mme_spgw/build/mme_app $verbose
+    make_test mme mme $OPENAIRCN_DIR/build/mme/build/mme_app $verbose
   fi 
 
   if [ $daemon -ne 0 ]; then
     # TODO /usr/sbin ?
     do_stop_daemon
-    $SUDO cp -upv $OPENAIRCN_DIR/build/mme_spgw/build/mme_app/mme /usr/sbin/mmed && echo_success "mmed installed"
+    $SUDO cp -upv $OPENAIRCN_DIR/build/mme/build/mme_app/mme /usr/sbin/mmed && echo_success "mmed installed"
   else
     $SUDO killall -q mme
-    $SUDO cp -upv $OPENAIRCN_DIR/build/mme_spgw/build/mme_app/mme /usr/local/bin && echo_success "mme installed" 
+    $SUDO cp -upv $OPENAIRCN_DIR/build/mme/build/mme_app/mme /usr/local/bin && echo_success "mme installed" 
   fi 
 }
 

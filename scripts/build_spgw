@@ -122,13 +122,44 @@ function main()
   
   mkdir -m 777 -p $dlog
 
-  compilations mme_spgw spgw $OPENAIRCN_DIR/build/mme_spgw/build/oai_sgw $verbose
+  ############################################################################
+  # Create spgw
+  ##############################################################################
+  cd $OPENAIRCN_DIR/build
+  if [ ! -d ./spgw ]; then
+    mkdir -m 777 -p -v spgw
+  fi
+  ##############################################################################
+  # Clean
+  ##############################################################################
+  cd $OPENAIRCN_DIR/build/spgw
+  if [ $clean -ne 0 ]; then
+    if [[ $verbose -eq 1 ]]; then
+      echo "Cleaning S/P-GW: generated configuration files, obj files, spgw executable"
+    fi
+    rm -Rf $OPENAIRCN_DIR/build/spgw/build  2>&1
+    mkdir -m 777 -p -v build
+  fi
+
+  ##############################################################################
+  # Compile S/P-GW
+  ##############################################################################
+  cd $OPENAIRCN_DIR/build/spgw
+  if [ ! -d ./build ]; then
+    mkdir -m 777 -p -v build
+  fi
+  
+  cp -rf $OPENAIRCN_DIR/build/CMakeLists.txt $OPENAIRCN_DIR/src/ 
+  cd ./build
+  $CMAKE $cmake_args $OPENAIRCN_DIR/src/ > /dev/null
+
+  compilations spgw spgw $OPENAIRCN_DIR/build/spgw/build/oai_sgw $verbose
 
   if [ $daemon -ne 0 ]; then
     # TODO /usr/sbin ?
-    $SUDO cp -upv $OPENAIRCN_DIR/build/mme_spgw/build/oai_sgw/spgw /usr/sbin/spgwd && echo_success "spgwd installed"
+    $SUDO cp -upv $OPENAIRCN_DIR/build/spgw/build/oai_sgw/spgw /usr/sbin/spgwd && echo_success "spgwd installed"
   else
-    $SUDO cp -upv $OPENAIRCN_DIR/build/mme_spgw/build/oai_sgw/spgw /usr/local/bin && echo_success "spgw installed"
+    $SUDO cp -upv $OPENAIRCN_DIR/build/spgw/build/oai_sgw/spgw /usr/local/bin && echo_success "spgw installed"
   fi
 }
 
