@@ -310,6 +310,10 @@ endif()
 ################################################################
 # Add sub modules
 ################################################################
+set(COMMON_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/magma_common")
+
+ADD_SUBDIRECTORY(../common
+  "${COMMON_BIN_DIR}")
 
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(gtpv1-u)
