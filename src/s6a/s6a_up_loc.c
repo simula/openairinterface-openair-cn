@@ -19,32 +19,18 @@
  *      contact@openairinterface.org
  */
 
-/*! \file s6a_update_loc.c
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <stdint.h>
-#include <pthread.h>
 
-#include "bstrlib.h"
-
-#include "dynamic_memory_check.h"
-#include "hashtable.h"
-#include "obj_hashtable.h"
-#include "log.h"
-#include "msc.h"
+#include "mme_config.h"
 #include "assertions.h"
 #include "conversions.h"
 #include "intertask_interface.h"
-#include "common_defs.h"
 #include "s6a_defs.h"
-#include "s6a_messages_types.h"
-#include "mme_config.h"
+#include "s6a_messages.h"
+#include "msc.h"
+#include "log.h"
 
 
 int
@@ -212,17 +198,13 @@ s6a_generate_update_location (
    * Destination Host
    */
   {
-    bstring                                 host = bstrcpy(mme_config.s6a_config.hss_host_name);
-
-    bconchar(host, '.');
-    bconcat (host, mme_config.realm);
-
+    bstring host = bstrcpy(mme_config.realm);
     CHECK_FCT (fd_msg_avp_new (s6a_fd_cnf.dataobj_s6a_destination_host, 0, &avp_p));
     value.os.data = (unsigned char *)bdata(host);
     value.os.len = blength(host);
     CHECK_FCT (fd_msg_avp_setvalue (avp_p, &value));
     CHECK_FCT (fd_msg_avp_add (msg_p, MSG_BRW_LAST_CHILD, avp_p));
-    bdestroy_wrapper (&host);
+    bdestroy(host);
   }
   /*
    * Destination_Realm

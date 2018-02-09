@@ -19,11 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file TLVEncoder.h
-  \brief
-  \author Philippe MOREL, Sebastien ROUX, Lionel GAUTHIER
-  \company Eurecom
-*/
 #ifndef FILE_TLV_ENCODER_SEEN
 #define FILE_TLV_ENCODER_SEEN
 

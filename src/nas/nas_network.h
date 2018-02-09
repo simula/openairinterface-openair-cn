@@ -30,12 +30,13 @@ Product     NAS stack
 
 Subsystem   NAS main process
 
-Author      Frederic Maurel, Lionel GAUTHIER
+Author      Frederic Maurel
 
 Description NAS procedure functions triggered by the network
 
 *****************************************************************************/
 
+#include "mme_config.h"
 
 #ifndef FILE_NAS_NETWORK_SEEN
 #define FILE_NAS_NETWORK_SEEN

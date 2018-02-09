@@ -69,6 +69,8 @@ s1ap_generate_initiating_message (
     return -1;
   }
 
+  ASN_STRUCT_FREE_CONTENTS_ONLY (asn_DEF_S1AP_PDU, &pdu);
+
   *length = encoded;
   return encoded;
 }
@@ -105,6 +107,9 @@ s1ap_generate_successfull_outcome (
     return -1;
   }
 
+  // Might need this if there is a leak here
+  ASN_STRUCT_FREE_CONTENTS_ONLY (asn_DEF_S1AP_PDU, &pdu);
+
   *length = encoded;
   return encoded;
 }
@@ -123,9 +128,9 @@ s1ap_generate_unsuccessfull_outcome (
 
   memset (&pdu, 0, sizeof (S1AP_PDU_t));
   pdu.present = S1AP_PDU_PR_unsuccessfulOutcome;
-  pdu.choice.successfulOutcome.procedureCode = procedureCode;
-  pdu.choice.successfulOutcome.criticality = criticality;
-  ANY_fromType_aper (&pdu.choice.successfulOutcome.value, td, sptr);
+  pdu.choice.unsuccessfulOutcome.procedureCode = procedureCode;
+  pdu.choice.unsuccessfulOutcome.criticality = criticality;
+  ANY_fromType_aper (&pdu.choice.unsuccessfulOutcome.value, td, sptr);
 
   if (asn1_xer_print) {
     xer_fprint (stdout, &asn_DEF_S1AP_PDU, (void *)&pdu);
@@ -140,6 +145,9 @@ s1ap_generate_unsuccessfull_outcome (
     OAILOG_ERROR (LOG_S1AP, "Encoding of %s failed\n", td->name);
     return -1;
   }
+
+  // Might need this if there is a leak here
+  ASN_STRUCT_FREE_CONTENTS_ONLY (asn_DEF_S1AP_PDU, &pdu);
 
   *length = encoded;
   return encoded;

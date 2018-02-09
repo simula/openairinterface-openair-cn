@@ -10,9 +10,6 @@ include_directories(${PROJECT_SOURCE_DIR}/common/ITTI)
 include_directories(${PROJECT_SOURCE_DIR}/utils)
 # bstrlib.h
 include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
-include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
-
-include_directories(${PROJECT_SOURCE_DIR}/nas/ies)
 set(SECU_CN_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/kdf.c
     ${CMAKE_CURRENT_SOURCE_DIR}/rijndael.c

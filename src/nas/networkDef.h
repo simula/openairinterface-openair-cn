@@ -32,7 +32,7 @@ Product     NAS stack
 
 Subsystem   include
 
-Author      Frederic Maurel, Lionel GAUTHIER
+Author      Frederic Maurel
 
 Description Contains network's global definitions
 

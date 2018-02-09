@@ -23,11 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
-#include "log.h"
 #include "3gpp_24.007.h"
 #include "3gpp_24.301.h"
 #include "TLVEncoder.h"
@@ -40,7 +37,6 @@ decode_esm_information_response (
   uint8_t * buffer,
   uint32_t len)
 {
-  OAILOG_FUNC_IN (LOG_NAS_ESM);
   uint32_t                                decoded = 0;
   int                                     decoded_result = 0;
 
@@ -64,8 +60,8 @@ decode_esm_information_response (
 
     switch (ieiDecoded) {
     case ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_IEI:
-      if ((decoded_result = decode_access_point_name_ie (&esm_information_response->accesspointname, true, buffer + decoded, len - decoded)) <= 0)
-        OAILOG_FUNC_RETURN (LOG_NAS_ESM, decoded_result);
+      if ((decoded_result = decode_access_point_name (&esm_information_response->accesspointname, ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_IEI, buffer + decoded, len - decoded)) <= 0)
+        return decoded_result;
 
       decoded += decoded_result;
       /*
@@ -75,8 +71,8 @@ decode_esm_information_response (
       break;
 
     case ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_IEI:
-      if ((decoded_result = decode_protocol_configuration_options_ie (&esm_information_response->protocolconfigurationoptions, true, buffer + decoded, len - decoded)) <= 0)
-        OAILOG_FUNC_RETURN (LOG_NAS_ESM, decoded_result);
+      if ((decoded_result = decode_ProtocolConfigurationOptions (&esm_information_response->protocolconfigurationoptions, ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_IEI, buffer + decoded, len - decoded)) <= 0)
+        return decoded_result;
 
       decoded += decoded_result;
       /*
@@ -87,11 +83,11 @@ decode_esm_information_response (
 
     default:
       errorCodeDecoder = TLV_UNEXPECTED_IEI;
-      OAILOG_FUNC_RETURN (LOG_NAS_ESM, TLV_UNEXPECTED_IEI);
+      return TLV_UNEXPECTED_IEI;
     }
   }
 
-  OAILOG_FUNC_RETURN (LOG_NAS_ESM, decoded);
+  return decoded;
 }
 
 int
@@ -100,7 +96,6 @@ encode_esm_information_response (
   uint8_t * buffer,
   uint32_t len)
 {
-  OAILOG_FUNC_IN (LOG_NAS_ESM);
   int                                     encoded = 0;
   int                                     encode_result = 0;
 
@@ -111,21 +106,21 @@ encode_esm_information_response (
 
   if ((esm_information_response->presencemask & ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
       == ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT) {
-    if ((encode_result = encode_access_point_name_ie (esm_information_response->accesspointname, true, buffer + encoded, len - encoded)) < 0)
+    if ((encode_result = encode_access_point_name (esm_information_response->accesspointname, ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_IEI, buffer + encoded, len - encoded)) < 0)
       // Return in case of error
-    OAILOG_FUNC_RETURN (LOG_NAS_ESM, encode_result);
+      return encode_result;
     else
       encoded += encode_result;
   }
 
   if ((esm_information_response->presencemask & ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
       == ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
-    if ((encode_result = encode_protocol_configuration_options_ie (&esm_information_response->protocolconfigurationoptions, true, buffer + encoded, len - encoded)) < 0)
+    if ((encode_result = encode_ProtocolConfigurationOptions (&esm_information_response->protocolconfigurationoptions, ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_IEI, buffer + encoded, len - encoded)) < 0)
       // Return in case of error
-      OAILOG_FUNC_RETURN (LOG_NAS_ESM, encode_result);
+      return encode_result;
     else
       encoded += encode_result;
   }
 
-  OAILOG_FUNC_RETURN (LOG_NAS_ESM, encoded);
+  return encoded;
 }

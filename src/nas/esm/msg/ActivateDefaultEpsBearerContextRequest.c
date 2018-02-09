@@ -23,12 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
-#include "log.h"
-#include "common_types.h"
 #include "3gpp_24.007.h"
 #include "3gpp_24.301.h"
 #include "TLVEncoder.h"
@@ -50,17 +46,17 @@ decode_activate_default_eps_bearer_context_request (
   /*
    * Decoding mandatory fields
    */
-  if ((decoded_result = decode_eps_quality_of_service (&activate_default_eps_bearer_context_request->epsqos, false, buffer + decoded, len - decoded)) < 0)
+  if ((decoded_result = decode_eps_quality_of_service (&activate_default_eps_bearer_context_request->epsqos, 0, buffer + decoded, len - decoded)) < 0)
     return decoded_result;
   else
     decoded += decoded_result;
 
-  if ((decoded_result = decode_access_point_name_ie (&activate_default_eps_bearer_context_request->accesspointname, false, buffer + decoded, len - decoded)) < 0)
+  if ((decoded_result = decode_access_point_name (&activate_default_eps_bearer_context_request->accesspointname, 0, buffer + decoded, len - decoded)) < 0)
     return decoded_result;
   else
     decoded += decoded_result;
 
-  if ((decoded_result = decode_pdn_address (&activate_default_eps_bearer_context_request->pdnaddress, false, buffer + decoded, len - decoded)) < 0)
+  if ((decoded_result = decode_pdn_address (&activate_default_eps_bearer_context_request->pdnaddress, 0, buffer + decoded, len - decoded)) < 0)
     return decoded_result;
   else
     decoded += decoded_result;
@@ -79,7 +75,7 @@ decode_activate_default_eps_bearer_context_request (
 
     switch (ieiDecoded) {
     case ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_IEI:
-      if ((decoded_result = decode_linked_ti_ie (&activate_default_eps_bearer_context_request->transactionidentifier, true, buffer + decoded, len - decoded)) <= 0)
+      if ((decoded_result = decode_transaction_identifier (&activate_default_eps_bearer_context_request->transactionidentifier, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_IEI, buffer + decoded, len - decoded)) <= 0)
         return decoded_result;
 
       decoded += decoded_result;
@@ -90,7 +86,7 @@ decode_activate_default_eps_bearer_context_request (
       break;
 
     case ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_IEI:
-      if ((decoded_result = decode_quality_of_service_ie (&activate_default_eps_bearer_context_request->negotiatedqos, true, buffer + decoded, len - decoded)) <= 0)
+      if ((decoded_result = decode_quality_of_service (&activate_default_eps_bearer_context_request->negotiatedqos, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_IEI, buffer + decoded, len - decoded)) <= 0)
         return decoded_result;
 
       decoded += decoded_result;
@@ -102,7 +98,7 @@ decode_activate_default_eps_bearer_context_request (
 
     case ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_IEI:
       if ((decoded_result =
-           decode_llc_service_access_point_identifier_ie (&activate_default_eps_bearer_context_request->negotiatedllcsapi, true, buffer + decoded, len - decoded)) <= 0)
+           decode_llc_service_access_point_identifier (&activate_default_eps_bearer_context_request->negotiatedllcsapi, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_IEI, buffer + decoded, len - decoded)) <= 0)
         return decoded_result;
 
       decoded += decoded_result;
@@ -124,7 +120,7 @@ decode_activate_default_eps_bearer_context_request (
       break;
 
     case ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_IEI:
-      if ((decoded_result = decode_packet_flow_identifier_ie (&activate_default_eps_bearer_context_request->packetflowidentifier, true, buffer + decoded, len - decoded)) <= 0)
+      if ((decoded_result = decode_packet_flow_identifier (&activate_default_eps_bearer_context_request->packetflowidentifier, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_IEI, buffer + decoded, len - decoded)) <= 0)
         return decoded_result;
 
       decoded += decoded_result;
@@ -158,8 +154,8 @@ decode_activate_default_eps_bearer_context_request (
 
     case ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI:
       if ((decoded_result =
-           decode_protocol_configuration_options_ie (&activate_default_eps_bearer_context_request->protocolconfigurationoptions,
-                                                  true, buffer + decoded, len - decoded)) <= 0)
+           decode_ProtocolConfigurationOptions (&activate_default_eps_bearer_context_request->protocolconfigurationoptions,
+                                                  ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI, buffer + decoded, len - decoded)) <= 0)
         return decoded_result;
 
       decoded += decoded_result;
@@ -193,27 +189,27 @@ encode_activate_default_eps_bearer_context_request (
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_MINIMUM_LENGTH, len);
 
   if ((encode_result = encode_eps_quality_of_service (&activate_default_eps_bearer_context_request->epsqos, 0, buffer + encoded, len - encoded)) < 0) { //Return in case of error
-    OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE epsqos\n");
+    OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE epsqos");
     return encode_result;
   } else
     encoded += encode_result;
 
-  if ((encode_result = encode_access_point_name_ie (activate_default_eps_bearer_context_request->accesspointname, 0, buffer + encoded, len - encoded)) < 0) {     //Return in case of error
-    OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE accesspointname\n");
+  if ((encode_result = encode_access_point_name (activate_default_eps_bearer_context_request->accesspointname, 0, buffer + encoded, len - encoded)) < 0) {     //Return in case of error
+    OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE accesspointname");
     return encode_result;
   } else
     encoded += encode_result;
 
   if ((encode_result = encode_pdn_address (&activate_default_eps_bearer_context_request->pdnaddress, 0, buffer + encoded, len - encoded)) < 0) {        //Return in case of error
-    OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE pdnaddress\n");
+    OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE pdnaddress");
     return encode_result;
   } else
     encoded += encode_result;
 
   if ((activate_default_eps_bearer_context_request->presencemask & ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_PRESENT)
       == ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_PRESENT) {
-    if ((encode_result = encode_linked_ti_ie (&activate_default_eps_bearer_context_request->transactionidentifier, true, buffer + encoded, len - encoded)) < 0) {
-      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE transactionidentifier\n");
+    if ((encode_result = encode_transaction_identifier (&activate_default_eps_bearer_context_request->transactionidentifier, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_IEI, buffer + encoded, len - encoded)) < 0) {
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE transactionidentifier");
       // Return in case of error
       return encode_result;
     } else
@@ -222,8 +218,8 @@ encode_activate_default_eps_bearer_context_request (
 
   if ((activate_default_eps_bearer_context_request->presencemask & ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_PRESENT)
       == ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_PRESENT) {
-    if ((encode_result = encode_quality_of_service_ie (&activate_default_eps_bearer_context_request->negotiatedqos, true, buffer + encoded, len - encoded)) < 0) {
-      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE negotiatedqos\n");
+    if ((encode_result = encode_quality_of_service (&activate_default_eps_bearer_context_request->negotiatedqos, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_IEI, buffer + encoded, len - encoded)) < 0) {
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE negotiatedqos");
       // Return in case of error
       return encode_result;
     } else
@@ -233,8 +229,8 @@ encode_activate_default_eps_bearer_context_request (
   if ((activate_default_eps_bearer_context_request->presencemask & ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_PRESENT)
       == ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_PRESENT) {
     if ((encode_result =
-         encode_llc_service_access_point_identifier_ie (&activate_default_eps_bearer_context_request->negotiatedllcsapi, true, buffer + encoded, len - encoded)) < 0) {
-      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE negotiatedllcsapi\n");
+         encode_llc_service_access_point_identifier (&activate_default_eps_bearer_context_request->negotiatedllcsapi, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_IEI, buffer + encoded, len - encoded)) < 0) {
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE negotiatedllcsapi");
       // Return in case of error
       return encode_result;
     } else
@@ -244,7 +240,7 @@ encode_activate_default_eps_bearer_context_request (
   if ((activate_default_eps_bearer_context_request->presencemask & ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT)
       == ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT) {
     if ((encode_result = encode_radio_priority (&activate_default_eps_bearer_context_request->radiopriority, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_IEI, buffer + encoded, len - encoded)) < 0) {
-      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE radiopriority\n");
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE radiopriority");
       // Return in case of error
       return encode_result;
     } else
@@ -253,8 +249,8 @@ encode_activate_default_eps_bearer_context_request (
 
   if ((activate_default_eps_bearer_context_request->presencemask & ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_PRESENT)
       == ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_PRESENT) {
-    if ((encode_result = encode_packet_flow_identifier_ie (&activate_default_eps_bearer_context_request->packetflowidentifier, true, buffer + encoded, len - encoded)) < 0) {
-      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE packetflowidentifier\n");
+    if ((encode_result = encode_packet_flow_identifier (&activate_default_eps_bearer_context_request->packetflowidentifier, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_IEI, buffer + encoded, len - encoded)) < 0) {
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE packetflowidentifier");
       // Return in case of error
       return encode_result;
     } else
@@ -264,7 +260,7 @@ encode_activate_default_eps_bearer_context_request (
   if ((activate_default_eps_bearer_context_request->presencemask & ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APNAMBR_PRESENT)
       == ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APNAMBR_PRESENT) {
     if ((encode_result = encode_apn_aggregate_maximum_bit_rate (&activate_default_eps_bearer_context_request->apnambr, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APNAMBR_IEI, buffer + encoded, len - encoded)) < 0) {
-      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE apnambr\n");
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE apnambr");
       // Return in case of error
       return encode_result;
     } else
@@ -274,7 +270,7 @@ encode_activate_default_eps_bearer_context_request (
   if ((activate_default_eps_bearer_context_request->presencemask & ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT)
       == ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT) {
     if ((encode_result = encode_esm_cause (&activate_default_eps_bearer_context_request->esmcause, ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_IEI, buffer + encoded, len - encoded)) < 0) {
-      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE esmcause\n");
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE esmcause");
       // Return in case of error
       return encode_result;
     } else
@@ -284,15 +280,15 @@ encode_activate_default_eps_bearer_context_request (
   if ((activate_default_eps_bearer_context_request->presencemask & ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
       == ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
     if ((encode_result =
-          encode_protocol_configuration_options_ie (&activate_default_eps_bearer_context_request->protocolconfigurationoptions,
-                                                true, buffer + encoded, len - encoded)) < 0) {
-      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE protocolconfigurationoptions\n");
+         encode_ProtocolConfigurationOptions (&activate_default_eps_bearer_context_request->protocolconfigurationoptions,
+                                                ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI, buffer + encoded, len - encoded)) < 0) {
+      OAILOG_ERROR (LOG_NAS_ESM, "ESM  ENCODE protocolconfigurationoptions");
       // Return in case of error
       return encode_result;
     } else
       encoded += encode_result;
   }
 
-  OAILOG_INFO (LOG_NAS_ESM, "ESM  ENCODED activate_default_eps_bearer_context_request\n");
+  OAILOG_INFO (LOG_NAS_ESM, "ESM  ENCODED activate_default_eps_bearer_context_request");
   return encoded;
 }

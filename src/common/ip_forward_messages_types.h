@@ -29,9 +29,6 @@
 #ifndef FILE_SGI_FORWARD_MESSAGES_TYPES_SEEN
 #define FILE_SGI_FORWARD_MESSAGES_TYPES_SEEN
 
-#include "common_types.h"
-#include "3gpp_24.007.h"
-#include "3gpp_24.008.h"
 typedef enum SGIStatus_e {
   SGI_STATUS_OK                                           = 16,
   SGI_STATUS_ERROR_CONTEXT_NOT_FOUND                      = 64,
@@ -50,7 +47,7 @@ typedef struct {
   teid_t           sgw_S1u_teid;        ///< Tunnel Endpoint Identifier S1-U
   ebi_t            eps_bearer_id;       ///< EPS bearer identifier
   pdn_type_t       pdn_type;            ///< PDN Type
-  paa_t            paa;                 ///< PDN Address Allocation
+  PAA_t            paa;                 ///< PDN Address Allocation
 } itti_sgi_create_end_point_request_t;
 
 typedef struct {
@@ -59,7 +56,7 @@ typedef struct {
   teid_t           sgw_S1u_teid;        ///< Tunnel Endpoint Identifier S1-U
   ebi_t            eps_bearer_id;       ///< EPS bearer identifier
   pdn_type_t       pdn_type;            ///< PDN Type
-  paa_t            paa;                 ///< PDN Address Allocation
+  PAA_t            paa;                 ///< PDN Address Allocation
   protocol_configuration_options_t       pco;                 ///< Protocol configuration options
 } itti_sgi_create_end_point_response_t;
 
@@ -84,7 +81,7 @@ typedef struct {
   teid_t           sgw_S1u_teid;        ///< Tunnel Endpoint Identifier S1-U
   ebi_t            eps_bearer_id;       ///< EPS bearer identifier
   pdn_type_t       pdn_type;            ///< PDN Type
-  paa_t            paa;                 ///< PDN Address Allocation
+  PAA_t            paa;                 ///< PDN Address Allocation
 } itti_sgi_delete_end_point_request_t;
 
 typedef struct {
@@ -93,7 +90,7 @@ typedef struct {
   teid_t           sgw_S1u_teid;        ///< Tunnel Endpoint Identifier S1-U
   ebi_t            eps_bearer_id;       ///< EPS bearer identifier
   pdn_type_t       pdn_type;            ///< PDN Type
-  paa_t            paa;                 ///< PDN Address Allocation
+  PAA_t            paa;                 ///< PDN Address Allocation
 } itti_sgi_delete_end_point_response_t;
 
 #endif /* FILE_SGI_FORWARD_MESSAGES_TYPES_SEEN */

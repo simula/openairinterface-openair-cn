@@ -47,7 +47,7 @@ extern                                  "C" {
   static
   void                                    NW_EVT_CALLBACK (
   nwUdpDataIndicationCallbackData) {
-    nw_rc_t                                   rc;
+    NwRcT                                   rc;
     uint8_t                                 udpBuf[MAX_UDP_PAYLOAD_LEN];
     NwS32T                                  bytesRead;
     struct sockaddr_in                      peer;
@@ -91,9 +91,9 @@ extern                                  "C" {
    Public functions
   --------------------------------------------------------------------------*/
 
-  nw_rc_t                                   nwGtpv2cUdpInit (
+  NwRcT                                   nwGtpv2cUdpInit (
   NwGtpv2cNodeUdpT * thiz,
-  nw_gtpv2c_StackHandleT hGtpv2cStack,
+  NwGtpv2cStackHandleT hGtpv2cStack,
   uint8_t * ipAddrStr) {
     int                                     sd;
     struct sockaddr_in                      addr;
@@ -129,12 +129,12 @@ extern                                  "C" {
     return NW_OK;
   }
 
-  nw_rc_t                                   nwGtpv2cUdpDestroy (
+  NwRcT                                   nwGtpv2cUdpDestroy (
   NwGtpv2cNodeUdpT * thiz) {
     close (thiz->hSocket);
   }
 
-  nw_rc_t                                   nwGtpv2cUdpReset (
+  NwRcT                                   nwGtpv2cUdpReset (
   NwGtpv2cNodeUdpT * thiz) {
     int                                     sd;
     struct sockaddr_in                      addr;
@@ -170,8 +170,8 @@ extern                                  "C" {
     return NW_OK;
   }
 
-  nw_rc_t                                   nwGtpv2cUdpDataReq (
-  nw_gtpv2c_UdpHandleT udpHandle,
+  NwRcT                                   nwGtpv2cUdpDataReq (
+  NwGtpv2cUdpHandleT udpHandle,
   uint8_t * dataBuf,
   uint32_t dataSize,
   uint32_t peerIp,

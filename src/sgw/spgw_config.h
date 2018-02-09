@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -30,21 +30,35 @@
 #define FILE_SPGW_CONFIG_SEEN
 #include "sgw_config.h"
 #include "pgw_config.h"
+#include "service303.h"
 
+#define MAGMA_CONFIG_STRING                               "MAGMA"
+#define SPGW_CONFIG_STRING_SERVICE303_CONFIG              "SERVICE303"
+#define SPGW_CONFIG_STRING_SERVICE303_CONF_SERVER_ADDRESS "SERVER_ADDRESS"
 
 typedef struct spgw_config_s {
-  sgw_config_t sgw_config;
-  pgw_config_t pgw_config;
-  bstring      config_file;
+  sgw_config_t      sgw_config;
+  pgw_config_t      pgw_config;
+  service303_data_t service303_config;
+  bstring           config_file;
 } spgw_config_t;
 
 #ifndef SGW
 extern spgw_config_t spgw_config;
 #endif
 
-int spgw_config_parse_opt_line (
-  int argc,
-  char *argv[],
-  spgw_config_t * spgw_config_p);
+int spgw_system (
+  bstring command_pP,
+  bool is_abort_on_errorP,
+  const char *const file_nameP,
+  const int line_numberP);
+
+void spgw_config_init (spgw_config_t *);
+
+int spgw_config_parse_opt_line (int argc, char *argv[], spgw_config_t *);
+
+int spgw_config_parse_file (spgw_config_t *);
+
+void spgw_config_display (spgw_config_t *);
 
 #endif /* FILE_SPGW_CONFIG_SEEN */

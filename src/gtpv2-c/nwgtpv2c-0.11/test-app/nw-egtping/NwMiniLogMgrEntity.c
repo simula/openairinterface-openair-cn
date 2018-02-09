@@ -40,21 +40,21 @@ extern                                  "C" {
     return &(__gLogMgr);
   }
 
-  nw_rc_t                                   nwMiniLogMgrInit (
+  NwRcT                                   nwMiniLogMgrInit (
   NwMiniLogMgrT * thiz,
   uint32_t logLevel) {
     thiz->logLevel = logLevel;
     return NW_OK;
   }
 
-  nw_rc_t                                   nwMiniLogMgrSetLogLevel (
+  NwRcT                                   nwMiniLogMgrSetLogLevel (
   NwMiniLogMgrT * thiz,
   uint32_t logLevel) {
     thiz->logLevel = logLevel;
   }
 
-  nw_rc_t                                   nwMiniLogMgrLogRequest (
-  nw_gtpv2c_LogMgrHandleT hLogMgr,
+  NwRcT                                   nwMiniLogMgrLogRequest (
+  NwGtpv2cLogMgrHandleT hLogMgr,
   uint32_t logLevel,
   NwCharT * file,
   uint32_t line,

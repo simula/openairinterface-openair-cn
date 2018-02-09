@@ -38,16 +38,16 @@ typedef struct {
 extern "C" {
 #endif
 
-nw_rc_t nwTimerStart( nw_gtpv2c_TimerMgrHandleT tmrMgrHandle,
+NwRcT nwTimerStart( NwGtpv2cTimerMgrHandleT tmrMgrHandle,
                     uint32_t timeoutSec,
                     uint32_t timeoutUsec,
                     uint32_t tmrType,
                     void*  timeoutArg,
-                    nw_gtpv2c_TimerHandleT* hTmr);
+                    NwGtpv2cTimerHandleT* hTmr);
 
 
-nw_rc_t nwTimerStop( nw_gtpv2c_TimerMgrHandleT tmrMgrHandle,
-                   nw_gtpv2c_TimerHandleT hTmr);
+NwRcT nwTimerStop( NwGtpv2cTimerMgrHandleT tmrMgrHandle,
+                   NwGtpv2cTimerHandleT hTmr);
 
 
 #ifdef __cplusplus

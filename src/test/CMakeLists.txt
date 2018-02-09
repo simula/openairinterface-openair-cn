@@ -1,4 +1,3 @@
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../build/modules/")
 find_package(Check REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -31,3 +30,7 @@ set(MME_APP_UE_CONTEXT_IMSI_SRC
 add_executable(test_mme_app_ue_context_imsi ${MME_APP_UE_CONTEXT_IMSI_SRC})
 target_link_libraries(test_mme_app_ue_context_imsi MME_APP ${CHECK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 add_test(NAME test_mme_app_ue_context COMMAND test_mme_app_ue_context_imsi)
+
+add_subdirectory(service303)
+add_subdirectory(openflow)
+add_subdirectory(service_registry)

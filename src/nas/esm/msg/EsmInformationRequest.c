@@ -23,11 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
-#include "log.h"
 #include "3gpp_24.007.h"
 #include "3gpp_24.301.h"
 #include "TLVEncoder.h"
@@ -40,7 +37,6 @@ decode_esm_information_request (
   uint8_t * buffer,
   uint32_t len)
 {
-  OAILOG_FUNC_IN (LOG_NAS_ESM);
   uint32_t                                decoded = 0;
 
   // Check if we got a NULL pointer and if buffer length is >= minimum length expected for the message.
@@ -48,7 +44,7 @@ decode_esm_information_request (
   /*
    * Decoding mandatory fields
    */
-  OAILOG_FUNC_RETURN (LOG_NAS_ESM, decoded);
+  return decoded;
 }
 
 int
@@ -57,12 +53,11 @@ encode_esm_information_request (
   uint8_t * buffer,
   uint32_t len)
 {
-  OAILOG_FUNC_IN (LOG_NAS_ESM);
   int                                     encoded = 0;
 
   /*
    * Checking IEI and pointer
    */
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, ESM_INFORMATION_REQUEST_MINIMUM_LENGTH, len);
-  OAILOG_FUNC_RETURN (LOG_NAS_ESM, encoded);
+  return encoded;
 }

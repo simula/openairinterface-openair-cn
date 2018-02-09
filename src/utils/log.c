@@ -33,28 +33,25 @@
    \date 2015
    \email: lionel.gauthier@eurecom.fr
 */
+
+#include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <inttypes.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <fcntl.h>
 #include <stdarg.h>
-#include <pthread.h>
-#include <syslog.h>
+#include <sys/time.h>
 
+#include <unistd.h>
+
+#include "hashtable.h"
 #include "intertask_interface.h"
-#include "timer.h"
 #include "log.h"
-#include "shared_ts_log.h"
+#include "liblfds611.h"
+#include "timer.h"
+
 #include "assertions.h"
 #include "dynamic_memory_check.h"
 
@@ -78,12 +75,15 @@
 #define LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH      6
 #define LOG_FUNC_INDENT_SPACES                   3
 #define LOG_LEVEL_NAME_MAX_LENGTH               10
-#define LOG_ANSI_CODE_MAX_LENGTH                15
-#define LOG_MAX_SERVER_ADDRESS_LENGTH           96
-#define LOG_MAX_PORT_NUM_LENGTH                  6
+
 //-------------------------------
 
 typedef unsigned long                   log_message_number_t;
+
+#define MIN(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
 
 typedef enum {
   MIN_LOG_TCP_STATE = 0,
@@ -94,7 +94,12 @@ typedef enum {
   MAX_LOG_TCP_STATE
 } log_tcp_state_t;
 
-#define ANSI_CODE_MAX_LENGTH    32
+typedef struct oai_log_handler_s {
+  void (*log_start_use)(void);
+  log_queue_item_t *(*get_log_queue_item)(void);
+  void (*log)(log_queue_item_t *new_item_p);
+  void (*free_log_queue_item)(log_queue_item_t **item_p);
+} oai_log_handler_t;
 
 /*! \struct  oai_log_t
 * \brief Structure containing all the logging utility internal variables.
@@ -104,37 +109,221 @@ typedef struct oai_log_s {
   // logging somewhere else of the console.
   FILE                                   *log_fd;                                               /*!< \brief output stream */
   bool                                    is_output_is_fd;                                      /* We may want to not use syslog even if exe is a daemon */
-  bool                                    is_output_fd_buffered;                                /* We way want no buffering */
-  bool                                    is_ansi_codes;                                        /* ANSI codes for color in console output */
+  bool                                    is_async;                                             /* We may want no buffering */
   bstring                                 bserver_address;                                      /*!< \brief TCP remote (or local) server hostname */
   bstring                                 bserver_port ;                                        /*!< \brief TCP remote (or local) server port     */
   log_tcp_state_t                         tcp_state;                                            /*!< \brief State of the client TCP connection           */
 
   char                                    log_proto2str[MAX_LOG_PROTOS][LOG_MAX_PROTO_NAME_LENGTH];    /*!< \brief Convert log client (protocol/layer) id into human readable log user name */
   char                                    log_level2str[MAX_LOG_LEVEL][LOG_LEVEL_NAME_MAX_LENGTH];     /*!< \brief Convert log level id into human readable log level string */
-  char                                    log_level2ansi[MAX_LOG_LEVEL][ANSI_CODE_MAX_LENGTH];     /*!< \brief Convert log level id into human readable log level string */
   int                                     log_start_time_second;                                       /*!< \brief Logging utility reference time              */
   log_level_t                             log_level[MAX_LOG_PROTOS];                                   /*!< \brief Loglevel id of each client (protocol/layer) */
+  int                                     log_level2syslog[MAX_LOG_LEVEL];
 
   log_message_number_t                    log_message_number;                                          /*!< \brief Counter of log message        */
+  struct lfds611_queue_state             *log_message_queue_p;                                         /*!< \brief Thread safe log message queue */
+  struct lfds611_stack_state             *log_free_message_queue_p;                                    /*!< \brief Thread safe memory pool       */
 
-  hash_table_ts_t                           *thread_context_htbl;                                         /*!< \brief Container for log_thread_ctxt_t */
+  hash_table_ts_t                        *thread_context_htbl;                                         /*!< \brief Container for log_thread_ctxt_t */
+  int                                     max_threads;                                                 /*!< \brief Maximum number of log threads */
+  const char *                            app_name;                                                    /*!< \brief Application name for log context */
+  oai_log_handler_t                       log_handler;                                                 /*!< \brief Logging handler function pointers */
 } oai_log_t;
+
+#define _LOG_START_USE g_oai_log.log_handler.log_start_use
+#define _LOG g_oai_log.log_handler.log
+#define _LOG_GET_ITEM g_oai_log.log_handler.get_log_queue_item
+#define _LOG_FREE_ITEM g_oai_log.log_handler.free_log_queue_item
 
 static oai_log_t g_oai_log={0};    /*!< \brief  logging utility internal variables global var definition*/
 
+static void log_message_int(log_thread_ctxt_t * const thread_ctxtP,
+                            const log_level_t log_levelP,
+                            const log_proto_t protoP,
+                            log_queue_item_t ** contextP, // Out parameter
+                            const char *const source_fileP,
+                            const unsigned int line_numP,
+                            char *format,
+                            va_list args);
+static void log_connect_to_server(void);
+
 //------------------------------------------------------------------------------
-void* log_task (__attribute__ ((unused)) void *args_p)
+static log_queue_item_t * new_queue_item(void)
+{
+  log_queue_item_t * item_p = calloc(1, sizeof(log_queue_item_t));
+  AssertFatal((item_p), "Allocation of log container failed");
+  item_p->bstr = bfromcstralloc(LOG_MESSAGE_MIN_ALLOC_SIZE, "");
+  AssertFatal((item_p->bstr), "Allocation of buf in log container failed");
+  return item_p;
+}
+
+//------------------------------------------------------------------------------
+// Get a new queue item from the free lfds stack for async logging or from heap.
+static log_queue_item_t * get_log_queue_item_async(void) {
+  int                                     rv              = 0;
+  log_queue_item_t                       *new_item_p      = NULL;
+
+  assert(g_oai_log.is_async);
+  rv = lfds611_stack_pop(g_oai_log.log_free_message_queue_p, (void **) &new_item_p);
+  if (rv == 1) {
+    btrunc(new_item_p->bstr, 0);
+    return new_item_p;
+  }
+  // We are out of lfds items so allocate a new one.
+  OAI_FPRINTF_ERR("Warning allocating an extra log_queue_item_t in LOG\n");
+  new_item_p = new_queue_item();
+  AssertFatal(new_item_p != NULL, "Out of memory error");
+  return new_item_p;
+}
+
+static log_queue_item_t * get_log_queue_item_sync(void)
+{
+  log_queue_item_t                       *new_item_p      = NULL;
+  new_item_p = new_queue_item();
+  AssertFatal(new_item_p, "Out of memory error");
+  return new_item_p;
+}
+
+static void free_log_queue_item_sync(log_queue_item_t **item_p) {
+  btrunc((*item_p)->bstr, 0);
+  bdestroy ((*item_p)->bstr);
+  free_wrapper ((void**) item_p);
+}
+
+static void free_log_queue_item_async(log_queue_item_t **item_p) {
+  int rv = 0;
+
+  btrunc((*item_p)->bstr, 0);
+  rv = 0;
+  if (g_oai_log.is_async) {
+    rv = lfds611_stack_guaranteed_push(g_oai_log.log_free_message_queue_p, *item_p);
+  }
+  if (0 == rv) {
+    // Failed to push to stack, just release.
+    bdestroy ((*item_p)->bstr);
+    free_wrapper ((void**) item_p);
+  }
+}
+
+//------------------------------------------------------------------------------
+static void
+log_start_use_sync (void)
+{
+  pthread_t      p       = pthread_self();
+  hashtable_rc_t hash_rc = hashtable_ts_is_key_exists (g_oai_log.thread_context_htbl, (hash_key_t) p);
+  if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
+    log_thread_ctxt_t *thread_ctxt = calloc(1, sizeof(log_thread_ctxt_t));
+    if (thread_ctxt) {
+      thread_ctxt->tid = p;
+      hash_rc = hashtable_ts_insert(g_oai_log.thread_context_htbl, (hash_key_t) p, thread_ctxt);
+      if (HASH_TABLE_OK != hash_rc) {
+        OAI_FPRINTF_ERR("Error Could not register log thread context\n");
+        free_wrapper((void**) &thread_ctxt);
+      }
+    } else {
+      OAI_FPRINTF_ERR("Error Could not create log thread context\n");
+    }
+  }
+}
+
+static void
+log_start_use_async (void) {
+  assert(g_oai_log.is_async);
+  lfds611_queue_use(g_oai_log.log_message_queue_p);
+  lfds611_stack_use(g_oai_log.log_free_message_queue_p);
+  log_start_use_sync();
+}
+
+static void init_lfds(const int max_threadsP) {
+  int                                     rv = 0;
+  log_queue_item_t                       *item_p = NULL;
+
+  assert(g_oai_log.is_async);
+
+  rv = lfds611_stack_new (&g_oai_log.log_free_message_queue_p, (lfds611_atom_t) max_threadsP + 2);
+
+  if (0 >= rv) {
+    AssertFatal (0, "lfds611_stack_new failed!\n");
+  }
+
+  rv = lfds611_queue_new (&g_oai_log.log_message_queue_p, (lfds611_atom_t) LOG_MAX_QUEUE_ELEMENTS);
+  AssertFatal (rv, "lfds611_queue_new failed!\n");
+  AssertFatal (g_oai_log.log_message_queue_p != NULL, "g_oai_log.log_message_queue_p is NULL!\n");
+  _LOG_START_USE();
+
+  for (int i = 0; i < max_threadsP * 30; i++) {
+    item_p = new_queue_item();
+    rv = lfds611_stack_guaranteed_push (g_oai_log.log_free_message_queue_p, item_p);
+    AssertFatal (rv, "lfds611_stack_guaranteed_push failed for item %u\n", i);
+  }
+}
+
+static void init_syslog(void) {
+  // Initialize syslog params
+  // Log to console on failure, log with PID, log without buffering, user log
+  openlog (g_oai_log.app_name, LOG_CONS | LOG_PID | LOG_NDELAY, LOG_USER);
+  g_oai_log.log_fd = NULL;
+  g_oai_log.is_output_is_fd = false;
+}
+
+static void init_console(void) {
+#if DAEMONIZE
+  g_oai_log.log_fd = NULL;
+  g_oai_log.is_output_is_fd = false;
+#else
+  setvbuf(stdout, NULL, _IONBF, 0);
+  g_oai_log.log_fd = stdout;
+  g_oai_log.is_output_is_fd = true;
+#endif
+}
+
+//------------------------------------------------------------------------------
+// Check if we should be logging the message for the said module
+static bool log_is_enabled(const log_level_t log_levelP,
+                    const log_proto_t protoP) {
+  if ((MIN_LOG_PROTOS > protoP) || (MAX_LOG_PROTOS <= protoP)) {
+    return false;
+  }
+  if ((MIN_LOG_LEVEL > log_levelP) || (MAX_LOG_LEVEL <= log_levelP)) {
+    return false;
+  }
+  if (log_levelP > g_oai_log.log_level[protoP]) {
+    return false;
+  }
+  return true;
+}
+
+//------------------------------------------------------------------------------
+// Get the associated thread context for the current thread allocating if required
+static void get_thread_context(log_thread_ctxt_t ** thread_ctxt)
+{
+
+  hashtable_rc_t                          hash_rc         = HASH_TABLE_OK;
+
+  if (NULL == *thread_ctxt){
+    pthread_t p = pthread_self();
+    hash_rc = hashtable_ts_get(g_oai_log.thread_context_htbl, (hash_key_t) p, (void **) thread_ctxt);
+    if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
+      // Initialize thread context
+      _LOG_START_USE();
+      hash_rc = hashtable_ts_get(g_oai_log.thread_context_htbl, (hash_key_t) p, (void **) thread_ctxt);
+      AssertFatal(HASH_TABLE_KEY_NOT_EXISTS != hash_rc, "Could not get new log thread context\n");
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+static void* log_task (__attribute__ ((unused)) void *args_p)
 {
   MessageDef                             *received_message_p = NULL;
   long                                    timer_id = 0;
   int                                     rc = 0;
 
   itti_mark_task_ready (TASK_LOG);
-  log_start_use ();
+  _LOG_START_USE();
   timer_setup (LOG_FLUSH_PERIOD_SEC,
                LOG_FLUSH_PERIOD_MICRO_SEC,
-               TASK_LOG, INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, &timer_id);
+               TASK_LOG, INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, 0, &timer_id);
 
   while (1) {
     itti_receive_msg (TASK_LOG, &received_message_p);
@@ -143,21 +332,29 @@ void* log_task (__attribute__ ((unused)) void *args_p)
 
       switch (ITTI_MSG_ID (received_message_p)) {
       case TIMER_HAS_EXPIRED:{
+          if (!timer_exists (received_message_p->ittiMsg.timer_has_expired.timer_id)) {
+            break;
+          }
           // if tcp logging is enabled
           if (LOG_TCP_STATE_NOT_CONNECTED == g_oai_log.tcp_state) {
             log_connect_to_server();
+            log_flush_messages ();
             timer_setup (LOG_CONNECT_PERIOD_SEC,
                          LOG_CONNECT_PERIOD_MICRO_SEC,
-                         TASK_LOG, INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, &timer_id);
+                         TASK_LOG, INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, 0, &timer_id);
+          } else {
+            log_flush_messages ();
+            timer_setup (LOG_FLUSH_PERIOD_SEC,
+                       LOG_FLUSH_PERIOD_MICRO_SEC,
+                       TASK_LOG, INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, 0, &timer_id);
           }
+          timer_handle_expired(received_message_p->ittiMsg.timer_has_expired.timer_id);
         }
         break;
 
       case TERMINATE_MESSAGE:{
-          timer_remove (timer_id, NULL);
+          timer_remove (timer_id);
           log_exit ();
-          MessageDef   *terminate_message_p = itti_alloc_new_message (TASK_LOG, TERMINATE_MESSAGE);
-          rc =  itti_send_msg_to_task (TASK_SHARED_TS_LOG, INSTANCE_DEFAULT, terminate_message_p);
           itti_exit_task ();
         }
         break;
@@ -178,11 +375,11 @@ void* log_task (__attribute__ ((unused)) void *args_p)
 }
 
 //------------------------------------------------------------------------------
-void log_connect_to_server(void)
+static void log_connect_to_server(void)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
-  int sfd, s;
+  int sfd = 0, s;
 
   g_oai_log.tcp_state = LOG_TCP_STATE_CONNECTING;
 
@@ -239,71 +436,145 @@ void log_connect_to_server(void)
    g_oai_log.tcp_state = LOG_TCP_STATE_CONNECTED;
 }
 
+static void log_sync(log_queue_item_t *new_item_p) {
+  if (g_oai_log.is_output_is_fd) {
+    fprintf(g_oai_log.log_fd, "%s", bdata(new_item_p->bstr));
+  } else {
+    syslog(new_item_p->log_level, "%s", bdata(new_item_p->bstr));
+  }
+  // Release the log_item
+  free_log_queue_item_sync(&new_item_p);
+}
+
+static void log_async(log_queue_item_t* new_item_p) {
+  int rv = 0;
+  rv = lfds611_queue_enqueue(g_oai_log.log_message_queue_p, new_item_p);
+  if (!rv) {
+    OAI_FPRINTF_ERR("Error enqueuing logging LOG message : %s", bdata(new_item_p->bstr));
+    free_log_queue_item_async(&new_item_p);
+  }
+}
+
 //------------------------------------------------------------------------------
-void log_set_config(const log_config_t * const config)
+// Create an ITTI thread to do the async flush and initialize the lfds
+// structures
+static void log_init_handler(bool async) {
+  int rv = 0;
+  // Initialize the lock free data structures
+  if (async) {
+    init_lfds(g_oai_log.max_threads);
+
+    g_oai_log.log_handler.log_start_use = log_start_use_async;
+    g_oai_log.log_handler.log = log_async;
+    g_oai_log.log_handler.get_log_queue_item = get_log_queue_item_async;
+    g_oai_log.log_handler.free_log_queue_item = free_log_queue_item_async;
+
+    rv = itti_create_task(TASK_LOG, log_task, NULL);
+    AssertFatal (rv == 0, "Create task for OAI logging failed!\n");
+  } else {
+    g_oai_log.log_handler.log_start_use = log_start_use_sync;
+    g_oai_log.log_handler.log = log_sync;
+    g_oai_log.log_handler.get_log_queue_item = get_log_queue_item_sync;
+    g_oai_log.log_handler.free_log_queue_item = free_log_queue_item_sync;
+  }
+}
+
+//------------------------------------------------------------------------------
+static void log_signal_callback_handler(int signum){
+  OAI_FPRINTF_ERR("Caught signal SIGPIPE %d\n",signum);
+  if (LOG_TCP_STATE_DISABLED != g_oai_log.tcp_state) {
+    // Let ITTI LOG Timer do the reconnection
+    g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
+    return;
+  }
+}
+
+//------------------------------------------------------------------------------
+void log_configure(const log_config_t *const config)
 {
-  if (config) {
-    if ((MAX_LOG_LEVEL > config->udp_log_level) && (MIN_LOG_LEVEL <= config->udp_log_level))         g_oai_log.log_level[LOG_UDP] = config->udp_log_level;
-    if ((MAX_LOG_LEVEL > config->gtpv1u_log_level) && (MIN_LOG_LEVEL <= config->gtpv1u_log_level))   g_oai_log.log_level[LOG_GTPV1U]   = config->gtpv1u_log_level;
-    if ((MAX_LOG_LEVEL > config->gtpv2c_log_level) && (MIN_LOG_LEVEL <= config->gtpv2c_log_level))   g_oai_log.log_level[LOG_GTPV2C]   = config->gtpv2c_log_level;
-    if ((MAX_LOG_LEVEL > config->sctp_log_level) && (MIN_LOG_LEVEL <= config->sctp_log_level))       g_oai_log.log_level[LOG_SCTP]     = config->sctp_log_level;
-    if ((MAX_LOG_LEVEL > config->s1ap_log_level) && (MIN_LOG_LEVEL <= config->s1ap_log_level))       g_oai_log.log_level[LOG_S1AP]     = config->s1ap_log_level;
-    if ((MAX_LOG_LEVEL > config->mme_app_log_level) && (MIN_LOG_LEVEL <= config->mme_app_log_level)) g_oai_log.log_level[LOG_MME_APP]  = config->mme_app_log_level;
-    if ((MAX_LOG_LEVEL > config->nas_log_level) && (MIN_LOG_LEVEL <= config->nas_log_level)) {
-      g_oai_log.log_level[LOG_NAS]      = config->nas_log_level;
-      g_oai_log.log_level[LOG_NAS_EMM]  = config->nas_log_level;
-      g_oai_log.log_level[LOG_NAS_ESM]  = config->nas_log_level;
+  if (NULL == config) {
+    log_message (NULL, OAILOG_LEVEL_WARNING, LOG_UTIL, __FILE__, __LINE__, "Log config unset, defaulting to syslog\n");
+    return;
+  }
+  if ((MAX_LOG_LEVEL > config->udp_log_level) && (MIN_LOG_LEVEL <= config->udp_log_level))
+    g_oai_log.log_level[LOG_UDP] = config->udp_log_level;
+  if ((MAX_LOG_LEVEL > config->gtpv1u_log_level) && (MIN_LOG_LEVEL <= config->gtpv1u_log_level))
+    g_oai_log.log_level[LOG_GTPV1U] = config->gtpv1u_log_level;
+  if ((MAX_LOG_LEVEL > config->gtpv2c_log_level) && (MIN_LOG_LEVEL <= config->gtpv2c_log_level))
+    g_oai_log.log_level[LOG_GTPV2C] = config->gtpv2c_log_level;
+  if ((MAX_LOG_LEVEL > config->sctp_log_level) && (MIN_LOG_LEVEL <= config->sctp_log_level))
+    g_oai_log.log_level[LOG_SCTP] = config->sctp_log_level;
+  if ((MAX_LOG_LEVEL > config->s1ap_log_level) && (MIN_LOG_LEVEL <= config->s1ap_log_level))
+    g_oai_log.log_level[LOG_S1AP] = config->s1ap_log_level;
+  if ((MAX_LOG_LEVEL > config->mme_app_log_level) && (MIN_LOG_LEVEL <= config->mme_app_log_level))
+    g_oai_log.log_level[LOG_MME_APP] = config->mme_app_log_level;
+  if ((MAX_LOG_LEVEL > config->nas_log_level) && (MIN_LOG_LEVEL <= config->nas_log_level)) {
+    g_oai_log.log_level[LOG_NAS] = config->nas_log_level;
+    g_oai_log.log_level[LOG_NAS_EMM] = config->nas_log_level;
+    g_oai_log.log_level[LOG_NAS_ESM] = config->nas_log_level;
+  }
+  if ((MAX_LOG_LEVEL > config->spgw_app_log_level) && (MIN_LOG_LEVEL <= config->spgw_app_log_level))
+    g_oai_log.log_level[LOG_SPGW_APP] = config->spgw_app_log_level;
+  if ((MAX_LOG_LEVEL > config->s11_log_level) && (MIN_LOG_LEVEL <= config->s11_log_level))
+    g_oai_log.log_level[LOG_S11] = config->s11_log_level;
+  if ((MAX_LOG_LEVEL > config->s6a_log_level) && (MIN_LOG_LEVEL <= config->s6a_log_level))
+    g_oai_log.log_level[LOG_S6A] = config->s6a_log_level;
+  if ((MAX_LOG_LEVEL > config->util_log_level) && (MIN_LOG_LEVEL <= config->util_log_level))
+    g_oai_log.log_level[LOG_UTIL] = config->util_log_level;
+  if ((MAX_LOG_LEVEL > config->msc_log_level) && (MIN_LOG_LEVEL <= config->msc_log_level))
+    g_oai_log.log_level[LOG_MSC] = config->msc_log_level;
+  if ((MAX_LOG_LEVEL > config->itti_log_level) && (MIN_LOG_LEVEL <= config->itti_log_level))
+    g_oai_log.log_level[LOG_ITTI] = config->itti_log_level;
+
+  g_oai_log.is_async = config->is_output_thread_safe;
+  log_init_handler(g_oai_log.is_async);
+
+
+  if (config->output) {
+    if (1 == biseqcstrcaseless(config->output, LOG_CONFIG_STRING_OUTPUT_SYSLOG)) {
+      // Output to syslog
+      init_syslog();
+      return;
     }
-    if ((MAX_LOG_LEVEL > config->spgw_app_log_level) && (MIN_LOG_LEVEL <= config->spgw_app_log_level)) g_oai_log.log_level[LOG_SPGW_APP] = config->spgw_app_log_level;
-    if ((MAX_LOG_LEVEL > config->s11_log_level) && (MIN_LOG_LEVEL <= config->s11_log_level))           g_oai_log.log_level[LOG_S11]      = config->s11_log_level;
-    if ((MAX_LOG_LEVEL > config->s6a_log_level) && (MIN_LOG_LEVEL <= config->s6a_log_level))           g_oai_log.log_level[LOG_S6A]      = config->s6a_log_level;
-    if ((MAX_LOG_LEVEL > config->secu_log_level) && (MIN_LOG_LEVEL <= config->secu_log_level))         g_oai_log.log_level[LOG_SECU]     = config->secu_log_level;
-    if ((MAX_LOG_LEVEL > config->util_log_level) && (MIN_LOG_LEVEL <= config->util_log_level))         g_oai_log.log_level[LOG_UTIL]     = config->util_log_level;
-    if ((MAX_LOG_LEVEL > config->msc_log_level) && (MIN_LOG_LEVEL <= config->msc_log_level))           g_oai_log.log_level[LOG_MSC]      = config->msc_log_level;
-    if ((MAX_LOG_LEVEL > config->itti_log_level) && (MIN_LOG_LEVEL <= config->itti_log_level))         g_oai_log.log_level[LOG_ITTI]     = config->itti_log_level;
-    if ((MAX_LOG_LEVEL > config->async_system_log_level) && (MIN_LOG_LEVEL <= config->async_system_log_level))
-      g_oai_log.log_level[LOG_ASYNC_SYSTEM] = config->async_system_log_level;
-
-    g_oai_log.is_output_fd_buffered = config->is_output_thread_safe;
-    g_oai_log.is_ansi_codes = config->color;
-
-    if (config->output) {
-      g_oai_log.log_fd = NULL;
-      g_oai_log.is_output_is_fd = false;
-      if (1 == biseqcstrcaseless(config->output, LOG_CONFIG_STRING_OUTPUT_CONSOLE)) {
-        setvbuf(stdout, NULL, _IONBF, 0);
-        g_oai_log.log_fd = stdout;
-        g_oai_log.is_output_is_fd = true;
-      } else if (1 == biseqcstrcaseless(config->output, LOG_CONFIG_STRING_OUTPUT_SYSLOG)){
-        openlog(NULL, 0, LOG_USER);
-        g_oai_log.log_fd = NULL;
-        g_oai_log.is_output_is_fd = false;
-      } else {
-        // if seems to be a file path
-        if (('.' == bchar(config->output,0)) || ('/' == bchar(config->output,0))) {
-          g_oai_log.log_fd = fopen (bdata(config->output), "w");
-          AssertFatal (NULL != g_oai_log.log_fd, "Could not open log file %s : %s", bdata(config->output), strerror (errno));
-          g_oai_log.is_output_is_fd = true;
-        } else {
-          // may be a TCP server address host:portnum
-          g_oai_log.bserver_address = bstrcpy(config->output);
-          int  pos = bstrchr (g_oai_log.bserver_address, ':');
-          if (BSTR_ERR != pos) {
-            g_oai_log.bserver_port = bmidstr (g_oai_log.bserver_address, pos + 1, 1024);
-            btrunc(g_oai_log.bserver_address, pos);
-          }
-
-          int server_port = atoi((const char *)g_oai_log.bserver_port->data);
-
-          AssertFatal(1024 <= server_port, "Invalid Server TCP port %d/%s", server_port, bdata(g_oai_log.bserver_port));
-          AssertFatal(65535 >= server_port, "Invalid Server TCP port %d/%s", server_port, bdata(g_oai_log.bserver_port));
-          g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
-          g_oai_log.is_output_is_fd = true;
-          log_connect_to_server();
-        }
+    if (1 == biseqcstrcaseless(config->output, LOG_CONFIG_STRING_OUTPUT_CONSOLE)) {
+      init_console();
+      return;
+    }
+    // if seems to be a file path
+    if (('.' == bchar(config->output, 0)) || ('/' == bchar(config->output, 0))) {
+      g_oai_log.log_fd = fopen(bdata(config->output), "w");
+      AssertFatal (NULL != g_oai_log.log_fd,
+                   "Could not open log file %s : %s",
+                   bdata(config->output),
+                   strerror(errno));
+      g_oai_log.is_output_is_fd = true;
+    } else {
+      // may be a TCP server address host:portnum
+      g_oai_log.bserver_address = bstrcpy(config->output);
+      int pos = bstrchr (g_oai_log.bserver_address, ':');
+      if (BSTR_ERR != pos) {
+        g_oai_log.bserver_port = bmidstr(g_oai_log.bserver_address, pos + 1, 1024);
+        btrunc(g_oai_log.bserver_address, pos);
       }
+
+      int server_port = atoi((const char *) g_oai_log.bserver_port->data);
+
+      AssertFatal(1024 <= server_port, "Invalid Server TCP port %d/%s", server_port, bdata(g_oai_log.bserver_port));
+      AssertFatal(65535 >= server_port, "Invalid Server TCP port %d/%s", server_port, bdata(g_oai_log.bserver_port));
+      g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
+      g_oai_log.is_output_is_fd = true;
+      log_connect_to_server();
     }
   }
+}
+
+//------------------------------------------------------------------------------
+static void log_get_elapsed_time_since_start(struct timeval * const elapsed_time)
+{
+  // no thread safe but do not matter a lot
+  gettimeofday(elapsed_time, NULL);
+  // no timersub call for fastest operations
+  elapsed_time->tv_sec = elapsed_time->tv_sec - g_oai_log.log_start_time_second;
 }
 
 //------------------------------------------------------------------------------
@@ -318,7 +589,7 @@ const char * log_level_int2str(const log_level_t log_level)
 //------------------------------------------------------------------------------
 log_level_t log_level_str2int(const char * const log_level_str)
 {
-  int log_level;
+  log_level_t log_level;
 
   if (log_level_str) {
     for (log_level = MIN_LOG_LEVEL; log_level < MAX_LOG_LEVEL; log_level++) {
@@ -332,50 +603,33 @@ log_level_t log_level_str2int(const char * const log_level_str)
 }
 
 //------------------------------------------------------------------------------
-void log_signal_callback_handler(int signum){
-  OAI_FPRINTF_ERR("Caught signal SIGPIPE %d\n",signum);
-  if (LOG_TCP_STATE_DISABLED != g_oai_log.tcp_state) {
-    // Let ITTI LOG Timer do the reconnection
-    g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
-    return;
-  }
-}
-
-//------------------------------------------------------------------------------
 int
 log_init (
-  __attribute__ ((unused))const log_env_t envP,
-  const log_level_t default_log_levelP,
-  const int max_threadsP)
+    const char *app_name,
+    const log_level_t default_log_levelP,
+    const int max_threadsP)
 {
   int                                     i = 0;
+  struct timeval                          start_time = {.tv_sec=0, .tv_usec=0};
 
-  OAI_FPRINTF_INFO("Initializing OAI Logging\n");
   signal(SIGPIPE, log_signal_callback_handler);
 
   g_oai_log.log_fd = NULL;
 
-  g_oai_log.log_start_time_second = shared_log_get_start_time_sec();
+  gettimeofday(&start_time, NULL);
+  g_oai_log.log_start_time_second = (int) start_time.tv_sec;
 
+
+  OAI_FPRINTF_INFO("Initializing OAI Logging to syslog\n");
 
   bstring b = bfromcstr("Logging thread context hashtable");
   g_oai_log.thread_context_htbl = hashtable_ts_create (LOG_MESSAGE_MIN_ALLOC_SIZE, NULL, free_wrapper, b);
-  bdestroy_wrapper (&b);
+  bdestroy(b);
   AssertFatal (NULL != g_oai_log.thread_context_htbl, "Could not create hashtable for Log!\n");
   g_oai_log.thread_context_htbl->log_enabled = false;
-
-
-  log_thread_ctxt_t *thread_ctxt = calloc(1, sizeof(log_thread_ctxt_t));
-  AssertFatal(NULL != thread_ctxt, "Error Could not create log thread context\n");
-  pthread_t p = pthread_self();
-  thread_ctxt->tid = p;
-  hashtable_rc_t hash_rc = hashtable_ts_insert(g_oai_log.thread_context_htbl, (hash_key_t) p, thread_ctxt);
-  if (HASH_TABLE_OK != hash_rc) {
-    OAI_FPRINTF_ERR("Error Could not register log thread context\n");
-    free_wrapper((void**)thread_ctxt);
-  }
-
-  log_start_use ();
+  g_oai_log.max_threads = max_threadsP;
+  g_oai_log.app_name = app_name;
+  g_oai_log.is_async = false;
 
   snprintf (&g_oai_log.log_proto2str[LOG_SCTP][0], LOG_MAX_PROTO_NAME_LENGTH, "SCTP");
   snprintf (&g_oai_log.log_proto2str[LOG_UDP][0], LOG_MAX_PROTO_NAME_LENGTH, "UDP");
@@ -389,13 +643,10 @@ log_init (
   snprintf (&g_oai_log.log_proto2str[LOG_SPGW_APP][0], LOG_MAX_PROTO_NAME_LENGTH, "SPGW-APP");
   snprintf (&g_oai_log.log_proto2str[LOG_S11][0], LOG_MAX_PROTO_NAME_LENGTH, "S11");
   snprintf (&g_oai_log.log_proto2str[LOG_S6A][0], LOG_MAX_PROTO_NAME_LENGTH, "S6A");
-  snprintf (&g_oai_log.log_proto2str[LOG_SECU][0], LOG_MAX_PROTO_NAME_LENGTH, "SECU");
   snprintf (&g_oai_log.log_proto2str[LOG_UTIL][0], LOG_MAX_PROTO_NAME_LENGTH, "UTIL");
   snprintf (&g_oai_log.log_proto2str[LOG_CONFIG][0], LOG_MAX_PROTO_NAME_LENGTH, "CONFIG");
   snprintf (&g_oai_log.log_proto2str[LOG_MSC][0], LOG_MAX_PROTO_NAME_LENGTH, "MSC");
   snprintf (&g_oai_log.log_proto2str[LOG_ITTI][0], LOG_MAX_PROTO_NAME_LENGTH, "ITTI");
-
-  snprintf (&g_oai_log.log_proto2str[LOG_ASYNC_SYSTEM][0], LOG_MAX_PROTO_NAME_LENGTH, "CMD");
 
   snprintf (&g_oai_log.log_level2str[OAILOG_LEVEL_TRACE][0], LOG_LEVEL_NAME_MAX_LENGTH, "TRACE");
   snprintf (&g_oai_log.log_level2str[OAILOG_LEVEL_DEBUG][0], LOG_LEVEL_NAME_MAX_LENGTH, "DEBUG");
@@ -407,16 +658,6 @@ log_init (
   snprintf (&g_oai_log.log_level2str[OAILOG_LEVEL_ALERT][0], LOG_LEVEL_NAME_MAX_LENGTH, "ALERT");
   snprintf (&g_oai_log.log_level2str[OAILOG_LEVEL_EMERGENCY][0], LOG_LEVEL_NAME_MAX_LENGTH, "EMERGENCY");
 
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_TRACE][0],     ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_WHITE);
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_DEBUG][0],     ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_GREEN);
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_INFO][0],      ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_CYAN);
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_NOTICE][0],    ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_BLUE);
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_WARNING][0],   ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_YELLOW);
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_ERROR][0],     ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_RED);
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_CRITICAL][0],  ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_REV_RED);
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_ALERT][0],     ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_REV_RED);
-  snprintf (&g_oai_log.log_level2ansi[OAILOG_LEVEL_EMERGENCY][0], ANSI_CODE_MAX_LENGTH, ANSI_COLOR_FG_REV_RED);
-
   for (i=MIN_LOG_PROTOS; i < MAX_LOG_PROTOS; i++) {
     g_oai_log.log_level[i] = default_log_levelP;
   }
@@ -425,99 +666,107 @@ log_init (
     g_oai_log.log_level2str[i][LOG_LEVEL_NAME_MAX_LENGTH-1]     = '\0';
   }
 
-  OAI_FPRINTF_INFO ("Initializing OAI logging Done\n");
+  // Map OAI log levels to syslog
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_EMERGENCY] = LOG_EMERG;
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_ALERT] = LOG_ALERT;
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_CRITICAL] = LOG_CRIT;
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_ERROR] = LOG_ERR;
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_WARNING] = LOG_WARNING;
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_NOTICE] = LOG_NOTICE;
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_INFO] = LOG_INFO;
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_DEBUG] = LOG_DEBUG;
+  g_oai_log.log_level2syslog[OAILOG_LEVEL_TRACE] = LOG_DEBUG;
+
+  log_init_handler(false /* asynchronous */);
+  // We should probably initialize default here which is console but we log a lot before we actually set the log
+  // config, so treat syslog as default for now.
+  init_syslog();
+
+  log_message (NULL, OAILOG_LEVEL_INFO, LOG_UTIL, __FILE__, __LINE__, "Initializing OAI logging Done\n");
   return 0;
 }
 
 //------------------------------------------------------------------------------
-// listen to ITTI events
-void log_itti_connect(void)
-{
-  if (g_oai_log.is_output_fd_buffered) {
-    int                                     rv = 0;
-    rv = itti_create_task (TASK_LOG, log_task, NULL);
-    AssertFatal (rv == 0, "Create task for OAI logging failed!\n");
-  }
-}
-
-//------------------------------------------------------------------------------
-void log_start_use (void)
-{
-  pthread_t      p       = pthread_self();
-  hashtable_rc_t hash_rc = hashtable_ts_is_key_exists (g_oai_log.thread_context_htbl, (hash_key_t) p);
-  if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
-    log_thread_ctxt_t *thread_ctxt = calloc(1, sizeof(log_thread_ctxt_t));
-    if (thread_ctxt) {
-      thread_ctxt->tid = p;
-      hash_rc = hashtable_ts_insert(g_oai_log.thread_context_htbl, (hash_key_t) p, thread_ctxt);
-      if (HASH_TABLE_OK != hash_rc) {
-        OAI_FPRINTF_ERR("Error Could not register log thread context\n");
-        free_wrapper((void**)&thread_ctxt);
-      }
-    } else {
-      OAI_FPRINTF_ERR("Error Could not create log thread context\n");
-    }
-  }
-}
-
-//------------------------------------------------------------------------------
-void log_flush_message (struct shared_log_queue_item_s *item_p)
+void
+log_flush_messages (
+  void)
 {
   int                                     rv = 0;
   int                                     rv_put = 0;
+  log_queue_item_t                       *item_p = NULL;
 
-  if (blength(item_p->bstr) > 0) {
-    if (g_oai_log.is_output_is_fd) {
-      if (g_oai_log.log_fd) {
-        rv_put = fputs ((const char *)item_p->bstr->data, g_oai_log.log_fd);
+  assert(g_oai_log.is_async);
 
-        if (rv_put < 0) {
-          // error occured
-          OAI_FPRINTF_ERR("Error while writing log %d\n", rv_put);
-          rv = fclose (g_oai_log.log_fd);
-          if (rv != 0) {
-            OAI_FPRINTF_ERR("Error while closing Log file stream: %s\n", strerror (errno));
-          }
-          // do not exit
-          if (LOG_TCP_STATE_DISABLED != g_oai_log.tcp_state) {
-            // Let ITTI LOG Timer do the reconnection
-            g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
-            return;
-          }
+  if (g_oai_log.log_fd) {
+    while (1 == lfds611_queue_dequeue (g_oai_log.log_message_queue_p, (void **)&item_p)) {
+      rv_put = 0;
+      if (blength(item_p->bstr) > 0) {
+        if (g_oai_log.is_output_is_fd) {
+          rv_put = fputs ((const char *)item_p->bstr->data, g_oai_log.log_fd);
+        } else {
+          syslog (item_p->log_level ,"%s", bdata(item_p->bstr));
         }
-        fflush (g_oai_log.log_fd);
       }
-    } else {
-      syslog (item_p->u_app_log.log.log_level ,"%s", bdata(item_p->bstr));
+      btrunc(item_p->bstr, 0);
+      rv = lfds611_stack_guaranteed_push (g_oai_log.log_free_message_queue_p, item_p);
+      if (rv == 0) {
+        bdestroy(item_p->bstr);
+        free_wrapper ((void**) &item_p);
+      }
+      if (rv_put < 0) {
+        // error occured
+        OAI_FPRINTF_ERR("Error while writing log %d\n", rv_put);
+        rv = fclose (g_oai_log.log_fd);
+        if (rv != 0) {
+          OAI_FPRINTF_ERR("Error while closing Log file stream: %s\n", strerror (errno));
+        }
+        // do not exit
+        if (LOG_TCP_STATE_DISABLED != g_oai_log.tcp_state) {
+          // Let ITTI LOG Timer do the reconnection
+          g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
+          return;
+        }
+      }
     }
+    fflush (g_oai_log.log_fd);
   }
 }
 
 //------------------------------------------------------------------------------
-void log_exit (void)
+void
+log_exit (
+  void)
 {
   int                                     rv = 0;
+  log_queue_item_t                       *item_p = NULL;
+
+  assert(g_oai_log.is_async);
 
   OAI_FPRINTF_INFO("[TRACE] Entering %s\n", __FUNCTION__);
   if (g_oai_log.log_fd) {
-    rv = fflush (g_oai_log.log_fd);
-
-    if (rv != 0) {
-      OAI_FPRINTF_ERR("Error while flushing stream of Log file: %s", strerror (errno));
+    log_flush_messages ();
+    while (lfds611_stack_pop(g_oai_log.log_free_message_queue_p, (void **) &item_p)) {
+      bdestroy(item_p->bstr);
+      free_wrapper((void**)&item_p);
     }
-
     rv = fclose (g_oai_log.log_fd);
 
     if (rv != 0) {
       OAI_FPRINTF_ERR("Error while closing Log file: %s", strerror (errno));
     }
   }
+#if DAEMONIZE
+  closelog();
+#else
   if (!g_oai_log.is_output_is_fd) {
     closelog();
   }
-  hashtable_ts_destroy (g_oai_log.thread_context_htbl);
-  bdestroy_wrapper(&g_oai_log.bserver_address);
-  bdestroy_wrapper(&g_oai_log.bserver_port);
+#endif
+  if (g_oai_log.thread_context_htbl) {
+    // TODO(fixme): Freeing this here might result in a seg fault when log_message is called with NULL thread_ctxt
+    // during shutdown.
+    // hashtable_ts_destroy(g_oai_log.thread_context_htbl);
+  }
   OAI_FPRINTF_INFO("[TRACE] Leaving %s\n", __FUNCTION__);
 }
 
@@ -531,27 +780,16 @@ void log_stream_hex(
   const char *const streamP,
   const size_t sizeP)
 {
-  struct shared_log_queue_item_s  * message = NULL;
-  size_t                            octet_index = 0;
-  int                               rv = 0;
-  log_thread_ctxt_t                *thread_ctxt = NULL;
-  hashtable_rc_t                    hash_rc = HASH_TABLE_OK;
+  log_queue_item_t  * message = NULL;
+  size_t              octet_index = 0;
+  int                 rv = 0;
+  log_thread_ctxt_t  *thread_ctxt = NULL;
 
-  pthread_t             p           = pthread_self();
-  hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-  if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
-    // make the thread safe LFDS collections usable by this thread
-    log_start_use();
-  }
-  hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-  AssertFatal(NULL != thread_ctxt, "Could not get new log thread context\n");
+  get_thread_context(&thread_ctxt);
   if (messageP) {
-    log_message_start(thread_ctxt, log_levelP, protoP, &message, source_fileP, line_numP, "hex stream ");
-    if (!message) return;
-    rv = bformata(message->bstr, "%s", messageP);
+    log_message_start(thread_ctxt, log_levelP, protoP, &message, source_fileP, line_numP, "%s (%ld bytes)", messageP, sizeP);
   } else {
-    log_message_start(thread_ctxt, log_levelP, protoP, &message, source_fileP, line_numP, "hex stream (%ld bytes):", sizeP);
-    if (!message) return;
+    log_message_start(thread_ctxt, log_levelP, protoP, &message, source_fileP, line_numP, "%p dumped(%ld bytes):", streamP, sizeP);
   }
   if ((streamP) && (message)) {
     for (octet_index = 0; octet_index < sizeP; octet_index++) {
@@ -576,23 +814,15 @@ void log_stream_hex_array(
   const char *const streamP,
   const size_t      sizeP)
 {
-  struct shared_log_queue_item_s *  message = NULL;
-  unsigned long                     octet_index = 0;
-  unsigned long                     index = 0;
-  log_thread_ctxt_t                *thread_ctxt = NULL;
-  hashtable_rc_t                    hash_rc = HASH_TABLE_OK;
+  log_queue_item_t *  message = NULL;
+  size_t              octet_index = 0;
+  size_t              index = 0;
+  log_thread_ctxt_t  *thread_ctxt = NULL;
 
-  pthread_t             p           = pthread_self();
-  hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-  if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
-    // make the thread safe LFDS collections usable by this thread
-    log_start_use();
-  }
-  hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-  AssertFatal(NULL != thread_ctxt, "Could not get new log thread context\n");
+  get_thread_context(&thread_ctxt);
 
   if (messageP) {
-    log_message(thread_ctxt, log_levelP, protoP, source_fileP, line_numP, "%s\n", messageP);
+    log_message(thread_ctxt, log_levelP, protoP, source_fileP, line_numP, "%s", messageP);
   }
   log_message(thread_ctxt, log_levelP, protoP, source_fileP, line_numP, "------+-------------------------------------------------|\n");
   log_message(thread_ctxt, log_levelP, protoP, source_fileP, line_numP, "      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n");
@@ -611,12 +841,12 @@ void log_stream_hex_array(
       /*
        * Print every single octet in hexadecimal form
        */
-      log_message_add(message, " %02x", ((unsigned char*)streamP)[octet_index]);
+      log_message_add(message, " %02x", streamP[octet_index]);
     }
     /*
      * Append enough spaces and put final pipe
      */
-    for (index = octet_index % 16; index < 16; ++index) {
+    for (index = octet_index; index < 16; ++index) {
       log_message_add(message, "   ");
     }
     log_message_add(message, " |");
@@ -625,7 +855,11 @@ void log_stream_hex_array(
 }
 
 //------------------------------------------------------------------------------
-void log_message_add (struct shared_log_queue_item_s * messageP, char *format, ...)
+void
+log_message_add (
+  log_queue_item_t * messageP,
+  char *format,
+  ...)
 {
   va_list                                 args;
   int                                     rv = 0;
@@ -641,130 +875,53 @@ void log_message_add (struct shared_log_queue_item_s * messageP, char *format, .
   }
 }
 //------------------------------------------------------------------------------
-void log_message_finish (struct shared_log_queue_item_s * messageP)
+void
+log_message_finish (
+    log_queue_item_t * messageP)
 {
   int                                     rv = 0;
 
-  if (messageP) {
-    if (g_oai_log.is_ansi_codes) {
-      rv = bformata(messageP->bstr, "%s\n", ANSI_COLOR_RESET);
-    } else {
-      rv = bcatcstr (messageP->bstr, "\n");
-    }
-
-    if (BSTR_ERR == rv) {
-      OAI_FPRINTF_ERR("Error while logging message\n");
-    }
-    // send message
-    if (g_oai_log.is_output_fd_buffered) {
-      shared_log_item(messageP);
-    } else {
-      if (g_oai_log.is_output_is_fd) {
-        fprintf(g_oai_log.log_fd, "%s", bdata(messageP->bstr));
-      } else {
-        syslog (messageP->u_app_log.log.log_level ,"%s", bdata(messageP->bstr));
-      }
-      shared_log_reuse_item(messageP);
-    }
+  if (NULL == messageP) {
+    log_message (NULL, OAILOG_LEVEL_WARNING, LOG_UTIL, __FILE__, __LINE__, "Calling finish on a NULL message\n");
+    return;
   }
+
+  rv = bcatcstr(messageP->bstr, "\n");
+
+  if (BSTR_ERR == rv) {
+    OAI_FPRINTF_ERR("Error while logging message\n");
+    goto error_event;
+  }
+  _LOG(messageP);
+  return;
+
+  error_event:
+  _LOG_FREE_ITEM(&messageP);
 }
 
 //------------------------------------------------------------------------------
-void log_message_start (
+void
+log_message_start (
   log_thread_ctxt_t *thread_ctxtP,
   const log_level_t log_levelP,
   const log_proto_t protoP,
-  struct shared_log_queue_item_s ** messageP, // Out parameter
+  log_queue_item_t ** messageP, // Out parameter
   const char *const source_fileP,
   const unsigned int line_numP,
   char *format,
   ...)
 {
   va_list                                 args;
-  int                                     rv              = 0;
-  int                                     filename_length = 0;
-  log_thread_ctxt_t                      *thread_ctxt     = thread_ctxtP;
-  hashtable_rc_t                          hash_rc         = HASH_TABLE_OK;
 
-  if ((MIN_LOG_PROTOS > protoP) || (MAX_LOG_PROTOS <= protoP)) {
-    return;
-  }
-  if ((MIN_LOG_LEVEL > log_levelP) || (MAX_LOG_LEVEL <= log_levelP)) {
-    return;
-  }
-  if (log_levelP > g_oai_log.log_level[protoP]) {
-    return;
-  }
-
-  if (NULL == thread_ctxt){
-    pthread_t             p           = pthread_self();
-    hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-    if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
-      // make the thread safe LFDS collections usable by this thread
-      log_start_use();
-      hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-      AssertFatal(NULL != thread_ctxt, "Could not get new log thread context\n");
-    }
-  }
-
-  if (! *messageP) {
-    *messageP = get_new_log_queue_item(SH_TS_LOG_TXT);
-  }
-
-  if (*messageP) {
-    struct timeval elapsed_time;
-    (*messageP)->u_app_log.log.log_level = log_levelP;
-    shared_log_get_elapsed_time_since_start(&elapsed_time);
-
-    filename_length = strlen(source_fileP);
-    if (g_oai_log.is_ansi_codes) {
-      rv = bformata ((*messageP)->bstr, "%s", &g_oai_log.log_level2ansi[log_levelP][0]);
-    }
-    if (filename_length > LOG_DISPLAYED_FILENAME_MAX_LENGTH) {
-      rv = bformata ((*messageP)->bstr, "%06" PRIu64 " %05ld:%06ld %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
-          __sync_fetch_and_add (&g_oai_log.log_message_number, 1), elapsed_time.tv_sec, elapsed_time.tv_usec,
-          thread_ctxt->tid,
-          LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, &g_oai_log.log_level2str[log_levelP][0],
-          LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, &g_oai_log.log_proto2str[protoP][0],
-          LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, &source_fileP[filename_length-LOG_DISPLAYED_FILENAME_MAX_LENGTH], line_numP,
-          thread_ctxt->indent, " ");
-    } else {
-      rv = bformata ((*messageP)->bstr, "%06" PRIu64 " %05ld:%06ld %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
-          __sync_fetch_and_add (&g_oai_log.log_message_number, 1), elapsed_time.tv_sec, elapsed_time.tv_usec,
-          thread_ctxt->tid,
-          LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, &g_oai_log.log_level2str[log_levelP][0],
-          LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, &g_oai_log.log_proto2str[protoP][0],
-          LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, source_fileP, line_numP,
-          thread_ctxt->indent, " ");
-    }
-
-    if (BSTR_ERR == rv) {
-      OAI_FPRINTF_ERR("Error while logging message : %s", &g_oai_log.log_proto2str[protoP][0]);
-      goto error_event_start;
-    }
-
-    va_start (args, format);
-    rv = bformata ((*messageP)->bstr, format, args);
-    va_end (args);
-
-    if (BSTR_ERR == rv) {
-      OAI_FPRINTF_ERR("Error while logging message : %s", &g_oai_log.log_proto2str[protoP][0]);
-      goto error_event_start;
-    }
-    return;
-  }
-  return;
-error_event_start:
-  // put in memory pool the message buffer
-  btrunc((*messageP)->bstr, 0);
-  shared_log_reuse_item (*messageP);
-  *messageP = NULL;
-  return;
+  va_start (args, format);
+  log_message_int(thread_ctxtP, log_levelP, protoP, messageP, source_fileP, line_numP, format, args);
+  va_end (args);
 }
 
 //------------------------------------------------------------------------------
 // hard-coded to use LOG_LEVEL_TRACE
-void log_func (
+void
+log_func (
   const bool  is_enteringP,
   const log_proto_t protoP,
   const char *const source_fileP,
@@ -772,16 +929,8 @@ void log_func (
   const char *const functionP)
 {
   log_thread_ctxt_t        *thread_ctxt = NULL;
-  hashtable_rc_t            hash_rc     = HASH_TABLE_OK;
-  pthread_t                 p           = pthread_self();
 
-  hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-  if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
-    // make the thread safe LFDS collections usable by this thread
-    log_start_use();
-  }
-  hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-  AssertFatal(NULL != thread_ctxt, "Could not get new log thread context\n");
+  get_thread_context(&thread_ctxt);
   if (is_enteringP) {
     log_message(thread_ctxt, OAILOG_LEVEL_TRACE, protoP, source_fileP, line_numP, "Entering %s()\n", functionP);
     thread_ctxt->indent += LOG_FUNC_INDENT_SPACES;
@@ -793,7 +942,8 @@ void log_func (
 }
 //------------------------------------------------------------------------------
 // hard-coded to use LOG_LEVEL_TRACE
-void log_func_return (
+void
+log_func_return (
   const log_proto_t protoP,
   const char *const source_fileP,
   const unsigned int line_numP,
@@ -801,16 +951,8 @@ void log_func_return (
   const long return_codeP)
 {
   log_thread_ctxt_t        *thread_ctxt = NULL;
-  hashtable_rc_t            hash_rc     = HASH_TABLE_OK;
-  pthread_t                 p           = pthread_self();
 
-  hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-  if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
-    // make the thread safe LFDS collections usable by this thread
-    log_start_use();
-  }
-  hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-  AssertFatal(NULL != thread_ctxt, "Could not get new log thread context\n");
+  get_thread_context(&thread_ctxt);
   thread_ctxt->indent -= LOG_FUNC_INDENT_SPACES;
   if (thread_ctxt->indent < 0) thread_ctxt->indent = 0;
   log_message(thread_ctxt, OAILOG_LEVEL_TRACE, protoP, source_fileP, line_numP, "Leaving %s() (rc=%ld)\n", functionP, return_codeP);
@@ -827,90 +969,77 @@ log_message (
   ...)
 {
   va_list                                 args;
-  int                                     rv              = 0;
-  int                                     filename_length = 0;
-  struct shared_log_queue_item_s         *new_item_p      = NULL;
-  log_thread_ctxt_t                      *thread_ctxt     = thread_ctxtP;
-  hashtable_rc_t                          hash_rc         = HASH_TABLE_OK;
+  log_queue_item_t                       *new_item_p = NULL;
 
-  if ((MIN_LOG_PROTOS > protoP) || (MAX_LOG_PROTOS <= protoP)) {
+  va_start (args, format);
+  log_message_int(thread_ctxtP, log_levelP, protoP, &new_item_p, source_fileP, line_numP, format, args);
+  va_end (args);
+
+  if (NULL == new_item_p) {
     return;
   }
-  if ((MIN_LOG_LEVEL > log_levelP) || (MAX_LOG_LEVEL <= log_levelP)) {
-    return;
-  }
-  if (log_levelP > g_oai_log.log_level[protoP]) {
-    return;
-  }
-  if (NULL == thread_ctxt){
-    pthread_t             p           = pthread_self();
-    hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-    if (HASH_TABLE_KEY_NOT_EXISTS == hash_rc) {
-      // make the thread safe LFDS collections usable by this thread
-      log_start_use();
-      hash_rc = hashtable_ts_get (g_oai_log.thread_context_htbl, (hash_key_t) p, (void **)&thread_ctxt);
-      AssertFatal(NULL != thread_ctxt, "Could not get new log thread context\n");
-    }
-  }
 
-  new_item_p = get_new_log_queue_item(SH_TS_LOG_TXT);
-
-  if (new_item_p) {
-    if (g_oai_log.is_ansi_codes) {
-      rv = bformata (new_item_p->bstr, "%s", &g_oai_log.log_level2ansi[log_levelP][0]);
-    }
-    struct timeval elapsed_time;
-    shared_log_get_elapsed_time_since_start(&elapsed_time);
-    filename_length = strlen(source_fileP);
-    if (filename_length > LOG_DISPLAYED_FILENAME_MAX_LENGTH) {
-      rv = bformata (new_item_p->bstr, "%06" PRIu64 " %05ld:%06ld %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
-          __sync_fetch_and_add (&g_oai_log.log_message_number, 1), elapsed_time.tv_sec, elapsed_time.tv_usec,
-          thread_ctxt->tid,
-          LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, &g_oai_log.log_level2str[log_levelP][0],
-          LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, &g_oai_log.log_proto2str[protoP][0],
-          LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, &source_fileP[filename_length-LOG_DISPLAYED_FILENAME_MAX_LENGTH], line_numP,
-          thread_ctxt->indent, " ");
-    } else {
-      rv = bformata (new_item_p->bstr, "%06" PRIu64 " %05ld:%06ld %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
-          __sync_fetch_and_add (&g_oai_log.log_message_number, 1), elapsed_time.tv_sec, elapsed_time.tv_usec,
-          thread_ctxt->tid,
-          LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH, &g_oai_log.log_level2str[log_levelP][0],
-          LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH, &g_oai_log.log_proto2str[protoP][0],
-          LOG_DISPLAYED_FILENAME_MAX_LENGTH, LOG_DISPLAYED_FILENAME_MAX_LENGTH, source_fileP, line_numP,
-          thread_ctxt->indent, " ");
-    }
-
-    if (BSTR_ERR == rv) {
-      OAI_FPRINTF_ERR("Error while logging LOG message : %s", &g_oai_log.log_proto2str[protoP][0]);
-      goto error_event;
-    }
-    va_start (args, format);
-    rv = bvcformata (new_item_p->bstr, 4096, format, args); // big number
-    va_end (args);
-
-    if (BSTR_ERR == rv) {
-      OAI_FPRINTF_ERR("Error while logging LOG message : %s", &g_oai_log.log_proto2str[protoP][0]);
-      goto error_event;
-    }
-    if (g_oai_log.is_ansi_codes) {
-      bformata(new_item_p->bstr, "%s", ANSI_COLOR_RESET);
-    }
-
-    if (g_oai_log.is_output_fd_buffered) {
-      shared_log_item(new_item_p);
-    } else {
-      if (g_oai_log.is_output_is_fd) {
-        fprintf(g_oai_log.log_fd, "%s", bdata(new_item_p->bstr));
-      } else {
-        syslog (new_item_p->u_app_log.log.log_level ,"%s", bdata(new_item_p->bstr));
-      }
-      shared_log_reuse_item(new_item_p);
-    }
-  }
-
-  return;
-error_event:
-  btrunc(new_item_p->bstr, 0);
-  shared_log_reuse_item(new_item_p);
+  _LOG(new_item_p);
 }
 
+static void log_message_int(log_thread_ctxt_t *const thread_ctxtP,
+                            const log_level_t log_levelP,
+                            const log_proto_t protoP,
+                            log_queue_item_t **contextP, // Out parameter
+                            const char *const source_fileP,
+                            const unsigned int line_numP,
+                            char *format,
+                            va_list args)
+{
+  int                                     rv              = 0;
+  size_t                                  filename_length = 0;
+  log_thread_ctxt_t                      *thread_ctxt     = thread_ctxtP;
+
+  if (!log_is_enabled(log_levelP, protoP)) {
+    return;
+  }
+
+  get_thread_context(&thread_ctxt);
+
+  assert(thread_ctxt != NULL);
+  *contextP = _LOG_GET_ITEM();
+
+  struct timeval elapsed_time;
+  log_get_elapsed_time_since_start(&elapsed_time);
+  filename_length = MIN(strlen(source_fileP) - LOG_DISPLAYED_FILENAME_MAX_LENGTH, 0);
+  rv = bassignformat((*contextP)->bstr,
+                     "%06" PRIu64 " %05ld:%06ld %08lX %-*.*s %-*.*s %-*.*s:%04u   %*s",
+                     __sync_fetch_and_add(&g_oai_log.log_message_number, 1),
+                     elapsed_time.tv_sec,
+                     elapsed_time.tv_usec,
+                     thread_ctxt->tid,
+                     LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH,
+                     LOG_DISPLAYED_LOG_LEVEL_NAME_MAX_LENGTH,
+                     &g_oai_log.log_level2str[log_levelP][0],
+                     LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH,
+                     LOG_DISPLAYED_PROTO_NAME_MAX_LENGTH,
+                     &g_oai_log.log_proto2str[protoP][0],
+                     LOG_DISPLAYED_FILENAME_MAX_LENGTH,
+                     LOG_DISPLAYED_FILENAME_MAX_LENGTH,
+                     &source_fileP[filename_length],
+                     line_numP,
+                     thread_ctxt->indent,
+                     " ");
+
+  if (BSTR_ERR == rv) {
+    OAI_FPRINTF_ERR("Error while logging LOG message : %s", &g_oai_log.log_proto2str[protoP][0]);
+    goto error_event;
+  }
+
+  rv = bvcformata((*contextP)->bstr, 4096, format, args); // big number
+  (*contextP)->log_level = g_oai_log.log_level2syslog[log_levelP];
+
+  if (BSTR_ERR == rv) {
+    OAI_FPRINTF_ERR("Error while logging LOG message : %s", &g_oai_log.log_proto2str[protoP][0]);
+    goto error_event;
+  }
+  return;
+
+error_event:
+  _LOG_FREE_ITEM(contextP);
+}

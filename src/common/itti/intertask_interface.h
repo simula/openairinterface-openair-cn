@@ -33,12 +33,15 @@
  * @{
  */
 
+#include <sys/epoll.h>
 
+#ifdef RTAI
+# include <rtai_sem.h>
+#endif
 
 #ifndef INTERTASK_INTERFACE_H_
 #define INTERTASK_INTERFACE_H_
 
-#include <sys/epoll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

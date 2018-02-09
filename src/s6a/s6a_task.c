@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -19,37 +19,29 @@
  *      contact@openairinterface.org
  */
 
-/*! \file s6a_task.c
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <pthread.h>
+#include "dynamic_memory_check.h"
 
-#include "bstrlib.h"
 #if HAVE_CONFIG_H
 #  include "config.h"
 #endif
 #include <freeDiameter/freeDiameter-host.h>
 #include <freeDiameter/libfdcore.h>
-#include "log.h"
-#include "assertions.h"
+#include "bstrlib.h"
 #include "intertask_interface.h"
-#include "itti_free_defined_msg.h"
-#include "common_defs.h"
 #include "s6a_defs.h"
 #include "s6a_messages.h"
-#include "mme_config.h"
+#include "common_types.h"
+#include "assertions.h"
+#include "msc.h"
+#include "log.h"
+#include "service303.h"
 #include "timer.h"
-#include "dynamic_memory_check.h"
 
 #define S6A_PEER_CONNECT_TIMEOUT_MICRO_SEC  (0)
 #define S6A_PEER_CONNECT_TIMEOUT_SEC        (1)
@@ -87,13 +79,14 @@ static void oai_fd_logger(int loglevel, const char * format, va_list args)
   if ((0 > rv) || ((FD_LOG_MAX_MESSAGE_LENGTH) < rv)) {
     return;
   }
-  OAILOG_EXTERNAL (OAILOG_LEVEL_TRACE - loglevel, LOG_S6A, "%s\n", buffer);
+  OAILOG_EXTERNAL (loglevel, LOG_S6A, "%s\n", buffer);
 }
 
 //------------------------------------------------------------------------------
 void *s6a_thread (void *args)
 {
   itti_mark_task_ready (TASK_S6A);
+  MSC_START_USE ();
 
   while (1) {
     MessageDef                             *received_message_p = NULL;
@@ -107,19 +100,18 @@ void *s6a_thread (void *args)
     DevAssert (received_message_p );
 
     switch (ITTI_MSG_ID (received_message_p)) {
-    case MESSAGE_TEST:{
-        OAI_FPRINTF_INFO("TASK_S6A received MESSAGE_TEST\n");
+    case S6A_UPDATE_LOCATION_REQ:{
+        s6a_generate_update_location (&received_message_p->ittiMsg.s6a_update_location_req);
       }
       break;
     case S6A_AUTH_INFO_REQ:{
         s6a_generate_authentication_info_req (&received_message_p->ittiMsg.s6a_auth_info_req);
       }
       break;
-    case S6A_UPDATE_LOCATION_REQ:{
-        s6a_generate_update_location (&received_message_p->ittiMsg.s6a_update_location_req);
-      }
-      break;
     case TIMER_HAS_EXPIRED:{
+        if (!timer_exists (received_message_p->ittiMsg.timer_has_expired.timer_id)) {
+          break;
+        }
         /*
          * Trying to connect to peers
          */
@@ -131,19 +123,18 @@ void *s6a_thread (void *args)
            * * longer to return than the period, the timer will schedule while
            * * the previous one is active, causing a seg fault.
            */
+          increment_counter ("s6a_subscriberdb_connection_failure", 1, NO_LABELS);
           OAILOG_ERROR(LOG_S6A, "s6a_fd_new_peer has failed (%s:%d)\n",
                        __FILE__, __LINE__);
           timer_setup(S6A_PEER_CONNECT_TIMEOUT_SEC,
                       S6A_PEER_CONNECT_TIMEOUT_MICRO_SEC, TASK_S6A,
-                      INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, &timer_id);
+                      INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, 0, &timer_id);
         }
+        timer_handle_expired(received_message_p->ittiMsg.timer_has_expired.timer_id);
       }
       break;
     case TERMINATE_MESSAGE:{
         s6a_exit();
-        itti_free_msg_content(received_message_p);
-        itti_free (ITTI_MSG_ORIGIN_ID (received_message_p), received_message_p);
-        OAI_FPRINTF_INFO("TASK_S6A terminated\n");
         itti_exit_task ();
       }
       break;
@@ -152,7 +143,6 @@ void *s6a_thread (void *args)
       }
       break;
     }
-    itti_free_msg_content(received_message_p);
     itti_free (ITTI_MSG_ORIGIN_ID (received_message_p), received_message_p);
     received_message_p = NULL;
   }
@@ -179,6 +169,10 @@ int s6a_init (
    * }
    */
 
+   // start s6a_service grpc
+   s6a_service_data_t s6a_config;
+   s6a_config.server_address = bfromcstr(S6ASERVICE_SERVER_ADDRESS);
+   s6a_service_init(&s6a_config);
 
   /*
    * Initializing freeDiameter logger
@@ -260,7 +254,7 @@ int s6a_init (
 
   /* Add timer here to send message to connect to peer */
   timer_setup(S6A_PEER_CONNECT_TIMEOUT_SEC, S6A_PEER_CONNECT_TIMEOUT_MICRO_SEC,
-              TASK_S6A, INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, &timer_id);
+              TASK_S6A, INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, 0, &timer_id);
 
   return RETURNok;
 }
@@ -269,7 +263,7 @@ int s6a_init (
 static void s6a_exit(void)
 {
   if (timer_id) {
-    timer_remove(timer_id, NULL);
+    timer_remove(timer_id);
   }
   // Release all resources
   free_wrapper((void **) &fd_g_config->cnf_diamid);

@@ -19,11 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file s6a_messages.h
-  \brief
-  \author Sebastien ROUX
-  \company Eurecom
-*/
 
 #ifndef S6A_MESSAGES_H_
 #define S6A_MESSAGES_H_
@@ -35,6 +30,10 @@ int s6a_ula_cb(struct msg **msg, struct avp *paramavp,
                struct session *sess, void *opaque,
                enum disp_action *act);
 int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
+               struct session *sess, void *opaque,
+               enum disp_action *act);
+
+int s6a_clr_cb(struct msg **msg, struct avp *paramavp,
                struct session *sess, void *opaque,
                enum disp_action *act);
 

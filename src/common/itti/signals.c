@@ -36,13 +36,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdbool.h>
-#include <stdint.h>
+
 #include <signal.h>
 #include <time.h>
 #include <errno.h>
-
-#include "bstrlib.h"
 
 #include "intertask_interface.h"
 #include "timer.h"
@@ -81,6 +78,7 @@ signal_mask (
   sigaddset (&set, SIGABRT);
   sigaddset (&set, SIGSEGV);
   sigaddset (&set, SIGINT);
+  sigaddset (&set, SIGTERM);
 
   if (sigprocmask (SIG_BLOCK, &set, NULL) < 0) {
     perror ("sigprocmask");
@@ -103,6 +101,7 @@ signal_handle (
   sigaddset (&set, SIGABRT);
   sigaddset (&set, SIGSEGV);
   sigaddset (&set, SIGINT);
+  sigaddset (&set, SIGTERM);
 
   if (sigprocmask (SIG_BLOCK, &set, NULL) < 0) {
     perror ("sigprocmask");
@@ -143,7 +142,8 @@ signal_handle (
       break;
 
     case SIGINT:
-      printf ("Received SIGINT\n");
+    case SIGTERM:
+      printf ("Received SIGINT or SIGTERM\n");
       itti_send_terminate_message (TASK_UNKNOWN);
       *end = 1;
       break;

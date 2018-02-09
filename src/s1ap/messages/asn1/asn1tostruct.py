@@ -53,11 +53,11 @@ def printFail(string):
     sys.stderr.write(FAIL + string + ENDC + "\n")
 
 def printWarning(string):
-    print WARN + string + ENDC
+    print(WARN + string + ENDC)
 
 def printDebug(string):
     if verbosity > 0:
-        print string
+        print(string)
 
 def outputHeaderToFile(f, filename):
     now = datetime.datetime.now()
@@ -113,7 +113,7 @@ def lowerFirstCamelWord(word):
         return lowered
 
     for c in swapped:
-        if c in string.lowercase:
+        if c in string.ascii_lowercase:
             newstr += c
             idx    += 1
         else:
@@ -126,13 +126,13 @@ def lowerFirstCamelWord(word):
     return newstr
 
 def usage():
-    print "Python parser for asn1 v%s" % (version)
-    print "Usage: python asn1tostruct.py [options]"
-    print "Available options:"
-    print "-d        Enable script debug"
-    print "-f [file] Input file to parse"
-    print "-o [dir]  Output files to given directory"
-    print "-h        Print this help and return"
+    print("Python parser for asn1 v%s" % (version))
+    print("Usage: python asn1tostruct.py [options]")
+    print("Available options:")
+    print("-d        Enable script debug")
+    print("-f [file] Input file to parse")
+    print("-o [dir]  Output files to given directory")
+    print("-h        Print this help and return")
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "df:ho:", ["debug", "file", "help", "outdir"])
@@ -258,7 +258,7 @@ f.write("    %s_Criticality_t   criticality;\n" % (fileprefix_first_upper))
 f.write("    uint8_t            direction;\n")
 f.write("    union {\n")
 
-messageList = iesDefs.keys()
+messageList = list(iesDefs.keys())
 messageList.sort()
 for message in messageList:
     if message in ieofielist.values():
@@ -432,8 +432,9 @@ for key in iesDefs:
         if ie[2] in ieofielist.keys():
             f.write("                if (%s_decode_%s(&%s->%s, %s_p) < 0) {\n" % (fileprefix, ietypeunderscore.lower(), lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore, lowerFirstCamelWord(ietypesubst)))
             f.write("                   OAILOG_ERROR (LOG_%s, \"Decoding of encapsulated IE %s failed\\n\");\n" % (fileprefix.upper(), lowerFirstCamelWord(ietypesubst)))
-            f.write("                    ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
             f.write("                }\n")
+            f.write("                ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" %
+                    (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
         else:
             f.write("                memcpy(&%s->%s, %s_p, sizeof(%s_t));\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore, lowerFirstCamelWord(ietypesubst), ietypeunderscore))
             f.write("                FREEMEM(%s_p);\n" % (lowerFirstCamelWord(ietypesubst)))
@@ -441,7 +442,6 @@ for key in iesDefs:
         f.write("            } break;\n")
     f.write("            default:\n")
     f.write("               OAILOG_ERROR (LOG_%s, \"Unknown protocol IE id (%%d) for message %s\\n\", (int)ie_p->id);\n" % (fileprefix.upper(), re.sub('-', '_', structName.lower())))
-    f.write("                return -1;\n")
     f.write("        }\n")
     f.write("    }\n")
     f.write("    ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (asn1cStruct, asn1cStructfirstlower))
@@ -464,10 +464,15 @@ for key in iesDefs:
     f.write("    %sIEs_t *%s) {\n\n" % (re.sub('-', '_', keyname), iesStructName))
     f.write("    assert(%s != NULL);\n\n" % (iesStructName))
     f.write("    for (int i = 0; i < %s->%s.count; i++) {\n" %
-            (iesStructName, re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
-    f.write("        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s->%s.array[i]);\n" %
-            (ietypeunderscore, iesStructName, re.sub('IEs', '',lowerFirstCamelWord(re.sub('-', '_', key)))))
+            (iesStructName,
+             re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
+    f.write("       ASN_STRUCT_FREE(asn_DEF_%s, %s->%s.array[i]);\n" %
+            (ietypeunderscore,
+             iesStructName,
+             re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
     f.write("    }\n")
+    f.write("    free(%s->%s.array);\n" %
+            (iesStructName, re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
     f.write("    return 0;\n")
     f.write("}\n\n")
 

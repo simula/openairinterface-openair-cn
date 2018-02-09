@@ -70,7 +70,6 @@ typedef struct items_group_s {
 } items_group_t;
 
 /*------------------------------------------------------------------------------*/
-static const items_group_position_t     ITEMS_GROUP_POSITION_INVALID = -1;
 static const items_group_index_t        ITEMS_GROUP_INDEX_INVALID = -1;
 
 /*------------------------------------------------------------------------------*/

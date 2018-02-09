@@ -39,12 +39,10 @@
 
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
-#include <malloc.h>
 
 
 
-#include "liblfds710.h"
-#include "bstrlib.h"
+#include "liblfds611.h"
 
 #include "assertions.h"
 #include "intertask_interface.h"
@@ -62,7 +60,6 @@
 #include "signals.h"
 #include "timer.h"
 #include "dynamic_memory_check.h"
-#include "shared_ts_log.h"
 #include "log.h"
 
 /* ITTI DEBUG groups */
@@ -152,9 +149,7 @@ typedef struct task_desc_s {
   /*
    * Queue of messages belonging to the task
    */
-  struct lfds710_queue_bmm_state         message_queue
-          __attribute__ ((aligned (LFDS710_PAL_ATOMIC_ISOLATION_IN_BYTES)));
-  struct lfds710_queue_bmm_element      *qbmme;
+  struct lfds611_queue_state             *message_queue;
 } task_desc_t;
 
 typedef struct itti_desc_s {
@@ -207,7 +202,7 @@ itti_malloc (
     char                                   *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
 
     OAILOG_ERROR (LOG_ITTI, " Memory pools statistics:\n%s", statistics);
-    free_wrapper ((void**)&statistics);
+    free_wrapper ((void **) &statistics);
   }
   AssertFatal (ptr != NULL, "Memory allocation of %d bytes failed (%d -> %d)!\n", (int)size, origin_task_id, destination_task_id);
   return ptr;
@@ -363,10 +358,6 @@ itti_alloc_new_message_sized (
   }
 
   temp = itti_malloc (origin_task_id, TASK_UNKNOWN, sizeof (MessageHeader) + size);
-
-  // better to do it here than in client code
-  memset(&temp->ittiMsg, 0, size);
-
   temp->ittiMsgHeader.messageId = message_id;
   temp->ittiMsgHeader.originTaskId = origin_task_id;
   temp->ittiMsgHeader.ittiMsgSize = size;
@@ -411,6 +402,9 @@ itti_send_msg_to_task (
    * Increment the global message number
    */
   message_number = itti_increment_message_number ();
+#if ENABLE_ITTI_ANALYZER
+  itti_dump_queue_message (origin_task_id, message_number, message, itti_desc.messages_info[message_id].name, sizeof (MessageHeader) + message->ittiMsgHeader.ittiMsgSize);
+#endif
 
   if (destination_task_id != TASK_UNKNOWN) {
     VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME (VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
@@ -440,7 +434,7 @@ itti_send_msg_to_task (
       /*
        * Enqueue message in destination task queue
        */
-      lfds710_queue_bmm_enqueue (&itti_desc.tasks[destination_task_id].message_queue, NULL, new);
+      lfds611_queue_enqueue (itti_desc.tasks[destination_task_id].message_queue, new);
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME (VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
       {
         /*
@@ -606,7 +600,7 @@ itti_receive_msg_internal_event_fd (
       read_ret = read (itti_desc.threads[thread_id].task_event_fd, &sem_counter, sizeof (sem_counter));
       AssertFatal (read_ret == sizeof (sem_counter), "Read from task message FD (%d) failed (%d/%d)!\n", thread_id, (int)read_ret, (int)sizeof (sem_counter));
 
-      if (lfds710_queue_bmm_dequeue (&itti_desc.tasks[task_id].message_queue, NULL, (void **)&message) == 0) {
+      if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **)&message) == 0) {
         /*
          * No element in list -> this should not happen
          */
@@ -647,7 +641,7 @@ itti_poll_msg (
   {
     struct message_list_s                  *message;
 
-    if (lfds710_queue_bmm_dequeue (&itti_desc.tasks[task_id].message_queue, NULL, (void **)&message) == 1) {
+    if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **)&message) == 1) {
       int                                     result;
 
       *received_msg = message->msg;
@@ -731,11 +725,16 @@ itti_mark_task_ready (
   thread_id_t                             thread_id = TASK_GET_THREAD_ID (task_id);
 
   AssertFatal (thread_id < itti_desc.thread_max, "Thread id (%d) is out of range (%d)!\n", thread_id, itti_desc.thread_max);
-
+  /*
+   * Register the thread in itti dump
+   */
+#if ENABLE_ITTI_ANALYZER
+  itti_dump_thread_use_ring_buffer ();
+#endif
   /*
    * Mark the thread as using LFDS queue
    */
-  LFDS710_MISC_MAKE_VALID_ON_CURRENT_LOGICAL_CORE_INITS_COMPLETED_BEFORE_NOW_ON_ANY_OTHER_LOGICAL_CORE;
+  lfds611_queue_use (itti_desc.tasks[task_id].message_queue);
   itti_desc.threads[thread_id].task_state = TASK_STATE_READY;
   itti_desc.ready_tasks++;
 
@@ -785,6 +784,7 @@ itti_init (
 {
   task_id_t                               task_id;
   thread_id_t                             thread_id;
+  int                                     ret;
 
   itti_desc.message_number = 1;
   ITTI_DEBUG (ITTI_DEBUG_INIT, " Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
@@ -801,8 +801,7 @@ itti_init (
   /*
    * Allocates memory for tasks info
    */
-  itti_desc.tasks = memalign(LFDS710_PAL_ATOMIC_ISOLATION_IN_BYTES, itti_desc.task_max * sizeof (task_desc_t));
-  memset(itti_desc.tasks, 0, itti_desc.task_max * sizeof (task_desc_t));
+  itti_desc.tasks = calloc (itti_desc.task_max, sizeof (task_desc_t));
   /*
    * Allocates memory for threads info
    */
@@ -817,10 +816,11 @@ itti_init (
                 itti_desc.tasks_info[task_id].name,
                 itti_desc.tasks_info[task_id].parent_task != TASK_UNKNOWN ? " with parent " : "", itti_desc.tasks_info[task_id].parent_task != TASK_UNKNOWN ? itti_get_task_name (itti_desc.tasks_info[task_id].parent_task) : "");
     ITTI_DEBUG (ITTI_DEBUG_INIT, " Creating queue of message of size %u\n", itti_desc.tasks_info[task_id].queue_size);
-    printf (" Creating queue of message of size %u\n", itti_desc.tasks_info[task_id].queue_size);
+    ret = lfds611_queue_new (&itti_desc.tasks[task_id].message_queue, itti_desc.tasks_info[task_id].queue_size);
 
-    itti_desc.tasks[task_id].qbmme = calloc(itti_desc.tasks_info[task_id].queue_size, sizeof(struct lfds710_queue_bmm_element));
-    lfds710_queue_bmm_init_valid_on_current_logical_core( &itti_desc.tasks[task_id].message_queue, itti_desc.tasks[task_id].qbmme, itti_desc.tasks_info[task_id].queue_size, NULL );
+    if (0 == ret) {
+      AssertFatal (0, "lfds611_queue_new failed for task %s!\n", itti_get_task_name (task_id));
+    }
   }
 
   /*
@@ -879,17 +879,17 @@ itti_init (
     char                                   *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
 
     ITTI_DEBUG (ITTI_DEBUG_MP_STATISTICS, " Memory pools statistics:\n%s", statistics);
-    free_wrapper ((void**)&statistics);
+    free_wrapper ((void **) &statistics);
   }
   itti_desc.vcd_poll_msg = 0;
   itti_desc.vcd_receive_msg = 0;
   itti_desc.vcd_send_msg = 0;
 
+#if ENABLE_ITTI_ANALYZER
+  itti_dump_init (messages_definition_xml, dump_file_name);
+#endif
 
   CHECK_INIT_RETURN (timer_init ());
-  // Could not be launched before ITTI initialization
-  shared_log_itti_connect();
-  OAILOG_ITTI_CONNECT();
   return 0;
 }
 
@@ -958,7 +958,7 @@ itti_wait_tasks_end (
     char                                   *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
 
     ITTI_DEBUG (ITTI_DEBUG_MP_STATISTICS, " Memory pools statistics:\n%s\n", statistics);
-    free_wrapper ((void**)&statistics);
+    free_wrapper ((void**) &statistics);
   }
 
   for (thread_id = THREAD_FIRST; thread_id < itti_desc.thread_max; thread_id++) {
@@ -970,6 +970,10 @@ itti_wait_tasks_end (
     ITTI_DEBUG (ITTI_DEBUG_ISSUES, " Some threads are still running, force exit\n");
     return;
   }
+
+#if ENABLE_ITTI_ANALYZER
+  itti_dump_exit ();
+#endif
 }
 
 void

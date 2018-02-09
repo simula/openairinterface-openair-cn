@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -19,46 +19,18 @@
  *      contact@openairinterface.org
  */
 
-/*! \file oai_mme.c
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
 #include <stdio.h>
-#include <pthread.h>
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <errno.h>
-#include <syslog.h>
 
 #if HAVE_CONFIG_H
 #  include "config.h"
 #endif
 
-#include "bstrlib.h"
-
-
-#include "log.h"
 #include "dynamic_memory_check.h"
 #include "assertions.h"
+#include "log.h"
 #include "msc.h"
-#include "3gpp_23.003.h"
-#include "3gpp_24.008.h"
-#include "3gpp_33.401.h"
-#include "3gpp_24.007.h"
-#include "3gpp_36.401.h"
-#include "3gpp_36.331.h"
-#include "security_types.h"
-#include "common_types.h"
-#include "common_defs.h"
 #include "mme_config.h"
 
 #include "intertask_interface_init.h"
@@ -66,18 +38,17 @@
 #include "sctp_primitives_server.h"
 #include "udp_primitives_server.h"
 #include "s1ap_mme.h"
-#include "timer.h"
 #include "mme_app_extern.h"
 #include "nas_defs.h"
 #include "s11_mme.h"
 
 /* FreeDiameter headers for support of S6A interface */
-#include <freeDiameter/freeDiameter-host.h>
-#include <freeDiameter/libfdcore.h>
 #include "s6a_defs.h"
 
 #include "oai_mme.h"
 #include "pid_file.h"
+#include "service303_message_utils.h"
+#include "mme_app_embedded_spgw.h"
 
 int
 main (
@@ -87,19 +58,22 @@ main (
   char *pid_dir;
   char *pid_file_name;
 
-  CHECK_INIT_RETURN (shared_log_init (MAX_LOG_PROTOS));
-  CHECK_INIT_RETURN (OAILOG_INIT (LOG_SPGW_ENV, OAILOG_LEVEL_DEBUG, MAX_LOG_PROTOS));
+  CHECK_INIT_RETURN (OAILOG_INIT (MME_CONFIG_STRING_MME_CONFIG, OAILOG_LEVEL_DEBUG, MAX_LOG_PROTOS));
   /*
    * Parse the command line for options and set the mme_config accordingly.
    */
+#if EMBEDDED_SGW
+  CHECK_INIT_RETURN (mme_config_embedded_spgw_parse_opt_line (argc, argv, &mme_config, &spgw_config));
+#else
   CHECK_INIT_RETURN (mme_config_parse_opt_line (argc, argv, &mme_config));
+#endif
 
   pid_dir = bstr2cstr(mme_config.pid_dir, 1);
-  if (pid_dir == NULL) {
-      pid_file_name = get_exe_absolute_path("/var/run");
+  if ( pid_dir == NULL ) {
+    pid_file_name = get_exe_absolute_path("var/run");
   } else {
-      pid_file_name = get_exe_absolute_path(pid_dir);
-      bcstrfree(pid_dir);
+    pid_file_name = get_exe_absolute_path(pid_dir);
+    bcstrfree(pid_dir);
   }
 
 #if DAEMONIZE
@@ -134,39 +108,60 @@ main (
   close(STDOUT_FILENO);
   close(STDERR_FILENO);
 
+  openlog(NULL, 0, LOG_DAEMON);
+#endif /* DAEMONIZE */
 
   if (! is_pid_file_lock_success(pid_file_name)) {
+#if DAEMONIZE
     closelog();
-    free_wrapper((void**)&pid_file_name);
+#endif /* DAEMONIZE */
+    free_wrapper((void **) &pid_file_name);
     exit (-EDEADLK);
   }
-#else
-  if (! is_pid_file_lock_success(pid_file_name)) {
-    free_wrapper((void**)&pid_file_name);
-    exit (-EDEADLK);
-  }
-#endif
 
-
-  CHECK_INIT_RETURN (itti_init (TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, NULL, NULL));
-  MSC_INIT (MSC_MME, THREAD_MAX + TASK_MAX);
   /*
    * Calling each layer init function
    */
+  CHECK_INIT_RETURN (itti_init (TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info,
+#if ENABLE_ITTI_ANALYZER
+          messages_definition_xml,
+#else
+          NULL,
+#endif
+          NULL));
+
+  // Intialize loggers and configured log levels.
+  OAILOG_LOG_CONFIGURE(&mme_config.log_config);
+  MSC_INIT (MSC_MME, THREAD_MAX + TASK_MAX);
+  CHECK_INIT_RETURN (service303_init(&(mme_config.service303_config)));
+
+  // Service started, but not healthy yet
+  send_app_health_to_service303 (TASK_MME_APP, false);
+
+  CHECK_INIT_RETURN (mme_app_init (&mme_config));
   CHECK_INIT_RETURN (nas_init (&mme_config));
   CHECK_INIT_RETURN (sctp_init (&mme_config));
   CHECK_INIT_RETURN (udp_init ());
+#if EMBEDDED_SGW
+  CHECK_INIT_RETURN (sgw_init (&spgw_config));
+#else
   CHECK_INIT_RETURN (s11_mme_init (&mme_config));
+#endif
   CHECK_INIT_RETURN (s1ap_mme_init());
-  CHECK_INIT_RETURN (mme_app_init (&mme_config));
   CHECK_INIT_RETURN (s6a_init (&mme_config));
-
   OAILOG_DEBUG(LOG_MME_APP, "MME app initialization complete\n");
+#if EMBEDDED_SGW
+  /*
+   * Display the configuration
+   */
+  mme_config_display (&mme_config);
+  spgw_config_display (&spgw_config);
+#endif
   /*
    * Handle signals here
    */
   itti_wait_tasks_end ();
   pid_file_unlock();
-  free_wrapper((void**)&pid_file_name);
+  free_wrapper((void**) &pid_file_name);
   return 0;
 }

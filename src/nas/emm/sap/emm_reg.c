@@ -38,15 +38,7 @@
         procedures.
 
 *****************************************************************************/
-#include <pthread.h>
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
 #include <assert.h>
-
-#include "bstrlib.h"
 
 #include "common_defs.h"
 #include "log.h"
@@ -81,7 +73,9 @@
  **      Others:    NONE                                       **
  **                                                                        **
  ***************************************************************************/
-void emm_reg_initialize (void)
+void
+emm_reg_initialize (
+  void)
 {
   OAILOG_FUNC_IN (LOG_NAS_EMM);
   /*
@@ -105,7 +99,9 @@ void emm_reg_initialize (void)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int emm_reg_send (emm_reg_t * const msg)
+int
+emm_reg_send (
+  const emm_reg_t * msg)
 {
   OAILOG_FUNC_IN (LOG_NAS_EMM);
   int                                     rc = RETURNok;

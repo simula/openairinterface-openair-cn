@@ -44,7 +44,8 @@
 extern "C" {
 #endif
 #include "common_defs.h"
-typedef enum nw_rc_e {
+typedef enum {
+
   NW_OK                 = RETURNok,
   NW_GTPV2C_IE_MISSING,
   NW_GTPV2C_IE_INCORRECT,
@@ -53,7 +54,8 @@ typedef enum nw_rc_e {
   NW_GTPV2C_MANDATORY_IE_MISSING,
   NW_GTPV2C_MSG_MALFORMED,
   NW_FAILURE            = 0xFFFFFFFE
-} nw_rc_t;
+}
+NwRcT;
 
 #ifdef __cplusplus
 }

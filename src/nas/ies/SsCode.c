@@ -22,17 +22,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
 #include "SsCode.h"
 
-//------------------------------------------------------------------------------
-int decode_ss_code (
-  ss_code_t * sscode,
+int
+decode_ss_code (
+  SsCode * sscode,
   uint8_t iei,
   uint8_t * buffer,
   uint32_t len)
@@ -46,12 +44,15 @@ int decode_ss_code (
 
   *sscode = *(buffer + decoded);
   decoded++;
+#if NAS_DEBUG
+  dump_ss_code_xml (sscode, iei);
+#endif
   return decoded;
 }
 
-//------------------------------------------------------------------------------
-int encode_ss_code (
-  ss_code_t * sscode,
+int
+encode_ss_code (
+  SsCode * sscode,
   uint8_t iei,
   uint8_t * buffer,
   uint32_t len)
@@ -62,6 +63,9 @@ int encode_ss_code (
    * Checking IEI and pointer
    */
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, SS_CODE_MINIMUM_LENGTH, len);
+#if NAS_DEBUG
+  dump_ss_code_xml (sscode, iei);
+#endif
 
   if (iei > 0) {
     *buffer = iei;
@@ -73,3 +77,19 @@ int encode_ss_code (
   return encoded;
 }
 
+void
+dump_ss_code_xml (
+  SsCode * sscode,
+  uint8_t iei)
+{
+  OAILOG_DEBUG (LOG_NAS, "<Ss Code>\n");
+
+  if (iei > 0)
+    /*
+     * Don't display IEI if = 0
+     */
+    OAILOG_DEBUG (LOG_NAS, "    <IEI>0x%X</IEI>\n", iei);
+
+  OAILOG_DEBUG (LOG_NAS, "    <SS code value>%u</SS code value>\n", *sscode);
+  OAILOG_DEBUG (LOG_NAS, "</Ss Code>\n");
+}

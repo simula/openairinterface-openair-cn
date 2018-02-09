@@ -22,17 +22,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
 #include "LcsIndicator.h"
 
-//------------------------------------------------------------------------------
-int decode_lcs_indicator (
-  lcs_indicator_t * lcsindicator,
+int
+decode_lcs_indicator (
+  LcsIndicator * lcsindicator,
   uint8_t iei,
   uint8_t * buffer,
   uint32_t len)
@@ -46,12 +44,15 @@ int decode_lcs_indicator (
 
   *lcsindicator = *(buffer + decoded);
   decoded++;
+#if NAS_DEBUG
+  dump_lcs_indicator_xml (lcsindicator, iei);
+#endif
   return decoded;
 }
 
-//------------------------------------------------------------------------------
-int encode_lcs_indicator (
-  lcs_indicator_t * lcsindicator,
+int
+encode_lcs_indicator (
+  LcsIndicator * lcsindicator,
   uint8_t iei,
   uint8_t * buffer,
   uint32_t len)
@@ -62,6 +63,9 @@ int encode_lcs_indicator (
    * Checking IEI and pointer
    */
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, LCS_INDICATOR_MINIMUM_LENGTH, len);
+#if NAS_DEBUG
+  dump_lcs_indicator_xml (lcsindicator, iei);
+#endif
 
   if (iei > 0) {
     *buffer = iei;
@@ -73,3 +77,19 @@ int encode_lcs_indicator (
   return encoded;
 }
 
+void
+dump_lcs_indicator_xml (
+  LcsIndicator * lcsindicator,
+  uint8_t iei)
+{
+  OAILOG_DEBUG (LOG_NAS, "<Lcs Indicator>\n");
+
+  if (iei > 0)
+    /*
+     * Don't display IEI if = 0
+     */
+    OAILOG_DEBUG (LOG_NAS, "    <IEI>0x%X</IEI>\n", iei);
+
+  OAILOG_DEBUG (LOG_NAS, "    <LCS indicator value>%u</LCS indicator value>\n", *lcsindicator);
+  OAILOG_DEBUG (LOG_NAS, "</Lcs Indicator>\n");
+}

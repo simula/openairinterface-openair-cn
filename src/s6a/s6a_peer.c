@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -27,29 +27,22 @@
    \version 0.1
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include <stdint.h>
-#include <pthread.h>
+#include <unistd.h>
 
-#include "bstrlib.h"
-
-#include "log.h"
 #include "common_types.h"
 #include "intertask_interface.h"
-#include "common_defs.h"
 #include "s6a_defs.h"
 #include "s6a_messages.h"
 #include "assertions.h"
 #include "dynamic_memory_check.h"
-#include "mme_config.h"
+#include "log.h"
 
 #define NB_MAX_TRIES  (8)
 
 extern __pid_t g_pid;
 
+void _send_activate_messages (void);
 
 void
 s6a_peer_connected_cb (
@@ -59,14 +52,9 @@ s6a_peer_connected_cb (
   if (info == NULL) {
     OAILOG_ERROR (LOG_S6A, "Failed to connect to HSS entity\n");
   } else {
-    MessageDef                             *message_p;
-
     OAILOG_DEBUG (LOG_S6A, "Peer %*s is now connected...\n", (int)info->pi_diamidlen, info->pi_diamid);
-    /*
-     * Inform S1AP that connection to HSS is established
-     */
-    message_p = itti_alloc_new_message (TASK_S6A, ACTIVATE_MESSAGE);
-    itti_send_msg_to_task (TASK_S1AP, INSTANCE_DEFAULT, message_p);
+
+    _send_activate_messages();
   }
 
   /*
@@ -99,6 +87,7 @@ s6a_fd_new_peer (
   char                                    host_name[100];
   size_t                                  host_name_len = 0;
   int                                     ret = 0;
+  bstring hss_name;
 #if FD_CONF_FILE_NO_CONNECT_PEERS_CONFIGURED
   struct peer_info                        info = {0};
 #endif
@@ -121,9 +110,7 @@ s6a_fd_new_peer (
   fd_g_config->cnf_diamid = strdup (host_name);
   fd_g_config->cnf_diamid_len = strlen (fd_g_config->cnf_diamid);
   OAILOG_DEBUG (LOG_S6A, "Diameter identity of MME: %s with length: %zd\n", fd_g_config->cnf_diamid, fd_g_config->cnf_diamid_len);
-  bstring                                 hss_name = bstrcpy(mme_config.s6a_config.hss_host_name);
-  bconchar(hss_name, '.');
-  bconcat (hss_name, mme_config.realm);
+  hss_name = bstrcpy(mme_config.realm);
 
   if (mme_config_unlock (&mme_config) ) {
     OAILOG_ERROR (LOG_S6A, "Failed to unlock configuration\n");
@@ -152,25 +139,23 @@ s6a_fd_new_peer (
   struct peer_hdr  *peer      = NULL;
   int               nb_tries  = 0;
   int               timeout   = fd_g_config->cnf_timer_tc;
+
   for (nb_tries = 0; nb_tries < NB_MAX_TRIES; nb_tries++) {
     OAILOG_DEBUG (LOG_S6A, "S6a peer connection attempt %d / %d\n",
                   1 + nb_tries, NB_MAX_TRIES);
     ret = fd_peer_getbyid( diamid, diamidlen, 0, &peer );
+
     if (peer && peer->info.config.pic_tctimer != 0) {
         timeout = peer->info.config.pic_tctimer;
     }
+
     if (!ret) {
       if (peer) {
         ret = fd_peer_get_state(peer);
         if (STATE_OPEN == ret) {
-          MessageDef                             *message_p;
-
           OAILOG_DEBUG (LOG_S6A, "Peer %*s is now connected...\n", (int)diamidlen, diamid);
-          /*
-           * Inform S1AP that connection to HSS is established
-           */
-          message_p = itti_alloc_new_message (TASK_S6A, ACTIVATE_MESSAGE);
-          itti_send_msg_to_task (TASK_S1AP, INSTANCE_DEFAULT, message_p);
+
+          _send_activate_messages();
 
           {
             FILE *fp = NULL;
@@ -180,7 +165,7 @@ s6a_fd_new_peer (
             fflush(fp);
             fclose(fp);
           }
-          bdestroy_wrapper (&hss_name);
+          bdestroy(hss_name);
           return RETURNok;
         } else {
           OAILOG_DEBUG (LOG_S6A, "S6a peer state is %d\n", ret);
@@ -196,4 +181,18 @@ s6a_fd_new_peer (
   fd_g_config->cnf_diamid_len = 0;
   return RETURNerror;
 #endif
+}
+
+/*
+ * Inform S1AP and MME that connection to HSS is established
+ */
+void _send_activate_messages (void) {
+  MessageDef *message_p;
+  message_p = itti_alloc_new_message (TASK_S6A, ACTIVATE_MESSAGE);
+  AssertFatal (message_p != NULL, "itti_alloc_new_message Failed");
+  itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+
+  message_p = itti_alloc_new_message (TASK_S6A, ACTIVATE_MESSAGE);
+  AssertFatal (message_p != NULL, "itti_alloc_new_message Failed");
+  itti_send_msg_to_task (TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }

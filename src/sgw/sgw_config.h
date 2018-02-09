@@ -37,6 +37,7 @@
 
 #define SGW_CONFIG_STRING_SGW_CONFIG                            "S-GW"
 #define SGW_CONFIG_STRING_NETWORK_INTERFACES_CONFIG             "NETWORK_INTERFACES"
+#define SGW_CONFIG_STRING_OVS_CONFIG                            "OVS"
 #define SGW_CONFIG_STRING_SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP  "SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"
 #define SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP    "SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP"
 #define SGW_CONFIG_STRING_SGW_PORT_FOR_S1U_S12_S4_UP            "SGW_IPV4_PORT_FOR_S1U_S12_S4_UP"
@@ -44,9 +45,20 @@
 #define SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S5_S8_UP         "SGW_IPV4_ADDRESS_FOR_S5_S8_UP"
 #define SGW_CONFIG_STRING_SGW_INTERFACE_NAME_FOR_S11            "SGW_INTERFACE_NAME_FOR_S11"
 #define SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S11              "SGW_IPV4_ADDRESS_FOR_S11"
+#define SGW_CONFIG_STRING_OVS_BRIDGE_NAME                       "BRIDGE_NAME"
+#define SGW_CONFIG_STRING_OVS_GTP_PORT_NUM                      "GTP_PORT_NUM"
+#define SGW_CONFIG_STRING_OVS_UPLINK_PORT_NUM                   "UPLINK_PORT_NUM"
+#define SGW_CONFIG_STRING_OVS_UPLINK_MAC                        "UPLINK_MAC"
 
 #define SPGW_ABORT_ON_ERROR true
 #define SPGW_WARN_ON_ERROR false
+
+typedef struct ovs_config_s {
+  bstring bridge_name;
+  int     gtp_port_num;
+  int     uplink_port_num;
+  bstring uplink_mac;
+} ovs_config_t;
 
 typedef struct sgw_config_s {
   /* Reader/writer lock for this configuration */
@@ -58,25 +70,27 @@ typedef struct sgw_config_s {
   } itti_config;
 
   struct {
-    bstring        if_name_S1u_S12_S4_up;
-    struct in_addr S1u_S12_S4_up;
-    int            netmask_S1u_S12_S4_up;
+    bstring    if_name_S1u_S12_S4_up;
+    ipv4_nbo_t S1u_S12_S4_up;
+    int        netmask_S1u_S12_S4_up;
 
-    bstring        if_name_S5_S8_up;
-    struct in_addr S5_S8_up;
-    int            netmask_S5_S8_up;
+    bstring    if_name_S5_S8_up;
+    ipv4_nbo_t S5_S8_up;
+    int        netmask_S5_S8_up;
 
-    bstring        if_name_S11;
-    struct in_addr S11;
-    int            netmask_S11;
+    bstring    if_name_S11;
+    ipv4_nbo_t S11;
+    int        netmask_S11;
   } ipv4;
   uint16_t     udp_port_S1u_S12_S4_up;
 
   bool         local_to_eNB;
-
+#if (!EMBEDDED_SGW)
   log_config_t log_config;
+#endif
 
   bstring      config_file;
+  ovs_config_t ovs_config;
 } sgw_config_t;
 
 void sgw_config_init (sgw_config_t * config_pP);

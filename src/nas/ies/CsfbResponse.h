@@ -20,22 +20,24 @@
  */
 
 
-#ifndef CSFB_RESPONSE_SEEN
-#define CSFB_RESPONSE_SEEN
+#ifndef CSFB_RESPONSE_H_
+#define CSFB_RESPONSE_H_
 #include <stdint.h>
 
 #define CSFB_RESPONSE_MINIMUM_LENGTH 1
 #define CSFB_RESPONSE_MAXIMUM_LENGTH 1
 
-typedef uint8_t csfb_response_t;
+typedef uint8_t CsfbResponse;
 
-int encode_csfb_response(csfb_response_t *csfbresponse, uint8_t iei, uint8_t *buffer, uint32_t len);
+int encode_csfb_response(CsfbResponse *csfbresponse, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-uint8_t encode_u8_csfb_response(csfb_response_t *csfbresponse);
+void dump_csfb_response_xml(CsfbResponse *csfbresponse, uint8_t iei);
 
-int decode_csfb_response(csfb_response_t *csfbresponse, uint8_t iei, uint8_t *buffer, uint32_t len);
+uint8_t encode_u8_csfb_response(CsfbResponse *csfbresponse);
 
-int decode_u8_csfb_response(csfb_response_t *csfbresponse, uint8_t iei, uint8_t value, uint32_t len);
+int decode_csfb_response(CsfbResponse *csfbresponse, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* CSFB_RESPONSE_SEEN */
+int decode_u8_csfb_response(CsfbResponse *csfbresponse, uint8_t iei, uint8_t value, uint32_t len);
+
+#endif /* CSFB RESPONSE_H_ */
 

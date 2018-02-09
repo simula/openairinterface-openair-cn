@@ -22,17 +22,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
 #include "EpsBearerContextStatus.h"
 
-//------------------------------------------------------------------------------
-int decode_eps_bearer_context_status (
-  eps_bearer_context_status_t * epsbearercontextstatus,
+int
+decode_eps_bearer_context_status (
+  EpsBearerContextStatus * epsbearercontextstatus,
   uint8_t iei,
   uint8_t * buffer,
   uint32_t len)
@@ -53,9 +51,9 @@ int decode_eps_bearer_context_status (
   return decoded;
 }
 
-//------------------------------------------------------------------------------
-int encode_eps_bearer_context_status (
-  eps_bearer_context_status_t * epsbearercontextstatus,
+int
+encode_eps_bearer_context_status (
+  EpsBearerContextStatus * epsbearercontextstatus,
   uint8_t iei,
   uint8_t * buffer,
   uint32_t len)
@@ -80,3 +78,12 @@ int encode_eps_bearer_context_status (
   return encoded;
 }
 
+void
+dump_eps_bearer_context_status_xml (
+  EpsBearerContextStatus * epsbearercontextstatus,
+  uint8_t iei)
+{
+  OAILOG_DEBUG (LOG_NAS, "<Eps Bearer Context Status>\n");
+  OAILOG_DEBUG (LOG_NAS, "    <EBI>%u</EBI>\n", *epsbearercontextstatus);
+  OAILOG_DEBUG (LOG_NAS, "</Eps Bearer Context Status>\n");
+}

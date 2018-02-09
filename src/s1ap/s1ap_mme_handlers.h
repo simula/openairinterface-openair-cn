@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -20,15 +20,12 @@
  */
 
 
-/*! \file s1ap_mme_handlers.h
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
 
 #ifndef FILE_S1AP_MME_HANDLERS_SEEN
 #define FILE_S1AP_MME_HANDLERS_SEEN
+#include "s1ap_ies_defs.h"
+#include "s1ap_mme.h"
+#include "intertask_interface.h"
 
 #define MAX_NUM_PARTIAL_S1_CONN_RESET 256
 
@@ -63,7 +60,7 @@ int s1ap_mme_handle_ue_context_release_request(const sctp_assoc_id_t assoc_id,
                                                const sctp_stream_id_t stream, struct s1ap_message_s *message_p);
 
 int s1ap_handle_ue_context_release_command(
-		const itti_s1ap_ue_context_release_command_t * const ue_context_release_command_pP);
+    const itti_s1ap_ue_context_release_command_t * const ue_context_release_command_pP);
 
 int s1ap_mme_handle_ue_context_release_complete(const sctp_assoc_id_t assoc_id,
                                                 const sctp_stream_id_t stream, struct s1ap_message_s *message_p);
@@ -86,19 +83,17 @@ int s1ap_mme_generate_s1_setup_failure(
     const sctp_assoc_id_t assoc_id, const S1ap_Cause_PR cause_type, const long cause_value,
     const long time_to_wait);
 
-int s1ap_mme_handle_erab_setup_response (const sctp_assoc_id_t assoc_id,
-    const sctp_stream_id_t stream, struct s1ap_message_s *message);
-
-int s1ap_mme_handle_erab_setup_failure (const sctp_assoc_id_t assoc_id,
-    const sctp_stream_id_t stream, struct s1ap_message_s *message);
-
 void s1ap_mme_handle_ue_context_rel_comp_timer_expiry (ue_description_t *ue_ref_p);
 
-int s1ap_mme_handle_error_ind_message (const sctp_assoc_id_t assoc_id, 
+int s1ap_mme_handle_error_ind_message (const sctp_assoc_id_t assoc_id,
                                        const sctp_stream_id_t stream, struct s1ap_message_s *message);
 
 int s1ap_mme_handle_enb_reset (const sctp_assoc_id_t assoc_id,
                                const sctp_stream_id_t stream, struct s1ap_message_s *message);
 
 int s1ap_handle_enb_initiated_reset_ack (const itti_s1ap_enb_initiated_reset_ack_t * const enb_reset_ack_p);
+
+void s1ap_enb_assoc_clean_up_timer_expiry (enb_description_t *enb_ref_p);
+
+int s1ap_handle_paging_request (const itti_s1ap_paging_request_t * paging_request);
 #endif /* FILE_S1AP_MME_HANDLERS_SEEN */

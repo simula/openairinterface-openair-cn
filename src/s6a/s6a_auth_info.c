@@ -19,30 +19,19 @@
  *      contact@openairinterface.org
  */
 
-/*! \file s6a_auth_info.c
-  \brief
-  \author Sebastien ROUX
-  \company Eurecom
-*/
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
-#include <pthread.h>
 
-#include "bstrlib.h"
-
-#include "dynamic_memory_check.h"
-#include "log.h"
-#include "msc.h"
 #include "mme_config.h"
+
 #include "assertions.h"
 #include "conversions.h"
-#include "common_types.h"
-#include "common_defs.h"
+
 #include "intertask_interface.h"
 #include "s6a_defs.h"
 #include "s6a_messages.h"
+#include "msc.h"
 
 static
   int
@@ -342,16 +331,13 @@ s6a_generate_authentication_info_req (
    * Destination Host
    */
   {
-    bstring                                 host = bstrcpy(mme_config.s6a_config.hss_host_name);
-
-    bconchar(host, '.');
-    bconcat (host, mme_config.realm);
+    bstring host = bstrcpy(mme_config.realm);
     CHECK_FCT (fd_msg_avp_new (s6a_fd_cnf.dataobj_s6a_destination_host, 0, &avp));
     value.os.data = (unsigned char *)bdata(host);
     value.os.len = blength(host);
     CHECK_FCT (fd_msg_avp_setvalue (avp, &value));
     CHECK_FCT (fd_msg_avp_add (msg, MSG_BRW_LAST_CHILD, avp));
-    bdestroy_wrapper (&host);
+    bdestroy(host);
   }
   /*
    * Destination_Realm
@@ -417,9 +403,8 @@ s6a_generate_authentication_info_req (
      */
     if (air_p->re_synchronization) {
       CHECK_FCT (fd_msg_avp_new (s6a_fd_cnf.dataobj_s6a_re_synchronization_info, 0, &child_avp));
-      // TODO Fix after updating HSS
-      value.os.len = AUTS_LENGTH;
-      value.os.data = (air_p->resync_param + RAND_LENGTH_OCTETS);
+      value.os.len = RESYNC_PARAM_LENGTH;
+      value.os.data = air_p->resync_param;
       CHECK_FCT (fd_msg_avp_setvalue (child_avp, &value));
       CHECK_FCT (fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, child_avp));
     }

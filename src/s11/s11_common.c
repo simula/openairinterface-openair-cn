@@ -19,23 +19,15 @@
  *      contact@openairinterface.org
  */
 
-/*! \file s11_common.c
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
-
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "bstrlib.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "NwGtpv2c.h"
 #include "s11_common.h"
 #include "log.h"
 
-nw_rc_t
+NwRcT
 s11_ie_indication_generic (
   uint8_t ieType,
   uint8_t ieLength,

@@ -22,16 +22,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
 #include "ApnAggregateMaximumBitRate.h"
 
-//------------------------------------------------------------------------------
-int decode_apn_aggregate_maximum_bit_rate (
+int
+decode_apn_aggregate_maximum_bit_rate (
   ApnAggregateMaximumBitRate * apnaggregatemaximumbitrate,
   uint8_t iei,
   uint8_t * buffer,
@@ -69,8 +67,8 @@ int decode_apn_aggregate_maximum_bit_rate (
   return decoded;
 }
 
-//------------------------------------------------------------------------------
-int encode_apn_aggregate_maximum_bit_rate (
+int
+encode_apn_aggregate_maximum_bit_rate (
   ApnAggregateMaximumBitRate * apnaggregatemaximumbitrate,
   uint8_t iei,
   uint8_t * buffer,
@@ -112,4 +110,33 @@ int encode_apn_aggregate_maximum_bit_rate (
 
   *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
   return encoded;
+}
+
+void
+dump_apn_aggregate_maximum_bit_rate_xml (
+  ApnAggregateMaximumBitRate * apnaggregatemaximumbitrate,
+  uint8_t iei)
+{
+  OAILOG_DEBUG (LOG_NAS, "<Apn Aggregate Maximum Bit Rate>\n");
+
+  if (iei > 0)
+    /*
+     * Don't display IEI if = 0
+     */
+    OAILOG_DEBUG (LOG_NAS, "    <IEI>0x%X</IEI>\n", iei);
+
+  OAILOG_DEBUG (LOG_NAS, "    <APN AMBR for downlink>%u</APN AMBR for downlink>\n", apnaggregatemaximumbitrate->apnambrfordownlink);
+  OAILOG_DEBUG (LOG_NAS, "    <APN AMBR for uplink>%u</APN AMBR for uplink>\n", apnaggregatemaximumbitrate->apnambrforuplink);
+
+  if (apnaggregatemaximumbitrate->extensions & APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION_PRESENT) {
+    OAILOG_DEBUG (LOG_NAS, "    <APN AMBR extended for downlink>%u</APN AMBR for downlink>\n", apnaggregatemaximumbitrate->apnambrfordownlink_extended);
+    OAILOG_DEBUG (LOG_NAS, "    <APN AMBR extended for uplink>%u</APN AMBR for uplink>\n", apnaggregatemaximumbitrate->apnambrforuplink_extended);
+
+    if (apnaggregatemaximumbitrate->extensions & APN_AGGREGATE_MAXIMUM_BIT_RATE_MAXIMUM_EXTENSION2_PRESENT) {
+      OAILOG_DEBUG (LOG_NAS, "    <APN AMBR extended2 for downlink>%u</APN AMBR for downlink>\n", apnaggregatemaximumbitrate->apnambrfordownlink_extended);
+      OAILOG_DEBUG (LOG_NAS, "    <APN AMBR extended2 for uplink>%u</APN AMBR for uplink>\n", apnaggregatemaximumbitrate->apnambrforuplink_extended);
+    }
+  }
+
+  OAILOG_DEBUG (LOG_NAS, "</Apn Aggregate Maximum Bit Rate>\n");
 }

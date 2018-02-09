@@ -23,12 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
-#include "log.h"
-#include "assertions.h"
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
 #include "DetachRequest.h"
@@ -85,5 +81,28 @@ encode_detach_request (
   else
     encoded += encode_result;
 
+  return encoded;
+}
+
+int
+encode_nw_detach_request (
+  nw_detach_request_msg * nw_detach_request,
+  uint8_t * buffer,
+  uint32_t len)
+{
+  int                                     encoded = 0;
+
+  //  Checking IEI and pointer
+
+  CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, NW_DETACH_REQUEST_MINIMUM_LENGTH, len);
+  *(buffer + encoded) = nw_detach_request->nw_detachtype;
+  encoded++;
+  if ((nw_detach_request->presenceMask & NW_DETACH_REQ_EMM_CAUSE_PRESENCE) == NW_DETACH_REQ_EMM_CAUSE_PRESENCE) {
+
+    *(buffer + encoded) = NW_DETACH_REQ_EMM_CAUSE_IEI;
+    encoded++;
+    *(buffer + encoded) = nw_detach_request->emm_cause;
+    encoded++;
+  }
   return encoded;
 }

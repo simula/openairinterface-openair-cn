@@ -19,21 +19,24 @@
  *      contact@openairinterface.org
  */
 
-#ifndef LINKED_EPS_BEARER_IDENTITY_SEEN
-#define LINKED_EPS_BEARER_IDENTITY_SEEN
+#ifndef LINKED_EPS_BEARER_IDENTITY_H_
+#define LINKED_EPS_BEARER_IDENTITY_H_
+#include <stdint.h>
 
 #define LINKED_EPS_BEARER_IDENTITY_MINIMUM_LENGTH 1
 #define LINKED_EPS_BEARER_IDENTITY_MAXIMUM_LENGTH 1
 
-typedef uint8_t linked_eps_bearer_identity_t;
+typedef uint8_t LinkedEpsBearerIdentity;
 
-int encode_linked_eps_bearer_identity(linked_eps_bearer_identity_t *linkedepsbeareridentity, uint8_t iei, uint8_t *buffer, uint32_t len);
+int encode_linked_eps_bearer_identity(LinkedEpsBearerIdentity *linkedepsbeareridentity, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-uint8_t encode_u8_linked_eps_bearer_identity(linked_eps_bearer_identity_t *linkedepsbeareridentity);
+void dump_linked_eps_bearer_identity_xml(LinkedEpsBearerIdentity *linkedepsbeareridentity, uint8_t iei);
 
-int decode_linked_eps_bearer_identity(linked_eps_bearer_identity_t *linkedepsbeareridentity, uint8_t iei, uint8_t *buffer, uint32_t len);
+uint8_t encode_u8_linked_eps_bearer_identity(LinkedEpsBearerIdentity *linkedepsbeareridentity);
 
-int decode_u8_linked_eps_bearer_identity(linked_eps_bearer_identity_t *linkedepsbeareridentity, uint8_t iei, uint8_t value, uint32_t len);
+int decode_linked_eps_bearer_identity(LinkedEpsBearerIdentity *linkedepsbeareridentity, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* LINKED EPS BEARER IDENTITY_SEEN */
+int decode_u8_linked_eps_bearer_identity(LinkedEpsBearerIdentity *linkedepsbeareridentity, uint8_t iei, uint8_t value, uint32_t len);
+
+#endif /* LINKED EPS BEARER IDENTITY_H_ */
 

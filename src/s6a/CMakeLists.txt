@@ -1,11 +1,10 @@
-set(ASN1RELDIR r10.5)
 include_directories(${PROJECT_SOURCE_DIR}/common)
 include_directories(${PROJECT_SOURCE_DIR}/common/itti)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 include_directories(${PROJECT_SOURCE_DIR}/utils)
 include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
 include_directories(${PROJECT_SOURCE_DIR}/utils/hashtable)
 include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 include_directories(${PROJECT_SOURCE_DIR}/mme_app)
 
 # TODO (amar) fix include leak
@@ -30,4 +29,6 @@ add_library(S6A
     s6a_subscription_data.c
     s6a_task.c
     s6a_up_loc.c
+    s6a_cancel_loc.c
+    s6a_service_handler.c
     )

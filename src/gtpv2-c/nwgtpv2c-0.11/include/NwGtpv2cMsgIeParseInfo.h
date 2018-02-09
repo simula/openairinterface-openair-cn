@@ -42,45 +42,45 @@
  * @brief This file defines APIs for to parse incoming messages.
 */
 
-typedef struct nw_gtpv2c_grouped_ie_parse_info_s {
+typedef struct {
   uint8_t                 groupedIeType;
   uint16_t                mandatoryIeCount;
-  nw_gtpv2c_stack_handle_t  hStack;
+  NwGtpv2cStackHandleT  hStack;
 
   struct {
     uint8_t ieMinLength;
     uint8_t iePresence;
   } ieParseInfo[NW_GTPV2C_IE_TYPE_MAXIMUM][NW_GTPV2C_IE_INSTANCE_MAXIMUM];
 
-} nw_gtpv2c_grouped_ie_parse_info_t;
+} NwGtpv2cGroupedIeParseInfoT;
 
-typedef struct nw_gtpv2c_msg_ie_parse_info_s {
+typedef struct {
   uint16_t                msgType;
   uint16_t                mandatoryIeCount;
-  nw_gtpv2c_stack_handle_t  hStack;
+  NwGtpv2cStackHandleT  hStack;
 
   struct {
     uint8_t ieMinLength;
     uint8_t iePresence;
-    nw_gtpv2c_grouped_ie_parse_info_t* pGroupedIeInfo;
+    NwGtpv2cGroupedIeParseInfoT* pGroupedIeInfo;
   } ieParseInfo[NW_GTPV2C_IE_TYPE_MAXIMUM][NW_GTPV2C_IE_INSTANCE_MAXIMUM];
 
-} nw_gtpv2c_msg_ie_parse_info_t;
+} NwGtpv2cMsgIeParseInfoT;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-nw_gtpv2c_msg_ie_parse_info_t*
-nwGtpv2cMsgIeParseInfoNew(nw_gtpv2c_stack_handle_t hStack, uint8_t msgType);
+NwGtpv2cMsgIeParseInfoT*
+nwGtpv2cMsgIeParseInfoNew(NwGtpv2cStackHandleT hStack, uint8_t msgType);
 
-nw_rc_t
-nwGtpv2cMsgIeParseInfoDelete(nw_gtpv2c_msg_ie_parse_info_t* thiz);
+NwRcT
+nwGtpv2cMsgIeParseInfoDelete(NwGtpv2cMsgIeParseInfoT* thiz);
 
-nw_rc_t
-nwGtpv2cMsgIeParse(NW_IN nw_gtpv2c_msg_ie_parse_info_t* thiz,
-                   NW_IN       nw_gtpv2c_msg_handle_t hMsg,
-                   NW_INOUT    nw_gtpv2c_error_t     *pError);
+NwRcT
+nwGtpv2cMsgIeParse(NW_IN NwGtpv2cMsgIeParseInfoT* thiz,
+                   NW_IN       NwGtpv2cMsgHandleT hMsg,
+                   NW_INOUT    NwGtpv2cErrorT     *pError);
 
 #ifdef __cplusplus
 }

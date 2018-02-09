@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -20,13 +20,8 @@
  */
 
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <pthread.h>
+#include <stdio.h>
 
-#include "bstrlib.h"
-
-#include "log.h"
 #include "intertask_interface.h"
 #include "mme_app_ue_context.h"
 #include "mme_app_defs.h"
@@ -48,9 +43,9 @@ int mme_app_statistics_display (
   OAILOG_DEBUG (LOG_MME_APP, "S1-U Bearers   | %10u      |     %10u              |    %10u               |\n\n",mme_app_desc.nb_s1u_bearers,
                                           mme_app_desc.nb_s1u_bearers_established_since_last_stat,mme_app_desc.nb_s1u_bearers_released_since_last_stat);
   OAILOG_DEBUG (LOG_MME_APP, "======================================= STATISTICS ============================================\n\n");
-  
+
   mme_stats_write_lock (&mme_app_desc);
-  
+
   // resetting stats for next display
   mme_app_desc.nb_enb_connected_since_last_stat = 0;
   mme_app_desc.nb_enb_released_since_last_stat  = 0;
@@ -62,7 +57,7 @@ int mme_app_statistics_display (
   mme_app_desc.nb_eps_bearers_released_since_last_stat = 0;
   mme_app_desc.nb_ue_attached_since_last_stat = 0;
   mme_app_desc.nb_ue_detached_since_last_stat = 0;
-  
+
   mme_stats_unlock(&mme_app_desc);
 
   return 0;
@@ -70,7 +65,7 @@ int mme_app_statistics_display (
 
 /*********************************** Utility Functions to update Statistics**************************************/
 
-// Number of Connected eNBs 
+// Number of Connected eNBs
 void update_mme_app_stats_connected_enb_add(void)
 {
   mme_stats_write_lock (&mme_app_desc);
@@ -110,7 +105,7 @@ void update_mme_app_stats_connected_ue_sub(void)
 }
 
 /*****************************************************/
-// Number of S1U Bearers 
+// Number of S1U Bearers
 void update_mme_app_stats_s1u_bearer_add(void)
 {
   mme_stats_write_lock (&mme_app_desc);
@@ -130,7 +125,7 @@ void update_mme_app_stats_s1u_bearer_sub(void)
 }
 
 /*****************************************************/
-// Number of Default EPS Bearers 
+// Number of Default EPS Bearers
 void update_mme_app_stats_default_bearer_add(void)
 {
   mme_stats_write_lock (&mme_app_desc);
@@ -150,7 +145,7 @@ void update_mme_app_stats_default_bearer_sub(void)
 }
 
 /*****************************************************/
-// Number of Attached UEs 
+// Number of Attached UEs
 void update_mme_app_stats_attached_ue_add(void)
 {
   mme_stats_write_lock (&mme_app_desc);

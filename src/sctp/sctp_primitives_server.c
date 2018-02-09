@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -22,7 +22,7 @@
 
 /*! \file sctp_primitives_server.c
     \brief Main server primitives
-    \author Sebastien ROUX, Lionel GAUTHIER
+    \author Sebastien ROUX
     \date 2013
     \version 1.0
     @ingroup _sctp
@@ -45,11 +45,11 @@
 #include "log.h"
 #include "msc.h"
 #include "intertask_interface.h"
-#include "itti_free_defined_msg.h"
 #include "sctp_primitives_server.h"
 #include "conversions.h"
 #include "sctp_common.h"
 #include "sctp_itti_messaging.h"
+#include "service303.h"
 
 
 #define SCTP_RC_ERROR       -1
@@ -282,12 +282,12 @@ static int sctp_send_msg (
    */
   if (sctp_sendmsg (assoc_desc->sd, (const void *)bdata(*payload), (size_t) blength(*payload), NULL, 0, htonl
       (assoc_desc->ppid), 0, stream, 0, 0) < 0) {
-    *payload = NULL;
+    bdestroy(*payload);
     OAILOG_ERROR (LOG_SCTP, "send: %s:%d\n", strerror (errno), errno);
     return -1;
   }
   OAILOG_DEBUG (LOG_SCTP, "Successfully sent %d bytes on stream %d\n", blength(*payload), stream);
-  *payload = NULL;
+  bdestroy(*payload);
 
   assoc_desc->messages_sent++;
   return 0;
@@ -325,13 +325,11 @@ static int sctp_create_new_listener (SctpInit * init_p)
     OAILOG_DEBUG (LOG_SCTP, "ipv4 addresses:\n");
 
     for (i = 0; i < init_p->nb_ipv4_addr; i++) {
+      OAILOG_DEBUG (LOG_SCTP, "\t- " IPV4_ADDR "\n", IPV4_ADDR_FORMAT (init_p->ipv4_address[i]));
       ip4_addr = (struct sockaddr_in *)&addr[i];
       ip4_addr->sin_family = AF_INET;
       ip4_addr->sin_port = htons (init_p->port);
-      ip4_addr->sin_addr.s_addr = init_p->ipv4_address[i].s_addr;
-      char ipv4[INET_ADDRSTRLEN];
-      inet_ntop (AF_INET, (void*)&ip4_addr->sin_addr.s_addr, ipv4, INET_ADDRSTRLEN);
-      OAILOG_DEBUG (LOG_SCTP, "\t- %s\n", ipv4);
+      ip4_addr->sin_addr.s_addr = init_p->ipv4_address[i];
     }
   }
 
@@ -341,14 +339,14 @@ static int sctp_create_new_listener (SctpInit * init_p)
     OAILOG_DEBUG (LOG_SCTP, "ipv6 addresses:\n");
 
     for (j = 0; j < init_p->nb_ipv6_addr; j++) {
-      char ipv6[INET6_ADDRSTRLEN];
-      inet_ntop (AF_INET6, (void*)&init_p->ipv6_address[j], ipv6, INET6_ADDRSTRLEN);
-      OAILOG_DEBUG (LOG_SCTP, "\t- %s\n", ipv6);
+      OAILOG_DEBUG (LOG_SCTP, "\t- %s\n", init_p->ipv6_address[j]);
       ip6_addr = (struct sockaddr_in6 *)&addr[i + j];
       ip6_addr->sin6_family = AF_INET6;
       ip6_addr->sin6_port = htons (init_p->port);
 
-      ip6_addr->sin6_addr = init_p->ipv6_address[j];
+      if (inet_pton (AF_INET6, init_p->ipv6_address[j], ip6_addr->sin6_addr.s6_addr) <= 0) {
+        OAILOG_WARNING (LOG_SCTP, "Provided ipv6 address %s is not valid\n", init_p->ipv6_address[j]);
+      }
     }
   }
 
@@ -542,6 +540,7 @@ void *sctp_receiver_thread (void *args_p)
   memcpy(&sctp_arg_p, args_p, sizeof sctp_arg_p);
   free_wrapper (&args_p);
 
+
   /*
    * clear the master and temp sets
    */
@@ -556,7 +555,6 @@ void *sctp_receiver_thread (void *args_p)
     if (select (fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) {
       OAILOG_ERROR (LOG_SCTP, "[%d] Select() error: %s\n", sctp_arg_p.sd, strerror (errno));
       free_wrapper ((void**) &args_p);
-      close(sctp_arg_p.sd);
       args_p = NULL;
       pthread_exit (NULL);
     }
@@ -571,7 +569,6 @@ void *sctp_receiver_thread (void *args_p)
           if ((clientsock = accept (sctp_arg_p.sd, NULL, NULL)) < 0) {
             OAILOG_ERROR (LOG_SCTP, "[%d] accept: %s:%d\n", sctp_arg_p.sd, strerror (errno), errno);
             free_wrapper ((void**) &args_p);
-            close(sctp_arg_p.sd);
             args_p = NULL;
             pthread_exit (NULL);
           } else {
@@ -620,8 +617,8 @@ void *sctp_receiver_thread (void *args_p)
 static void * sctp_intertask_interface (
     __attribute__ ((unused)) void *args_p)
 {
-  int sctp_sd = -1;
   itti_mark_task_ready (TASK_SCTP);
+  MSC_START_USE ();
 
   while (1) {
     MessageDef                             *received_message_p = NULL;
@@ -635,13 +632,19 @@ static void * sctp_intertask_interface (
         /*
          * We received a new connection request
          */
-        if ((sctp_sd = sctp_create_new_listener (&received_message_p->ittiMsg.sctpInit)) < 0) {
+        if (sctp_create_new_listener (&received_message_p->ittiMsg.sctpInit) < 0) {
           /*
            * SCTP socket creation or bind failed...
            * Die as this MME is not going to be useful.
            */
           AssertFatal(false, "Failed to create new SCTP listener\n");
         }
+        MessageDef *message_p = NULL;
+        message_p = itti_alloc_new_message (
+          TASK_S1AP, SCTP_MME_SERVER_INITIALIZED);
+        SCTP_MME_SERVER_INITIALIZED(message_p).successful = true;
+        AssertFatal (message_p != NULL, "itti_alloc_new_message Failed");
+        itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
       }
       break;
 
@@ -672,15 +675,13 @@ static void * sctp_intertask_interface (
       break;
 
     case MESSAGE_TEST:{
-        OAI_FPRINTF_INFO("TASK_SCTP received MESSAGE_TEST\n");
+        //                 int i = 10000;
+        //                 while(i--);
       }
       break;
 
     case TERMINATE_MESSAGE:{
-        close(sctp_sd);
         sctp_exit();
-        itti_free_msg_content(received_message_p);
-        itti_free (ITTI_MSG_ORIGIN_ID (received_message_p), received_message_p);
         itti_exit_task ();
       }
       break;
@@ -691,7 +692,6 @@ static void * sctp_intertask_interface (
       break;
     }
 
-    itti_free_msg_content(received_message_p);
     itti_free (ITTI_MSG_ORIGIN_ID (received_message_p), received_message_p);
     received_message_p = NULL;
   }
@@ -742,6 +742,7 @@ int handle_assoc_change(int sd, uint32_t ppid, struct sctp_assoc_change  *sctp_a
     DevAssert(sctp_is_assoc_in_list((sctp_assoc_id_t) sctp_assoc_changed->sac_assoc_id) != NULL);
     /* Don't remove the sctp assoc from the list of associations, just send remove the s1ap state */
     rc =  sctp_handle_reset((sctp_assoc_id_t) sctp_assoc_changed->sac_assoc_id);
+    increment_counter("sctp_reset", 1, NO_LABELS);
     break;
   }
   case SCTP_COMM_LOST:
@@ -749,6 +750,7 @@ int handle_assoc_change(int sd, uint32_t ppid, struct sctp_assoc_change  *sctp_a
   case SCTP_CANT_STR_ASSOC: {
     DevAssert(sctp_is_assoc_in_list((sctp_assoc_id_t) sctp_assoc_changed->sac_assoc_id) != NULL);
     rc = sctp_handle_com_down((sctp_assoc_id_t) sctp_assoc_changed->sac_assoc_id);
+    increment_counter("sctp_shutdown", 1, NO_LABELS);
     break;
   }
   default:
@@ -782,10 +784,10 @@ int sctp_init (const mme_config_t * mme_config_p)
 //------------------------------------------------------------------------------
 static void sctp_exit (void)
 {
-
   int rv = pthread_cancel(assoc_thread);
   pthread_join(assoc_thread, NULL);
   if (rv) OAILOG_DEBUG (LOG_SCTP, "pthread_cancel(%08lX) failed: %d:%s\n", assoc_thread, rv, strerror(rv));;
+
 
   sctp_association_t              *sctp_assoc_p = sctp_desc.available_connections_head;
   sctp_association_t              *next_sctp_assoc_p = sctp_desc.available_connections_head;
@@ -793,12 +795,10 @@ static void sctp_exit (void)
   while (next_sctp_assoc_p) {
     next_sctp_assoc_p = sctp_assoc_p->next_assoc;
     if (sctp_assoc_p->peer_addresses) {
-      close(sctp_assoc_p->sd);
       rv = sctp_freepaddrs(sctp_assoc_p->peer_addresses);
       if (rv) OAILOG_DEBUG (LOG_SCTP, "sctp_freepaddrs(%p) failed\n", sctp_assoc_p->peer_addresses);
     }
     free_wrapper ((void**) &sctp_assoc_p);
     sctp_desc.number_of_connections--;
   }
-  OAI_FPRINTF_INFO("TASK_SCTP terminated\n");
 }

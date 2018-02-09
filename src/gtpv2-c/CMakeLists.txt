@@ -12,7 +12,6 @@ add_library(GTPV2C
 include_directories(${PROJECT_SOURCE_DIR}/common)
 # log.h
 include_directories(${PROJECT_SOURCE_DIR}/utils)
-include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
 include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/nwgtpv2c-0.11/include/)

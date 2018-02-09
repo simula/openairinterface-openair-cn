@@ -19,27 +19,34 @@
  *      contact@openairinterface.org
  */
 
-/*! \file s1ap_mme.h
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
-
-#ifndef FILE_S1AP_MME_SEEN
-#define FILE_S1AP_MME_SEEN
 
 #if MME_CLIENT_TEST == 0
 # include "intertask_interface.h"
 #endif
 
+#include "mme_config.h"
 #include "hashtable.h"
+
+#ifndef FILE_S1AP_MME_SEEN
+#define FILE_S1AP_MME_SEEN
 
 // Forward declarations
 struct enb_description_s;
 
 #define S1AP_TIMER_INACTIVE_ID   (-1)
 #define S1AP_UE_CONTEXT_REL_COMP_TIMER 1 // in seconds 
+
+enum s1_timer_class_s {
+  S1AP_INVALID_TIMER_CLASS,
+  S1AP_ENB_TIMER,
+  S1AP_UE_TIMER
+};
+
+/* S1AP Timer argument */
+typedef struct s1ap_timer_arg_s {
+  enum s1_timer_class_s timer_class;
+  uint32_t  instance_id;
+} s1ap_timer_arg_t;
 
 /* Timer structure */
 struct s1ap_timer_t {
@@ -115,7 +122,8 @@ typedef struct enb_description_s {
   uint32_t nb_ue_associated; ///< Number of NAS associated UE on this eNB
   hash_table_ts_t  ue_coll; // contains ue_description_s, key is ue_description_s.?;
   /*@}*/
-
+  // Wait for associated UE clean-up timer during sctp shutdown
+  struct s1ap_timer_t       s1ap_enb_assoc_clean_up_timer;
   /** SCTP stuff **/
   /*@{*/
   sctp_assoc_id_t  sctp_assoc_id;    ///< SCTP association id on this machine
@@ -127,16 +135,12 @@ typedef struct enb_description_s {
 
 extern bool             hss_associated;
 extern uint32_t         nb_enb_associated;
-extern struct mme_config_s    *global_mme_config_p;
+extern mme_config_t    *global_mme_config_p;
 
 /** \brief S1AP layer top init
  * @returns -1 in case of failure
  **/
 int s1ap_mme_init(void);
-
-/** \brief S1AP layer top exit
- **/
-void s1ap_mme_exit (void);
 
 /** \brief Look for given eNB id in the list
  * \param enb_id The unique eNB id to search in list

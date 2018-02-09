@@ -21,11 +21,10 @@
 
 #ifndef FILE_TRACKING_AREA_UPDATE_COMPLETE_SEEN
 #define FILE_TRACKING_AREA_UPDATE_COMPLETE_SEEN
+#include <stdint.h>
+#include "ProtocolDiscriminator.h"
 #include "SecurityHeaderType.h"
 #include "MessageType.h"
-#include "3gpp_23.003.h"
-#include "3gpp_24.007.h"
-#include "3gpp_24.008.h"
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define TRACKING_AREA_UPDATE_COMPLETE_MINIMUM_LENGTH (0)
@@ -42,9 +41,9 @@
 
 typedef struct tracking_area_update_complete_msg_tag {
   /* Mandatory fields */
-  eps_protocol_discriminator_t              protocoldiscriminator:4;
-  security_header_type_t                    securityheadertype:4;
-  message_type_t                            messagetype;
+  ProtocolDiscriminator                     protocoldiscriminator:4;
+  SecurityHeaderType                        securityheadertype:4;
+  MessageType                               messagetype;
 } tracking_area_update_complete_msg;
 
 int decode_tracking_area_update_complete(tracking_area_update_complete_msg *trackingareaupdatecomplete, uint8_t *buffer, uint32_t len);

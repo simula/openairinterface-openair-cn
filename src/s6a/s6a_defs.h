@@ -20,11 +20,6 @@
  */
 
 
-/*! \file s6a_defs.h
-  \brief
-  \author Sebastien ROUX
-  \company Eurecom
-*/
 #ifndef S6A_DEFS_H_
 #define S6A_DEFS_H_
 
@@ -90,6 +85,8 @@ typedef struct {
   struct dict_object *dataobj_s6a_cla; /* s6a Cancel Location ans */
 
   /* Some standard basic AVPs */
+  struct dict_object *dataobj_s6a_origin_host;
+  struct dict_object *dataobj_s6a_origin_realm;
   struct dict_object *dataobj_s6a_destination_host;
   struct dict_object *dataobj_s6a_destination_realm;
   struct dict_object *dataobj_s6a_user_name;
@@ -97,6 +94,8 @@ typedef struct {
   struct dict_object *dataobj_s6a_auth_session_state;
   struct dict_object *dataobj_s6a_result_code;
   struct dict_object *dataobj_s6a_experimental_result;
+  struct dict_object *dataobj_s6a_vendor_id;
+  struct dict_object *dataobj_s6a_experimental_result_code;
 
   /* S6A specific AVPs */
   struct dict_object *dataobj_s6a_visited_plmn_id;
@@ -111,6 +110,7 @@ typedef struct {
   struct dict_object *dataobj_s6a_re_synchronization_info;
   struct dict_object *dataobj_s6a_service_selection;
   struct dict_object *dataobj_s6a_ue_srvcc_cap;
+  struct dict_object *dataobj_s6a_cancellation_type;
 
   /* Handlers */
   struct disp_hdl *aia_hdl;   /* Authentication Information Answer Handle */
@@ -161,6 +161,7 @@ extern s6a_fd_cnf_t s6a_fd_cnf;
 #define AVP_CODE_AUTHENTICATION_INFO               (1413)
 #define AVP_CODE_E_UTRAN_VECTOR                    (1414)
 #define AVP_CODE_NETWORK_ACCESS_MODE               (1417)
+#define AVP_CODE_CANCELLATION_TYPE                 (1420)
 #define AVP_CODE_CONTEXT_IDENTIFIER                (1423)
 #define AVP_CODE_SUBSCRIBER_STATUS                 (1424)
 #define AVP_CODE_ACCESS_RESTRICTION_DATA           (1426)
@@ -190,6 +191,10 @@ int s6a_parse_subscription_data(struct avp *avp_subscription_data,
 int s6a_parse_experimental_result(struct avp *avp, s6a_experimental_result_t *ptr);
 char *experimental_retcode_2_string(uint32_t ret_code);
 char *retcode_2_string(uint32_t ret_code);
+
+int s6a_add_result_code(struct msg *ans, struct avp *failed_avp,
+                         int result_code, int experimental);
+
 
 
 #endif /* S6A_DEFS_H_ */

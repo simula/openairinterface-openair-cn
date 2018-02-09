@@ -21,12 +21,11 @@
 
 #ifndef FILE_DETACH_ACCEPT_SEEN
 #define FILE_DETACH_ACCEPT_SEEN
+#include <stdint.h>
 
+#include "ProtocolDiscriminator.h"
 #include "SecurityHeaderType.h"
 #include "MessageType.h"
-#include "3gpp_23.003.h"
-#include "3gpp_24.007.h"
-#include "3gpp_24.008.h"
 
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
@@ -44,9 +43,9 @@
 
 typedef struct detach_accept_msg_tag {
   /* Mandatory fields */
-  eps_protocol_discriminator_t protocoldiscriminator:4;
-  security_header_type_t       securityheadertype:4;
-  message_type_t               messagetype;
+  ProtocolDiscriminator       protocoldiscriminator:4;
+  SecurityHeaderType          securityheadertype:4;
+  MessageType                 messagetype;
 } detach_accept_msg;
 
 int decode_detach_accept(detach_accept_msg *detachaccept, uint8_t *buffer, uint32_t len);

@@ -27,19 +27,12 @@
  * either expressed or implied, of the FreeBSD Project.
  */
 //WARNING: Do not include this header directly. Use intertask_interface.h instead.
-/*! \file S11_messages_def.h
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
 MESSAGE_DEF(S11_CREATE_SESSION_REQUEST,  MESSAGE_PRIORITY_MED, itti_s11_create_session_request_t,  s11_create_session_request)
 MESSAGE_DEF(S11_CREATE_SESSION_RESPONSE, MESSAGE_PRIORITY_MED, itti_s11_create_session_response_t, s11_create_session_response)
-MESSAGE_DEF(S11_CREATE_BEARER_REQUEST,   MESSAGE_PRIORITY_MED, itti_s11_create_bearer_request_t,   s11_create_bearer_request)
-MESSAGE_DEF(S11_CREATE_BEARER_RESPONSE,  MESSAGE_PRIORITY_MED, itti_s11_create_bearer_response_t,  s11_create_bearer_response)
 MESSAGE_DEF(S11_MODIFY_BEARER_REQUEST,   MESSAGE_PRIORITY_MED, itti_s11_modify_bearer_request_t,   s11_modify_bearer_request)
 MESSAGE_DEF(S11_MODIFY_BEARER_RESPONSE,  MESSAGE_PRIORITY_MED, itti_s11_modify_bearer_response_t,  s11_modify_bearer_response)
 MESSAGE_DEF(S11_DELETE_SESSION_REQUEST,  MESSAGE_PRIORITY_MED, itti_s11_delete_session_request_t,  s11_delete_session_request)
 MESSAGE_DEF(S11_DELETE_SESSION_RESPONSE, MESSAGE_PRIORITY_MED, itti_s11_delete_session_response_t, s11_delete_session_response)
 MESSAGE_DEF(S11_RELEASE_ACCESS_BEARERS_REQUEST, MESSAGE_PRIORITY_MED, itti_s11_release_access_bearers_request_t, s11_release_access_bearers_request)
 MESSAGE_DEF(S11_RELEASE_ACCESS_BEARERS_RESPONSE, MESSAGE_PRIORITY_MED, itti_s11_release_access_bearers_response_t, s11_release_access_bearers_response)
+MESSAGE_DEF(S11_PAGING_REQUEST, MESSAGE_PRIORITY_MED, itti_s11_paging_request_t, s11_paging_request)

@@ -30,7 +30,7 @@ Product     NAS stack
 
 Subsystem   Application Programming Interface
 
-Author      Frederic Maurel, Lionel GAUTHIER
+Author      Frederic Maurel
 
 Description Implements the API used by the NAS layer running in the MME
         to interact with a Mobility Management Entity
@@ -39,9 +39,11 @@ Description Implements the API used by the NAS layer running in the MME
 #ifndef FILE_MME_API_SEEN
 #define FILE_MME_API_SEEN
 
-#include "TrackingAreaIdentityList.h"
-#include "3gpp_23.003.h"
+#include "mme_config.h"
+#include "commonDef.h"
 #include "common_types.h"
+#include "securityDef.h"
+#include "bstrlib.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -84,7 +86,10 @@ typedef struct mme_api_emm_config_s {
   uint8_t           prefered_ciphering_algorithm[8];// choice in NAS_SECURITY_ALGORITHMS_EEA0, etc
   uint8_t           eps_network_feature_support;
   bool              force_push_pco;
-  tai_list_t        tai_list;
+  TAI_LIST_T(16)    tai_list;
+  bstring           full_network_name;
+  bstring           short_network_name;
+  uint8_t           daylight_saving_time;
 } mme_api_emm_config_t;
 
 /*
@@ -122,12 +127,9 @@ typedef struct mme_api_tft_s {
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
-struct mme_config_s;
 
-int mme_api_get_emm_config(mme_api_emm_config_t *config, struct mme_config_s *mme_config_p);
+int mme_api_get_emm_config(mme_api_emm_config_t *config, mme_config_t *mme_config_p);
 
-#define REMOVE_OLD_CONTEXT true
-#define REMOVE_NEW_CONTEXT false
 void mme_api_duplicate_enb_ue_s1ap_id_detected (
     const enb_s1ap_id_key_t enb_ue_s1ap_id,
     const mme_ue_s1ap_id_t mme_ue_s1ap_id,

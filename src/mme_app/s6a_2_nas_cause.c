@@ -19,7 +19,7 @@
  *      contact@openairinterface.org
  */
 
-
+// TODO: (amar) Follow up on the purpose of this file.
 
 #include "as_message.h"
 #include "mme_app_defs.h"

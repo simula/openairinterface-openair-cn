@@ -22,16 +22,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
 #include "NasSecurityAlgorithms.h"
 
-//------------------------------------------------------------------------------
-int decode_nas_security_algorithms (
+int
+decode_nas_security_algorithms (
   NasSecurityAlgorithms * nassecurityalgorithms,
   uint8_t iei,
   uint8_t * buffer,
@@ -47,11 +45,14 @@ int decode_nas_security_algorithms (
   nassecurityalgorithms->typeofcipheringalgorithm = (*(buffer + decoded) >> 4) & 0x7;
   nassecurityalgorithms->typeofintegrityalgorithm = *(buffer + decoded) & 0x7;
   decoded++;
+#if NAS_DEBUG
+  dump_nas_security_algorithms_xml (nassecurityalgorithms, iei);
+#endif
   return decoded;
 }
 
-//------------------------------------------------------------------------------
-int encode_nas_security_algorithms (
+int
+encode_nas_security_algorithms (
   NasSecurityAlgorithms * nassecurityalgorithms,
   uint8_t iei,
   uint8_t * buffer,
@@ -63,6 +64,9 @@ int encode_nas_security_algorithms (
    * Checking IEI and pointer
    */
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, NAS_SECURITY_ALGORITHMS_MINIMUM_LENGTH, len);
+#if NAS_DEBUG
+  dump_nas_security_algorithms_xml (nassecurityalgorithms, iei);
+#endif
 
   if (iei > 0) {
     *buffer = iei;
@@ -74,3 +78,20 @@ int encode_nas_security_algorithms (
   return encoded;
 }
 
+void
+dump_nas_security_algorithms_xml (
+  NasSecurityAlgorithms * nassecurityalgorithms,
+  uint8_t iei)
+{
+  OAILOG_DEBUG (LOG_NAS, "<Nas Security Algorithms>\n");
+
+  if (iei > 0)
+    /*
+     * Don't display IEI if = 0
+     */
+    OAILOG_DEBUG (LOG_NAS, "    <IEI>0x%X</IEI>\n", iei);
+
+  OAILOG_DEBUG (LOG_NAS, "    <Type of ciphering algorithm>%u</Type of ciphering algorithm>\n", nassecurityalgorithms->typeofcipheringalgorithm);
+  OAILOG_DEBUG (LOG_NAS, "    <Type of integrity algorithm>%u</Type of integrity algorithm>\n", nassecurityalgorithms->typeofintegrityalgorithm);
+  OAILOG_DEBUG (LOG_NAS, "</Nas Security Algorithms>\n");
+}

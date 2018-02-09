@@ -35,6 +35,7 @@
 static uint32_t                         g_gtpv1u_teid = 0;
 #endif
 
+// TODO (amar) Function is unused. See if we can remove.
 uint32_t
 gtpv1u_new_teid (
   void)

@@ -21,8 +21,8 @@
 
 
 /*! \file sctp_common.c
-    \brief MME SCTP related common procedures
-    \author Sebastien ROUX, Lionel GAUTHIER
+    \brief eNB/MME SCTP related common procedures
+    \author Sebastien ROUX
     \date 2013
     \version 1.0
     @ingroup _sctp
@@ -36,10 +36,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/sctp.h>
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "bstrlib.h"
 
 #include "sctp_common.h"
 #include "log.h"
@@ -160,7 +156,7 @@ int sctp_get_peeraddresses (
 
   for (j = 0; j < nb; j++) {
     if (temp_addr_p[j].sa_family == AF_INET) {
-      char                                    address[INET_ADDRSTRLEN] = {0};
+      char                                    address[16] = {0};
       struct sockaddr_in                     *addr = NULL;
 
       addr = (struct sockaddr_in *)&temp_addr_p[j];
@@ -170,7 +166,7 @@ int sctp_get_peeraddresses (
       }
     } else {
       struct sockaddr_in6                    *addr = NULL;
-      char                                    address[INET6_ADDRSTRLEN] = {0};
+      char                                    address[40] = {0};
 
       addr = (struct sockaddr_in6 *)&temp_addr_p[j];
 
@@ -216,7 +212,7 @@ int sctp_get_localaddresses (
 
     for (j = 0; j < nb; j++) {
       if (temp_addr_p[j].sa_family == AF_INET) {
-        char                                    address[INET_ADDRSTRLEN] = {0};
+        char                                    address[16] = {0};
         struct sockaddr_in                     *addr = NULL;
 
         addr = (struct sockaddr_in *)&temp_addr_p[j];
@@ -226,7 +222,7 @@ int sctp_get_localaddresses (
         }
       } else if (temp_addr_p[j].sa_family == AF_INET6) {
         struct sockaddr_in6                    *addr = NULL;
-        char                                    address[INET6_ADDRSTRLEN] = {0};
+        char                                    address[40] = {0};
 
         addr = (struct sockaddr_in6 *)&temp_addr_p[j];
 

@@ -19,13 +19,18 @@
  *      contact@openairinterface.org
  */
 
-#ifndef UE_SECURITY_CAPABILITY_SEEN
-#define UE_SECURITY_CAPABILITY_SEEN
+#ifndef UE_SECURITY_CAPABILITY_H_
+#define UE_SECURITY_CAPABILITY_H_
+#include <stdint.h>
+#include "3gpp_24.301.h"
 
+typedef ue_security_capability_t UeSecurityCapability;
 
-int encode_ue_security_capability(ue_security_capability_t *uesecuritycapability, uint8_t iei, uint8_t *buffer, uint32_t len);
+int encode_ue_security_capability(UeSecurityCapability *uesecuritycapability, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-int decode_ue_security_capability(ue_security_capability_t *uesecuritycapability, uint8_t iei, uint8_t *buffer, uint32_t len);
+int decode_ue_security_capability(UeSecurityCapability *uesecuritycapability, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* UE SECURITY CAPABILITY_SEEN */
+void dump_ue_security_capability_xml(UeSecurityCapability *uesecuritycapability, uint8_t iei);
+
+#endif /* UE SECURITY CAPABILITY_H_ */
 

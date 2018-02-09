@@ -22,16 +22,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bstrlib.h"
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
 #include "PdnAddress.h"
 
-//------------------------------------------------------------------------------
-int decode_pdn_address (
+int
+decode_pdn_address (
   PdnAddress * pdnaddress,
   uint8_t iei,
   uint8_t * buffer,
@@ -57,11 +55,14 @@ int decode_pdn_address (
   else
     decoded += decode_result;
 
+#if NAS_DEBUG
+  dump_pdn_address_xml (pdnaddress, iei);
+#endif
   return decoded;
 }
 
-//------------------------------------------------------------------------------
-int encode_pdn_address (
+int
+encode_pdn_address (
   PdnAddress * pdnaddress,
   uint8_t iei,
   uint8_t * buffer,
@@ -75,6 +76,9 @@ int encode_pdn_address (
    * Checking IEI and pointer
    */
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, PDN_ADDRESS_MINIMUM_LENGTH, len);
+#if NAS_DEBUG
+  dump_pdn_address_xml (pdnaddress, iei);
+#endif
 
   if (iei > 0) {
     *buffer = iei;
@@ -95,4 +99,22 @@ int encode_pdn_address (
   return encoded;
 }
 
+void
+dump_pdn_address_xml (
+  PdnAddress * pdnaddress,
+  uint8_t iei)
+{
+  OAILOG_DEBUG (LOG_NAS, "<Pdn Address>\n");
 
+  if (iei > 0)
+    /*
+     * Don't display IEI if = 0
+     */
+    OAILOG_DEBUG (LOG_NAS, "    <IEI>0x%X</IEI>\n", iei);
+
+  OAILOG_DEBUG (LOG_NAS, "    <PDN type value>%u</PDN type value>\n", pdnaddress->pdntypevalue);
+  bstring b = dump_bstring_xml (pdnaddress->pdnaddressinformation);
+  OAILOG_DEBUG (LOG_NAS, "%s", bdata(b));
+  bdestroy(b);
+  OAILOG_DEBUG (LOG_NAS, "</Pdn Address>\n");
+}

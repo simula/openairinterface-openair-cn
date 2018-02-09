@@ -28,101 +28,47 @@
  */
 
 
-/*! \file log.h
-  \brief
-  \author Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
 #ifndef FILE_LOG_SEEN
 #define FILE_LOG_SEEN
 
+#include "gcc_diag.h"
 #include <syslog.h>
-#include <pthread.h>
-
-#include "bstrlib.h"
 
 /* asn1c debug */
 extern int asn_debug;
 extern int asn1_xer_print;
 extern int fd_g_debug_lvl;
 
-#define ANSI_COLOR_FG_BLACK        "\x1b[0;30m"
-#define ANSI_COLOR_FG_RED          "\x1b[0;31m"
-#define ANSI_COLOR_FG_GREEN        "\x1b[0;32m"
-#define ANSI_COLOR_FG_YELLOW       "\x1b[0;33m"
-#define ANSI_COLOR_FG_BLUE         "\x1b[0;34m"
-#define ANSI_COLOR_FG_MAGENTA      "\x1b[0;35m"
-#define ANSI_COLOR_FG_CYAN         "\x1b[0;36m"
-#define ANSI_COLOR_FG_WHITE        "\x1b[0;37m"
-#define ANSI_COLOR_BG_BLACK        "\x1b[0;40m"
-#define ANSI_COLOR_BG_RED          "\x1b[0;41m"
-#define ANSI_COLOR_BG_GREEN        "\x1b[0;42m"
-#define ANSI_COLOR_BG_YELLOW       "\x1b[0;43m"
-#define ANSI_COLOR_BG_BLUE         "\x1b[0;44m"
-#define ANSI_COLOR_BG_MAGENTA      "\x1b[0;45m"
-#define ANSI_COLOR_BG_CYAN         "\x1b[0;46m"
-#define ANSI_COLOR_BG_WHITE        "\x1b[0;47m"
 
-#define ANSI_COLOR_FG_REV_BLACK        "\x1b[7;30m"
-#define ANSI_COLOR_FG_REV_RED          "\x1b[7;31m"
-#define ANSI_COLOR_FG_REV_GREEN        "\x1b[7;32m"
-#define ANSI_COLOR_FG_REV_YELLOW       "\x1b[7;33m"
-#define ANSI_COLOR_FG_REV_BLUE         "\x1b[7;34m"
-#define ANSI_COLOR_FG_REV_MAGENTA      "\x1b[7;35m"
-#define ANSI_COLOR_FG_REV_CYAN         "\x1b[7;36m"
-#define ANSI_COLOR_FG_REV_WHITE        "\x1b[7;37m"
-#define ANSI_COLOR_BG_REV_BLACK        "\x1b[7;40m"
-#define ANSI_COLOR_BG_REV_RED          "\x1b[7;41m"
-#define ANSI_COLOR_BG_REV_GREEN        "\x1b[7;42m"
-#define ANSI_COLOR_BG_REV_YELLOW       "\x1b[7;43m"
-#define ANSI_COLOR_BG_REV_BLUE         "\x1b[7;44m"
-#define ANSI_COLOR_BG_REV_MAGENTA      "\x1b[7;45m"
-#define ANSI_COLOR_BG_REV_CYAN         "\x1b[7;46m"
-#define ANSI_COLOR_BG_REV_WHITE        "\x1b[7;47m"
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <pthread.h>
+#include "bstrlib.h"
 
-#define ANSI_COLOR_RESET        "\x1b[0m"
-#define ANSI_COLOR_BOLD_ON      "\x1b[1m"
-#define ANSI_COLOR_UNDERSCORE   "\x1b[4m"
-#define ANSI_COLOR_BLINK_ON     "\x1b[5m"
-#define ANSI_COLOR_REV_VIDEO_ON "\x1b[7m"
-#define ANSI_COLOR_CONCEALED_ON "\x1b[8m"
-
-#define LOG_CONFIG_STRING_ASYNC_SYSTEM_LOG_LEVEL         "ASYNC_SYSTEM"
+#define LOG_CONFIG_STRING_LOGGING                        "LOGGING"
+#define LOG_CONFIG_STRING_OUTPUT                         "OUTPUT"
+#define LOG_CONFIG_STRING_OUTPUT_THREAD_SAFE             "THREAD_SAFE"
 #define LOG_CONFIG_STRING_COLOR                          "COLOR"
 #define LOG_CONFIG_STRING_OUTPUT_CONSOLE                 "CONSOLE"
+#define LOG_CONFIG_STRING_OUTPUT_SYSLOG                  "SYSLOG"
 #define LOG_CONFIG_STRING_GTPV1U_LOG_LEVEL               "GTPV1U_LOG_LEVEL"
 #define LOG_CONFIG_STRING_GTPV2C_LOG_LEVEL               "GTPV2C_LOG_LEVEL"
 #define LOG_CONFIG_STRING_ITTI_LOG_LEVEL                 "ITTI_LOG_LEVEL"
-#define LOG_CONFIG_STRING_LOGGING                        "LOGGING"
 #define LOG_CONFIG_STRING_MME_APP_LOG_LEVEL              "MME_APP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_MSC_LOG_LEVEL                  "MSC_LOG_LEVEL"
 #define LOG_CONFIG_STRING_NAS_LOG_LEVEL                  "NAS_LOG_LEVEL"
-#define LOG_CONFIG_STRING_OUTPUT                         "OUTPUT"
-#define LOG_CONFIG_STRING_S11_LOG_LEVEL                  "S11_LOG_LEVEL"
 #define LOG_CONFIG_STRING_S11_LOG_LEVEL                  "S11_LOG_LEVEL"
 #define LOG_CONFIG_STRING_S1AP_LOG_LEVEL                 "S1AP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_S6A_LOG_LEVEL                  "S6A_LOG_LEVEL"
-#define LOG_CONFIG_STRING_SECU_LOG_LEVEL                 "SECU_LOG_LEVEL"
 #define LOG_CONFIG_STRING_SCTP_LOG_LEVEL                 "SCTP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_SPGW_APP_LOG_LEVEL             "SPGW_APP_LOG_LEVEL"
-#define LOG_CONFIG_STRING_SPGW_APP_LOG_LEVEL             "SPGW_APP_LOG_LEVEL"
-#define LOG_CONFIG_STRING_OUTPUT_SYSLOG                  "SYSLOG"
-#define LOG_CONFIG_STRING_OUTPUT_THREAD_SAFE             "THREAD_SAFE"
 #define LOG_CONFIG_STRING_UDP_LOG_LEVEL                  "UDP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_UTIL_LOG_LEVEL                 "UTIL_LOG_LEVEL"
 
 typedef enum {
-  MIN_LOG_ENV = 0,
-  LOG_MME_ENV = MIN_LOG_ENV,
-  LOG_MME_GW_ENV,
-  LOG_SPGW_ENV,
-  MAX_LOG_ENV
-} log_env_t;
-
-typedef enum {
   MIN_LOG_LEVEL = 0,
-  OAILOG_LEVEL_EMERGENCY = MIN_LOG_ENV,
+  OAILOG_LEVEL_EMERGENCY = MIN_LOG_LEVEL,
   OAILOG_LEVEL_ALERT,
   OAILOG_LEVEL_CRITICAL,
   OAILOG_LEVEL_ERROR,
@@ -148,12 +94,10 @@ typedef enum {
   LOG_SPGW_APP,
   LOG_S11,
   LOG_S6A,
-  LOG_SECU,
   LOG_UTIL,
   LOG_CONFIG,
   LOG_MSC,
   LOG_ITTI,
-  LOG_ASYNC_SYSTEM,
   MAX_LOG_PROTOS,
 } log_proto_t;
 
@@ -165,15 +109,16 @@ typedef struct log_thread_ctxt_s {
   pthread_t tid;
 } log_thread_ctxt_t;
 
-/*! \struct  log_private_t
+/*! \struct  log_queue_item_t
 * \brief Structure containing a string to be logged.
 * This structure is pushed in thread safe queues by thread producers of logs.
 * This structure is then popped by a dedicated thread that will write the string
 * in the opened stream ( file, tcp, stdout)
 */
-typedef struct log_private_s {
-  int32_t                                 log_level; /*!< \brief log level. */
-} log_private_t;
+typedef struct log_queue_item_s {
+  int32_t                                 log_level; /*!< \brief log level for syslog. */
+  bstring                                 bstr;      /*!< \brief string containing the message. */
+} log_queue_item_t;
 
 /*! \struct  log_config_t
 * \brief Structure containing the dynamically configurable parameters of the Logging facilities.
@@ -192,32 +137,25 @@ typedef struct log_config_s {
   log_level_t   spgw_app_log_level; /*!< \brief SP-GW ITTI task log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   s11_log_level;      /*!< \brief S11 ITTI task log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   s6a_log_level;      /*!< \brief S6a layer log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
-  log_level_t   secu_log_level;      /*!< \brief LTE security log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   util_log_level;     /*!< \brief Misc utilities log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   msc_log_level;      /*!< \brief MSC utility log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
-  log_level_t   async_system_log_level; /*!< \brief async system log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   itti_log_level;     /*!< \brief ITTI layer log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   uint8_t       asn1_verbosity_level; /*!< \brief related to asn1c generated code for S1AP verbosity level */
   bool          color;              /*!< \brief use of ANSI styling codes or no */
 } log_config_t;
 
 # if LOG_OAI
-
-void log_connect_to_server(void);
-void log_set_config(const log_config_t * const config);
+void log_configure(const log_config_t *const config);
 const char * log_level_int2str(const log_level_t log_level);
 log_level_t log_level_str2int(const char * const log_level_str);
 
 int log_init(
-  const log_env_t envP,
-  const log_level_t default_log_levelP,
-  const int max_threadsP);
+    const char *app_name,
+    log_level_t default_log_levelP,
+    int max_threadsP);
 
-void log_itti_connect(void);
 void log_start_use(void);
-struct shared_log_queue_item_s;
-
-void log_flush_message (struct shared_log_queue_item_s *item_p) __attribute__ ((hot));
+void log_flush_messages(void) __attribute__ ((hot));
 void log_exit(void);
 
 void log_stream_hex(
@@ -229,27 +167,19 @@ void log_stream_hex(
   const char *const streamP,
   const size_t sizeP);
 
-void log_stream_hex_array(
-  const log_level_t log_levelP,
-  const log_proto_t protoP,
-  const char *const source_fileP,
-  const unsigned int line_numP,
-  const char *const messageP,
-  const char *const streamP,
-  const size_t sizeP);
-
 void log_message_add (
-  struct shared_log_queue_item_s * contextP,
+  log_queue_item_t * contextP,
   char *format,
   ...) __attribute__ ((format (printf, 2, 3)));
 
-void log_message_finish (struct shared_log_queue_item_s * contextP);
+void log_message_finish (
+  log_queue_item_t * contextP);
 
 void log_message_start (
   log_thread_ctxt_t * const thread_ctxtP,
   const log_level_t log_levelP,
   const log_proto_t protoP,
-  struct shared_log_queue_item_s ** contextP, // Out parameter
+  log_queue_item_t ** contextP, // Out parameter
   const char *const source_fileP,
   const unsigned int line_numP,
   char *format,
@@ -280,13 +210,10 @@ void log_message (
       char *format,
       ...) __attribute__ ((format (printf, 6, 7)));
 
-int log_get_start_time_sec (void);
-
-#    define OAILOG_SET_CONFIG                                           log_set_config
+#    define OAILOG_LOG_CONFIGURE                                        log_configure
 #    define OAILOG_LEVEL_STR2INT                                        log_level_str2int
 #    define OAILOG_LEVEL_INT2STR                                        log_level_int2str
 #    define OAILOG_INIT                                                 log_init
-#    define OAILOG_ITTI_CONNECT                                         log_itti_connect
 #    define OAILOG_EXIT()                                               log_exit()
 #    define OAILOG_SPEC(pRoTo, ...)                                     do { log_message(NULL, OAILOG_LEVEL_NOTICE,   pRoTo, __FILE__, __LINE__, ##__VA_ARGS__); } while(0)/*!< \brief 3GPP trace on specifications */
 #    define OAILOG_EMERGENCY(pRoTo, ...)                                do { log_message(NULL, OAILOG_LEVEL_EMERGENCY,pRoTo, __FILE__, __LINE__, ##__VA_ARGS__); } while(0)/*!< \brief system is unusable */
@@ -312,17 +239,14 @@ int log_get_start_time_sec (void);
 #        define OAILOG_FUNC_IN(pRoTo)                                   do { log_func(true, pRoTo, __FILE__, __LINE__, __FUNCTION__); } while(0) /*!< \brief informational */
 #        define OAILOG_FUNC_OUT(pRoTo)                                  do { log_func(false, pRoTo, __FILE__, __LINE__, __FUNCTION__); return;} while(0) /*!< \brief informational */
 #        define OAILOG_FUNC_RETURN(pRoTo, rEtUrNcOdE)                   do { log_func_return(pRoTo, __FILE__, __LINE__, __FUNCTION__, (long)rEtUrNcOdE); return rEtUrNcOdE;} while(0) /*!< \brief informational */
-#        define OAILOG_STREAM_HEX_ARRAY(pRoTo, mEsSaGe, sTrEaM, sIzE)       do { log_stream_hex_array(OAILOG_LEVEL_TRACE, pRoTo, __FILE__, __LINE__, mEsSaGe, sTrEaM, sIzE); } while(0) /*!< \brief trace buffer content with indexes */
 #      endif
 #    endif
-#    include "shared_ts_log.h"
 #  else
 #    define OAILOG_SPEC(...)
-#    define OAILOG_SET_CONFIG(a)
+#    define OAILOG_LOG_CONFIGURE(a)
 #    define OAILOG_LEVEL_STR2INT(a)                                     OAILOG_LEVEL_EMERGENCY
 #    define OAILOG_LEVEL_INT2STR(a)                                     "EMERGENCY"
-#    define OAILOG_INIT(a,b,c)                                          0
-#    define OAILOG_ITTI_CONNECT()
+#    define OAILOG_INIT(a, b, c)                                        0
 #    define OAILOG_EXIT()
 #    define OAILOG_EMERGENCY(...)
 #    define OAILOG_ALERT(...)
@@ -340,13 +264,13 @@ int log_get_start_time_sec (void);
 #    define OAILOG_DEBUG(...)                                           {void;}
 #  endif
 #  if !defined(OAILOG_TRACE)
-#    define OAILOG_TRACE(...)                                           {void;}
+#    define OAILOG_TRACE(pRoTo, ...)                                    (void)(pRoTo)
 #  endif
 #  if !defined(OAILOG_EXTERNAL)
-#    define OAILOG_EXTERNAL(...)                                        {void;}
+#    define OAILOG_EXTERNAL(lOgLeVeL, pRoTo, ...)                       (void)(lOgLeVeL), (void)(pRoTo)
 #  endif
 #  if !defined(OAILOG_FUNC_IN)
-#    define OAILOG_FUNC_IN(...)                                         {void;}
+#    define OAILOG_FUNC_IN(pRoTo)                                       (void)(pRoTo)
 #  endif
 #  if !defined(OAILOG_FUNC_OUT)
 #    define OAILOG_FUNC_OUT(pRoTo)                                      do{ return;} while (0)
@@ -356,9 +280,6 @@ int log_get_start_time_sec (void);
 #  endif
 #  if !defined(OAILOG_STREAM_HEX)
 #    define OAILOG_STREAM_HEX(...)                                      {void;}
-#  endif
-#  if !defined(OAILOG_STREAM_HEX_ARRAY)
-#    define OAILOG_STREAM_HEX_ARRAY(...)                                {void;}
 #  endif
 
 #  if DAEMONIZE
@@ -370,12 +291,12 @@ int log_get_start_time_sec (void);
 #      define ASN_DEBUG(...)                                         do {vsyslog (LOG_ERR , ##__VA_ARGS__);} while(0)
 #    endif
 #  else
-#    define OAI_FPRINTF_ERR(...)                                     do {fprintf (stderr,   ##__VA_ARGS__);fflush(stderr);} while(0)
-#    define OAI_FPRINTF_INFO(...)                                    do {fprintf (stdout,   ##__VA_ARGS__);fflush(stdout);} while(0)
-#    define OAI_VFPRINTF_ERR(...)                                    do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
-#    define OAI_VFPRINTF_INFO(...)                                   do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
+#    define OAI_FPRINTF_ERR(...)                                     do {fprintf (stderr,   ##__VA_ARGS__);} while(0)
+#    define OAI_FPRINTF_INFO(...)                                    do {fprintf (stdout,   ##__VA_ARGS__);} while(0)
+#    define OAI_VFPRINTF_ERR(...)                                    do {vfprintf (stderr , ##__VA_ARGS__);} while(0)
+#    define OAI_VFPRINTF_INFO(...)                                   do {vfprintf (stderr , ##__VA_ARGS__);} while(0)
 #    if EMIT_ASN_DEBUG_EXTERN
-#      define ASN_DEBUG(...)                                         do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
+#      define ASN_DEBUG(...)                                         do {vfprintf (stderr , ##__VA_ARGS__);} while(0)
 #    endif
 #  endif
 #endif /* FILE_LOG_SEEN */

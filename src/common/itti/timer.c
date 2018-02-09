@@ -32,20 +32,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdbool.h>
-#include <stdint.h>
+
 #include <signal.h>
 #include <time.h>
 #include <errno.h>
 
-#include "bstrlib.h"
-
+#include "assertions.h"
 #include "intertask_interface.h"
 #include "timer.h"
 #include "log.h"
 #include "queue.h"
 #include "dynamic_memory_check.h"
-#include "assertions.h"
 
 
 int                                     timer_handle_signal (
@@ -70,6 +67,9 @@ typedef struct timer_desc_s {
 } timer_desc_t;
 
 static timer_desc_t                     timer_desc;
+
+static int _timer_delete_helper (struct timer_elm_s *timer_p);
+static struct timer_elm_s* _find_timer (long timer_id);
 
 #define TIMER_SEARCH(vAR, tIMERfIELD, tIMERvALUE, tIMERqUEUE)   \
   do {                                                            \
@@ -103,25 +103,6 @@ timer_handle_signal (
   timer_expired_p->arg = timer_p->timer_arg;
 
   /*
-   * Timer is a one shot timer, remove it
-   */
-  if (timer_p->type == TIMER_ONE_SHOT) {
-    //         if (timer_delete(timer_p->timer) < 0) {
-    //             TMR_DEBUG("Failed to delete timer 0x%lx", (long)timer_p->timer);
-    //         }
-    //         TMR_DEBUG("Removed timer 0x%lx", (long)timer_p->timer);
-    //         pthread_mutex_lock(&timer_desc.timer_list_mutex);
-    //         STAILQ_REMOVE(&timer_desc.timer_queue, timer_p, timer_elm_s, entries);
-    //         pthread_mutex_unlock(&timer_desc.timer_list_mutex);
-    //         free_wrapper(timer_p);
-    //         timer_p = NULL;
-    // timer_arg saved in TIMER_HAS_EXPIRED msg
-    if (timer_remove ((long)timer_p->timer, NULL) != 0) {
-      OAILOG_DEBUG (LOG_ITTI, "Failed to delete timer 0x%lx\n", (long)timer_p->timer);
-    }
-  }
-
-  /*
    * Notify task of timer expiry
    */
   if (itti_send_msg_to_task (task_id, instance, message_p) < 0) {
@@ -141,6 +122,7 @@ timer_setup (
   int32_t instance,
   timer_type_t type,
   void *timer_arg,
+  size_t arg_size,
   long *timer_id)
 {
   struct sigevent                         se;
@@ -156,7 +138,7 @@ timer_setup (
   /*
    * Allocate new timer list element
    */
-  timer_p = malloc (sizeof (struct timer_elm_s));
+  timer_p = calloc (1, sizeof (struct timer_elm_s));
 
   if (timer_p == NULL) {
     OAILOG_ERROR (LOG_ITTI, "Failed to create new timer element\n");
@@ -168,7 +150,17 @@ timer_setup (
   timer_p->task_id = task_id;
   timer_p->instance = instance;
   timer_p->type = type;
-  timer_p->timer_arg = timer_arg;
+  // copy timer_arg if it exists
+  if (timer_arg != NULL) {
+    void *arg_copy = calloc(1, arg_size);
+    if (arg_copy == NULL) {
+      OAILOG_ERROR (LOG_ITTI, "Failed to copy timer argument\n");
+      return -1;
+    }
+    memcpy (arg_copy, timer_arg, arg_size);
+    timer_p->timer_arg = arg_copy;
+  }
+
   /*
    * Setting up alarm
    */
@@ -186,7 +178,7 @@ timer_setup (
    */
   if (timer_create (CLOCK_REALTIME, &se, &timer) < 0) {
     OAILOG_ERROR (LOG_ITTI, "Failed to create timer: (%s:%d)\n", strerror (errno), errno);
-    free_wrapper ((void**)&timer_p);
+    free_wrapper ((void**) &timer_p);
     return -1;
   }
 
@@ -226,38 +218,80 @@ timer_setup (
   return 0;
 }
 
-int timer_remove (long timer_id, void ** arg)
+
+// Helper function to delete a timer from queue and cleanup associated resources
+static int _timer_delete_helper (
+  struct timer_elm_s *timer_p)
 {
-  int                                     rc = 0;
-  struct timer_elm_s                     *timer_p;
-
-  OAILOG_DEBUG (LOG_ITTI, "Removing timer 0x%lx\n", timer_id);
+  int rc = TIMER_OK;
   pthread_mutex_lock (&timer_desc.timer_list_mutex);
-  TIMER_SEARCH (timer_p, timer, ((timer_t) timer_id), &timer_desc.timer_queue);
-
-  /*
-   * We didn't find the timer in list
-   */
-  if (timer_p == NULL) {
-    pthread_mutex_unlock (&timer_desc.timer_list_mutex);
-    if (arg) *arg = NULL;
-    OAILOG_ERROR (LOG_ITTI, "Didn't find timer 0x%lx in list\n", timer_id);
-    return -1;
-  }
-
   STAILQ_REMOVE (&timer_desc.timer_queue, timer_p, timer_elm_s, entries);
   pthread_mutex_unlock (&timer_desc.timer_list_mutex);
 
-  // let user of API get back arg that can be an allocated memory (memory leak).
-
-  if (arg) *arg = timer_p->timer_arg;
   if (timer_delete (timer_p->timer) < 0) {
     OAILOG_ERROR (LOG_ITTI, "Failed to delete timer 0x%lx\n", (long)timer_p->timer);
-    rc = -1;
+    rc = TIMER_ERR;
   }
 
-  free_wrapper ((void**)&timer_p);
+  free_wrapper (&timer_p->timer_arg);
+  free_wrapper ((void **) &timer_p);
+  timer_p = NULL;
   return rc;
+}
+
+// Helper function to find a timer in the queue
+static struct timer_elm_s* _find_timer (
+  long timer_id)
+{
+  struct timer_elm_s *timer_p = NULL;
+  pthread_mutex_lock (&timer_desc.timer_list_mutex);
+  TIMER_SEARCH (timer_p, timer, ((timer_t) timer_id), &timer_desc.timer_queue);
+
+  if (timer_p == NULL) {
+    OAILOG_ERROR (LOG_ITTI, "Didn't find timer 0x%lx in list\n", timer_id);
+  }
+  pthread_mutex_unlock (&timer_desc.timer_list_mutex);
+  return timer_p;
+}
+
+/**
+ * Called when another actor gets a message that a timer has expired.
+ * If the timer is a one shot timer, then the timer is removed. If it is
+ * periodic, then nothing is done
+ */
+int timer_handle_expired (
+  long timer_id)
+{
+  struct timer_elm_s *timer_p = _find_timer (timer_id);
+  if (timer_p == NULL) {
+    return TIMER_NOT_FOUND;
+  }
+
+  if (timer_p->type == TIMER_ONE_SHOT) {
+    OAILOG_INFO (LOG_ITTI, "Timer 0x%lx expiry signal received, deleting\n", timer_id);
+    return _timer_delete_helper (timer_p);
+  }
+
+  OAILOG_INFO (LOG_ITTI, "Timer 0x%lx expired but is not one shot, not deleting\n", timer_id);
+  return TIMER_OK;
+}
+
+bool timer_exists (
+  long timer_id)
+{
+  return _find_timer (timer_id) != NULL;
+}
+
+int
+timer_remove (
+  long timer_id)
+{
+  struct timer_elm_s *timer_p = _find_timer (timer_id);
+  if (timer_p == NULL) {
+    return TIMER_NOT_FOUND;
+  }
+
+  return _timer_delete_helper (timer_p);
 }
 
 int

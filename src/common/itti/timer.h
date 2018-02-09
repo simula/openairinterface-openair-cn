@@ -40,6 +40,12 @@ typedef enum timer_type_s {
   TIMER_TYPE_MAX,
 } timer_type_t;
 
+typedef enum {
+  TIMER_OK          =  0,
+  TIMER_NOT_FOUND   = -1,
+  TIMER_ERR         = -2,
+} timer_result_t;
+
 int timer_handle_signal(siginfo_t *info);
 
 /** \brief Request a new timer
@@ -48,6 +54,8 @@ int timer_handle_signal(siginfo_t *info);
  *  \param task_id      task id of the task requesting the timer
  *  \param instance     instance of the task requesting the timer
  *  \param type         timer type
+ *  \param timer_arg    extra data to save with the timer
+ *  \param arg_size     size of the data you are saving
  *  \param timer_id     unique timer identifier
  *  @returns -1 on failure, 0 otherwise
  **/
@@ -58,14 +66,19 @@ int timer_setup(
   int32_t       instance,
   timer_type_t  type,
   void         *timer_arg,
+  size_t        arg_size,
   long         *timer_id);
+
+int timer_handle_expired (long timer_id);
+
+bool timer_exists (long timer_id);
 
 /** \brief Remove the timer from list
  *  \param timer_id unique timer id
  *  @returns -1 on failure, 0 otherwise
  **/
 
-int timer_remove (long timer_id, void ** arg);
+int timer_remove(long timer_id);
 #define timer_stop timer_remove
 
 /** \brief Initialize timer task and its API

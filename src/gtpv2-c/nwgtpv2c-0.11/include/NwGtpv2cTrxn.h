@@ -52,14 +52,14 @@ extern "C" {
 /**
  * Constructotr
  */
-nw_gtpv2c_trxn_t*
-nwGtpv2cTrxnNew( NW_IN  nw_gtpv2c_stack_t* pStack);
+NwGtpv2cTrxnT*
+nwGtpv2cTrxnNew( NW_IN  NwGtpv2cStackT* pStack);
 
 /**
  * Overloaded Constructotr
  */
-nw_gtpv2c_trxn_t*
-nwGtpv2cTrxnWithSeqNumNew( NW_IN  nw_gtpv2c_stack_t* pStack,
+NwGtpv2cTrxnT*
+nwGtpv2cTrxnWithSeqNumNew( NW_IN  NwGtpv2cStackT* pStack,
                            NW_IN  uint32_t seqNum);
 
 /**
@@ -74,15 +74,15 @@ nwGtpv2cTrxnWithSeqNumNew( NW_IN  nw_gtpv2c_stack_t* pStack,
  * @return NW_OK on success.
  */
 
-nw_gtpv2c_trxn_t*
-nwGtpv2cTrxnOutstandingRxNew( NW_IN  nw_gtpv2c_stack_t* pStack,
+NwGtpv2cTrxnT*
+nwGtpv2cTrxnOutstandingRxNew( NW_IN  NwGtpv2cStackT* pStack,
                               NW_IN  uint32_t teidLocal,
-                              NW_IN  struct in_addr * peerIp,
+                              NW_IN  uint32_t peerIp,
                               NW_IN  uint32_t peerPort,
                               NW_IN  uint32_t seqNum);
 
-nw_rc_t
-nwGtpv2cTrxnDelete( NW_INOUT nw_gtpv2c_trxn_t **ppTrxn);
+NwRcT
+nwGtpv2cTrxnDelete( NW_INOUT NwGtpv2cTrxnT **ppTrxn);
 
 /**
  * Start timer to wait before pruginf a req tran for which response has been sent
@@ -91,8 +91,8 @@ nwGtpv2cTrxnDelete( NW_INOUT nw_gtpv2c_trxn_t **ppTrxn);
  * @return NW_OK on success.
  */
 
-nw_rc_t
-nwGtpv2cTrxnStartDulpicateRequestWaitTimer(nw_gtpv2c_trxn_t* thiz);
+NwRcT
+nwGtpv2cTrxnStartDulpicateRequestWaitTimer(NwGtpv2cTrxnT* thiz);
 
 /**
  * Start timer to wait for rsp of a req message
@@ -102,8 +102,8 @@ nwGtpv2cTrxnStartDulpicateRequestWaitTimer(nw_gtpv2c_trxn_t* thiz);
  * @return NW_OK on success.
  */
 
-nw_rc_t
-nwGtpv2cTrxnStartPeerRspWaitTimer(nw_gtpv2c_trxn_t* thiz);
+NwRcT
+nwGtpv2cTrxnStartPeerRspWaitTimer(NwGtpv2cTrxnT* thiz);
 
 #ifdef __cplusplus
 }

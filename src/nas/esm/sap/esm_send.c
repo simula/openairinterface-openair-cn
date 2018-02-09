@@ -37,22 +37,12 @@
         EPS Mobility Management sublayer.
 
 *****************************************************************************/
-#include <pthread.h>
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
 
-#include "bstrlib.h"
-
+#include <string.h>             // strlen
 #include "log.h"
-#include "gcc_diag.h"
 #include "commonDef.h"
 #include "3gpp_24.007.h"
 #include "3gpp_24.301.h"
-#include "nas_message.h"
 #include "esm_send.h"
 #include "esm_msgDef.h"
 #include "esm_cause.h"
@@ -72,22 +62,9 @@
 
 /*
    --------------------------------------------------------------------------
-   Functions executed by the MME to send ESM messages
+   Functions executed by both the UE and the MME to send ESM messages
    --------------------------------------------------------------------------
 */
-int esm_send_esm_information_request (pti_t pti, ebi_t ebi, esm_information_request_msg * msg)
-{
-  OAILOG_FUNC_IN (LOG_NAS_ESM);
-  /*
-   * Mandatory - ESM message header
-   */
-  msg->protocoldiscriminator        = EPS_SESSION_MANAGEMENT_MESSAGE;
-  msg->epsbeareridentity            = ebi;
-  msg->messagetype                  = ESM_INFORMATION_REQUEST;
-  msg->proceduretransactionidentity = pti;
-  OAILOG_NOTICE (LOG_NAS_ESM, "ESM-SAP   - Send ESM_INFORMATION_REQUEST message (pti=%d, ebi=%d)\n", msg->proceduretransactionidentity, msg->epsbeareridentity);
-  OAILOG_FUNC_RETURN (LOG_NAS_ESM, RETURNok);
-}
 /****************************************************************************
  **                                                                        **
  ** Name:    esm_send_status()                                         **
@@ -110,8 +87,8 @@ int esm_send_esm_information_request (pti_t pti, ebi_t ebi, esm_information_requ
  ***************************************************************************/
 int
 esm_send_status (
-  pti_t pti,
-  ebi_t ebi,
+  int pti,
+  int ebi,
   esm_status_msg * msg,
   int esm_cause)
 {
@@ -158,7 +135,7 @@ esm_send_status (
  ***************************************************************************/
 int
 esm_send_pdn_connectivity_reject (
-  pti_t pti,
+  int pti,
   pdn_connectivity_reject_msg * msg,
   int esm_cause)
 {
@@ -202,7 +179,7 @@ esm_send_pdn_connectivity_reject (
  ***************************************************************************/
 int
 esm_send_pdn_disconnect_reject (
-  pti_t pti,
+  int pti,
   pdn_disconnect_reject_msg * msg,
   int esm_cause)
 {
@@ -252,11 +229,11 @@ esm_send_pdn_disconnect_reject (
  ***************************************************************************/
 int
 esm_send_activate_default_eps_bearer_context_request (
-  pti_t pti,
-  ebi_t ebi,
+  int pti,
+  int ebi,
   activate_default_eps_bearer_context_request_msg * msg,
   bstring apn,
-  const protocol_configuration_options_t * pco,
+  const ProtocolConfigurationOptions * pco,
   int pdn_type,
   bstring pdn_addr,
   const EpsQualityOfService * qos,
@@ -370,14 +347,15 @@ esm_send_activate_default_eps_bearer_context_request (
  ***************************************************************************/
 int
 esm_send_activate_dedicated_eps_bearer_context_request (
-  pti_t pti,
-  ebi_t ebi,
+  int pti,
+  int ebi,
   activate_dedicated_eps_bearer_context_request_msg * msg,
-  ebi_t linked_ebi,
+  int linked_ebi,
   const EpsQualityOfService * qos,
-  traffic_flow_template_t *tft,
-  protocol_configuration_options_t *pco)
+  PacketFilters * pkfs,
+  int n_pkfs)
 {
+  int                                     i;
 
   OAILOG_FUNC_IN (LOG_NAS_ESM);
   /*
@@ -387,7 +365,6 @@ esm_send_activate_dedicated_eps_bearer_context_request (
   msg->epsbeareridentity = ebi;
   msg->messagetype = ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST;
   msg->proceduretransactionidentity = pti;
-  msg->linkedepsbeareridentity = linked_ebi;
   /*
    * Mandatory - EPS QoS
    */
@@ -395,18 +372,18 @@ esm_send_activate_dedicated_eps_bearer_context_request (
   /*
    * Mandatory - traffic flow template
    */
-  if (tft) {
-    memcpy(&msg->tft, tft, sizeof(traffic_flow_template_t));
+  msg->tft.tftoperationcode = TRAFFIC_FLOW_TEMPLATE_OPCODE_CREATE;
+  msg->tft.ebit = TRAFFIC_FLOW_TEMPLATE_PARAMETER_LIST_IS_NOT_INCLUDED;
+  msg->tft.numberofpacketfilters = n_pkfs;
+
+  for (i = 0; i < msg->tft.numberofpacketfilters; i++) {
+    msg->tft.packetfilterlist.createtft[i] = (*pkfs)[i];
   }
 
   /*
    * Optional
    */
   msg->presencemask = 0;
-  if (pco) {
-    memcpy(&msg->protocolconfigurationoptions, pco, sizeof(protocol_configuration_options_t));
-    msg->presencemask |= ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_IEI;
-  }
   OAILOG_INFO (LOG_NAS_ESM, "ESM-SAP   - Send Activate Dedicated EPS Bearer Context " "Request message (pti=%d, ebi=%d)\n", msg->proceduretransactionidentity, msg->epsbeareridentity);
   OAILOG_FUNC_RETURN (LOG_NAS_ESM, RETURNok);
 }
@@ -433,8 +410,8 @@ esm_send_activate_dedicated_eps_bearer_context_request (
  ***************************************************************************/
 int
 esm_send_deactivate_eps_bearer_context_request (
-  pti_t pti,
-  ebi_t ebi,
+  int pti,
+  int ebi,
   deactivate_eps_bearer_context_request_msg * msg,
   int esm_cause)
 {

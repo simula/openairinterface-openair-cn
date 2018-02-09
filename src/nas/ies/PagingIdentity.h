@@ -19,17 +19,20 @@
  *      contact@openairinterface.org
  */
 
-#ifndef PAGING_IDENTITY_SEEN
-#define PAGING_IDENTITY_SEEN
+#ifndef PAGING_IDENTITY_H_
+#define PAGING_IDENTITY_H_
+#include <stdint.h>
 
 #define PAGING_IDENTITY_MINIMUM_LENGTH 2
 #define PAGING_IDENTITY_MAXIMUM_LENGTH 2
 
-typedef uint8_t paging_identity_t;
+typedef uint8_t PagingIdentity;
 
-int encode_paging_identity(paging_identity_t *pagingidentity, uint8_t iei, uint8_t *buffer, uint32_t len);
+int encode_paging_identity(PagingIdentity *pagingidentity, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-int decode_paging_identity(paging_identity_t *pagingidentity, uint8_t iei, uint8_t *buffer, uint32_t len);
+void dump_paging_identity_xml(PagingIdentity *pagingidentity, uint8_t iei);
 
-#endif /* PAGING IDENTITY_SEEN */
+int decode_paging_identity(PagingIdentity *pagingidentity, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#endif /* PAGING IDENTITY_H_ */
 

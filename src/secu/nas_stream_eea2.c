@@ -22,13 +22,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include <nettle/nettle-meta.h>
 #include <nettle/aes.h>
 #include <nettle/ctr.h>
-#include "bstrlib.h"
 #include "assertions.h"
 #include "conversions.h"
 #include "secu_defs.h"
@@ -55,7 +53,7 @@ nas_stream_encrypt_eea2 (
     byte_length += 1;
 
   ctx = malloc (nettle_aes128.context_size);
-  data = calloc (1, byte_length);
+  data = malloc (byte_length);
   local_count = hton_int32 (stream_cipher->count);
   memset (m, 0, sizeof (m));
   memcpy (&m[0], &local_count, 4);
@@ -64,11 +62,11 @@ nas_stream_encrypt_eea2 (
    * Other bits are 0
    */
 #if NETTLE_VERSION_MAJOR < 3
-  nettle_aes128.set_encrypt_key(ctx, stream_cipher->key_length,
-                                stream_cipher->key);
+    nettle_aes128.set_encrypt_key(ctx, stream_cipher->key_length,
+                                  stream_cipher->key);
 #else
-  nettle_aes128.set_encrypt_key(ctx,
-                                stream_cipher->key);
+    nettle_aes128.set_encrypt_key(ctx,
+                                  stream_cipher->key);
 #endif
   nettle_ctr_crypt (ctx, nettle_aes128.encrypt, nettle_aes128.block_size, m, byte_length, data, stream_cipher->message);
 
@@ -76,7 +74,7 @@ nas_stream_encrypt_eea2 (
     data[byte_length - 1] = data[byte_length - 1] & (uint8_t) (0xFF << (8 - zero_bit));
 
   memcpy (out, data, byte_length);
-  free_wrapper ((void**)&data);
-  free_wrapper ((void**)&ctx);
+  free_wrapper ((void**) &data);
+  free_wrapper (&ctx);
   return 0;
 }

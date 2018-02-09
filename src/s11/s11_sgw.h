@@ -19,13 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file s11_sgw.h
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
-
 #ifndef FILE_S11_SGW_SEEN
 #define FILE_S11_SGW_SEEN
 

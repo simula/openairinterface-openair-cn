@@ -20,17 +20,23 @@
  */
 
 
-#ifndef EMM_CAUSE_SEEN
-#define EMM_CAUSE_SEEN
+#ifndef EMM_CAUSE_H_
+#define EMM_CAUSE_H_
+#include <stdint.h>
 
 #define EMM_CAUSE_MINIMUM_LENGTH 1
 #define EMM_CAUSE_MAXIMUM_LENGTH 1
 
-typedef uint8_t emm_cause_t;
+#define EMM_CAUSE_UE_SECURITY_CAP_MISMATCH 23
+#define EMM_CAUSE_SMC_REJECT_UNSPECIFIED 24
 
-int encode_emm_cause(emm_cause_t *emmcause, uint8_t iei, uint8_t *buffer, uint32_t len);
+typedef uint8_t EmmCause;
 
-int decode_emm_cause(emm_cause_t *emmcause, uint8_t iei, uint8_t *buffer, uint32_t len);
+int encode_emm_cause(EmmCause *emmcause, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* EMM CAUSE_SEEN */
+void dump_emm_cause_xml(EmmCause *emmcause, uint8_t iei);
+
+int decode_emm_cause(EmmCause *emmcause, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#endif /* EMM CAUSE_H_ */
 

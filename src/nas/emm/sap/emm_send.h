@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -103,8 +103,12 @@ int emm_send_service_reject(const emm_as_establish_t *msg,
 int emm_send_identity_request(const emm_as_security_t *, identity_request_msg *);
 int emm_send_authentication_request(const emm_as_security_t *,
                                    authentication_request_msg *);
+void emm_free_send_authentication_request(authentication_request_msg *);
 int emm_send_authentication_reject(authentication_reject_msg *);
 int emm_send_security_mode_command(const emm_as_security_t *,
                                    security_mode_command_msg *);
+int emm_send_emm_information (const emm_as_data_t * msg, emm_information_msg * emm_msg);
+void emm_free_send_emm_information (emm_information_msg * emm_msg);
 
+int emm_send_nw_detach_request(const emm_as_data_t *, nw_detach_request_msg *);
 #endif /* FILE_EMM_SEND_SEEN*/

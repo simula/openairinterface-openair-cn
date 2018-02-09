@@ -1,7 +1,5 @@
-set(ASN1RELDIR r10.5)
 include_directories(${PROJECT_SOURCE_DIR}/common)
 include_directories(${PROJECT_SOURCE_DIR}/common/itti)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 include_directories(${PROJECT_SOURCE_DIR}/mme_app)
 include_directories(${PROJECT_SOURCE_DIR}/secu)
 include_directories(${PROJECT_SOURCE_DIR}/sgw)
@@ -10,6 +8,7 @@ include_directories(${PROJECT_SOURCE_DIR}/utils)
 include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
 include_directories(${PROJECT_SOURCE_DIR}/utils/hashtable)
 include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 
 # TODO (amar) fix include leak
 include_directories("${PROJECT_SOURCE_DIR}/nas")
@@ -25,6 +24,7 @@ include_directories("${PROJECT_SOURCE_DIR}/nas/api/mme")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/api/network)
 set(libnas_api_OBJS
+    ${CMAKE_CURRENT_SOURCE_DIR}/api/network/as_message.c
     ${CMAKE_CURRENT_SOURCE_DIR}/api/network/nas_message.c
     )
 
@@ -96,16 +96,26 @@ set(libnas_esm_msg_OBJS
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ies)
 set(libnas_ies_OBJS
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/AccessPointName.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/AdditionalUpdateResult.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/AdditionalUpdateType.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/ApnAggregateMaximumBitRate.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/AuthenticationFailureParameter.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/AuthenticationParameterAutn.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/AuthenticationParameterRand.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/AuthenticationResponseParameter.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/CipheringKeySequenceNumber.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/Cli.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/CsfbResponse.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/DaylightSavingTime.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/DetachType.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/DrxParameter.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/EmergencyNumberList.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EmmCause.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EpsAttachResult.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EpsAttachType.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EpsBearerContextStatus.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/EpsBearerIdentity.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EpsMobileIdentity.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EpsNetworkFeatureSupport.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EpsQualityOfService.c
@@ -114,30 +124,56 @@ set(libnas_ies_OBJS
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EsmCause.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EsmInformationTransferFlag.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/EsmMessageContainer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/GprsTimer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/GutiType.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/IdentityType2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/ImeisvRequest.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/KsiAndSequenceNumber.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/LcsClientIdentity.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/LcsIndicator.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/LinkedEpsBearerIdentity.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/LlcServiceAccessPointIdentifier.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/LocationAreaIdentification.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/MessageType.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/MobileIdentity.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/MobileStationClassmark2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/MobileStationClassmark3.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/MsNetworkCapability.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/MsNetworkFeatureSupport.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/NasKeySetIdentifier.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/NasMessageContainer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/NasRequestType.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/NasSecurityAlgorithms.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/NetworkName.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/Nonce.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/PacketFlowIdentifier.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/PagingIdentity.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/PdnAddress.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/PdnType.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/PlmnList.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/ProcedureTransactionIdentity.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/ProtocolConfigurationOptions.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/ProtocolDiscriminator.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/PTmsiSignature.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/QualityOfService.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/RadioPriority.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/SecurityHeaderType.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/ServiceType.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/ShortMac.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/SsCode.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/SupportedCodecList.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/TimeZoneAndTime.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/TimeZone.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/TmsiStatus.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/TrackingAreaIdentity.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/TrackingAreaIdentityList.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/TrafficFlowAggregateDescription.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/TrafficFlowTemplate.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/TransactionIdentifier.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/UeNetworkCapability.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/UeRadioCapabilityInformationUpdateNeeded.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ies/UeSecurityCapability.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ies/VoiceDomainPreferenceAndUeUsageSetting.c
     )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/util)
@@ -155,6 +191,8 @@ set(libnas_mme_emm_OBJS
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/Attach.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/Authentication.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/Detach.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/emm/EmmCommon.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/emm/EmmInformation.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/emm_data_ctx.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/emm_main.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/EmmStatusHdl.c
@@ -164,20 +202,6 @@ set(libnas_mme_emm_OBJS
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/ServiceRequestHdl.c
     ${CMAKE_CURRENT_SOURCE_DIR}/emm/TrackingAreaUpdate.c
     )
-
-if(${MOBILITY_REPO})
-  include_directories ("${MOBILITY_REPO_SRC}/src/nas/emm") 
-  set(libnas_mme_emm_OBJS
-    ${libnas_mme_emm_OBJS}
-    ${MOBILITY_REPO_SRC}/src/nas/emm/TrackingAreaUpdateMobility.c
-  ) 
-else (${MOBILITY_REPO})
-  set(libnas_mme_emm_OBJS
-    ${libnas_mme_emm_OBJS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/emm/TrackingAreaUpdateMobility.c
-  ) 
-endif ()
-
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/emm/sap)
 set(libnas_mme_emm_sap_OBJS
@@ -203,7 +227,6 @@ set (libnas_mme_esm_OBJS
     ${CMAKE_CURRENT_SOURCE_DIR}/esm/esm_data_context.c
     ${CMAKE_CURRENT_SOURCE_DIR}/esm/esm_ebr.c
     ${CMAKE_CURRENT_SOURCE_DIR}/esm/esm_ebr_context.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/esm/esm_information.c
     ${CMAKE_CURRENT_SOURCE_DIR}/esm/esm_ip.c
     ${CMAKE_CURRENT_SOURCE_DIR}/esm/esm_main.c
     ${CMAKE_CURRENT_SOURCE_DIR}/esm/esm_pt.c
@@ -221,9 +244,10 @@ set(libnas_mme_esm_sap_OBJS
 
 add_library(LIB_NAS_MME
     nas_itti_messaging.c
+    nas_if_s1.c
+    nas_if_s6a.c
     nas_network.c
     nas_proc.c
-    nas_procedures.c
     ${libnas_api_OBJS}
     ${libnas_mme_api_OBJS}
     ${libnas_emm_msg_OBJS}

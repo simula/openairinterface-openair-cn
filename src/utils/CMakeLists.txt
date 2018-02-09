@@ -14,17 +14,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/bstr)
 # libhashtable
 add_library(HASHTABLE
     ${CMAKE_CURRENT_SOURCE_DIR}/hashtable/hashtable.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/hashtable/hashtable_uint64.c
     ${CMAKE_CURRENT_SOURCE_DIR}/hashtable/obj_hashtable.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/hashtable/obj_hashtable_uint64.c
     )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/hashtable)
 # pulls in dynamic_memory_checker.h
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # log.h pulls in gcc_diag.h
-set(ASN1RELDIR r10.5)
 include_directories(${PROJECT_SOURCE_DIR}/common)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 
 
 ###############################################################################
@@ -60,14 +56,11 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/msc)
 
 set(CN_UTILS_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/async_system.c
     ${CMAKE_CURRENT_SOURCE_DIR}/conversions.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/digest.c
     ${CMAKE_CURRENT_SOURCE_DIR}/enum_string.c
     ${CMAKE_CURRENT_SOURCE_DIR}/mcc_mnc_itu.c
     ${CMAKE_CURRENT_SOURCE_DIR}/dynamic_memory_check.c
     ${CMAKE_CURRENT_SOURCE_DIR}/pid_file.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/shared_ts_log.c
     ${CMAKE_CURRENT_SOURCE_DIR}/TLVEncoder.c
     ${CMAKE_CURRENT_SOURCE_DIR}/TLVDecoder.c
     )
@@ -90,3 +83,12 @@ file(GLOB lfds_slist ${lfds}/lfds611_slist/*.c)
 file(GLOB lfds_stack ${lfds}/lfds611_stack/*.c)
 file(GLOB lfds_freelist ${lfds}/lfds611_freelist/*.c)
 
+include_directories(${lfds})
+add_library(LFDS
+    ${lfds_queue} ${lfds_ring} ${lfds_slist} ${lfds_stack} ${lfds_freelist}
+    ${lfds}/lfds611_liblfds/lfds611_liblfds_abstraction_test_helpers.c
+    ${lfds}/lfds611_liblfds/lfds611_liblfds_aligned_free.c
+    ${lfds}/lfds611_liblfds/lfds611_liblfds_aligned_malloc.c
+    ${lfds}/lfds611_abstraction/lfds611_abstraction_free.c
+    ${lfds}/lfds611_abstraction/lfds611_abstraction_malloc.c
+    )

@@ -19,13 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file sctp_itti_messaging.h
-  \brief
-  \author Sebastien ROUX, Lionel Gauthier
-  \company Eurecom
-  \email: lionel.gauthier@eurecom.fr
-*/
-
 #ifndef FILE_SCTP_ITTI_MESSAGING_SEEN
 #define FILE_SCTP_ITTI_MESSAGING_SEEN
 #include "common_defs.h"

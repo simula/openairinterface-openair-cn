@@ -2,9 +2,9 @@
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
+ * The OpenAirInterface Software Alliance licenses this file to You under
  * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
+ * except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -41,30 +41,16 @@
         sent by both the MME and the UE.
 
 *****************************************************************************/
-#include <pthread.h>
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
 
-#include "bstrlib.h"
-
-#include "log.h"
-#include "common_types.h"
-#include "3gpp_24.007.h"
-#include "3gpp_24.008.h"
-#include "3gpp_29.274.h"
-#include "mme_app_ue_context.h"
 #include "emm_proc.h"
 #include "commonDef.h"
-#include "common_defs.h"
+#include "log.h"
 
 #include "emm_cause.h"
-#include "emm_data.h"
+#include "emmData.h"
 
 #include "emm_sap.h"
-#include "mme_app_defs.h"
+#include "service303.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -101,13 +87,15 @@
 int
 emm_proc_status_ind (
   mme_ue_s1ap_id_t ue_id,
-  emm_cause_t emm_cause)
+  int emm_cause)
 {
   OAILOG_FUNC_IN (LOG_NAS_EMM);
   int                                     rc = RETURNok;
 
   OAILOG_INFO (LOG_NAS_EMM, "EMM-PROC  - EMM status procedure requested (cause=%d)", emm_cause);
   OAILOG_DEBUG (LOG_NAS_EMM, "EMM-PROC  - To be implemented");
+  increment_counter ("emm_status_rcvd", 1, NO_LABELS);
+
   /*
    * TODO
    */
@@ -132,15 +120,16 @@ emm_proc_status_ind (
 int
 emm_proc_status (
   mme_ue_s1ap_id_t ue_id,
-  emm_cause_t emm_cause)
+  int emm_cause)
 {
   OAILOG_FUNC_IN (LOG_NAS_EMM);
+  increment_counter ("emm_status_sent", 1, NO_LABELS);
   int                                     rc;
   emm_sap_t                               emm_sap = {0};
   emm_security_context_t                 *sctx = NULL;
-  struct emm_context_s              *ctx = NULL;
+  struct emm_data_context_s              *ctx = NULL;
 
-  OAILOG_INFO (LOG_NAS_EMM, "EMM-PROC  - EMM status procedure requested\n");
+  OAILOG_INFO (LOG_NAS_EMM, "EMM-PROC  - EMM status procedure requested");
   /*
    * Notity EMM that EMM status indication has to be sent to lower layers
    */
@@ -148,22 +137,17 @@ emm_proc_status (
   emm_sap.u.emm_as.u.status.emm_cause = emm_cause;
   emm_sap.u.emm_as.u.status.ue_id = ue_id;
   emm_sap.u.emm_as.u.status.guti = NULL;
+  ctx = emm_data_context_get (&_emm_data, ue_id);
 
-  ue_mm_context_t *ue_mm_context = mme_ue_context_exists_mme_ue_s1ap_id (&mme_app_desc.mme_ue_contexts, ue_id);
-  if (ue_mm_context) {
-    ctx = &ue_mm_context->emm_context;
-    if (ctx) {
-      sctx = &ctx->_security;
-    }
+  if (ctx) {
+    sctx = &ctx->_security;
   }
 
   /*
    * Setup EPS NAS security data
    */
   emm_as_set_security_data (&emm_sap.u.emm_as.u.status.sctx, sctx, false, true);
-  MSC_LOG_TX_MESSAGE (MSC_NAS_EMM_MME, MSC_NAS_EMM_MME, NULL, 0, "EMMAS_STATUS_IND  ue id " MME_UE_S1AP_ID_FMT " ", ue_id);
   rc = emm_sap_send (&emm_sap);
-  unlock_ue_contexts(ue_mm_context);
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
 

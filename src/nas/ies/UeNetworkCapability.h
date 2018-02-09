@@ -19,13 +19,18 @@
  *      contact@openairinterface.org
  */
 
-#ifndef UE_NETWORK_CAPABILITY_SEEN
-#define UE_NETWORK_CAPABILITY_SEEN
-
+#ifndef UE_NETWORK_CAPABILITY_H_
+#define UE_NETWORK_CAPABILITY_H_
+#include <stdint.h>
 #include "3gpp_24.301.h"
-int encode_ue_network_capability(ue_network_capability_t *uenetworkcapability, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-int decode_ue_network_capability(ue_network_capability_t *uenetworkcapability, uint8_t iei, uint8_t *buffer, uint32_t len);
+typedef ue_network_capability_t UeNetworkCapability;
+
+int encode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+int decode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+void dump_ue_network_capability_xml(UeNetworkCapability *uenetworkcapability, uint8_t iei);
 
 #endif /* UE NETWORK CAPABILITY_H_ */
 
