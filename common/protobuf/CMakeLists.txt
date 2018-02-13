@@ -7,7 +7,7 @@
 
 find_package(Protobuf REQUIRED)
 add_compile_options(-std=c++11)
-
+set(OPENAIRCN_DIR "/home/vagrant/openair-cn")
 set(PROTO_PATH "${OPENAIRCN_DIR}/protos")
 set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -20,28 +20,11 @@ set(PROTO_FILES
 list(APPEND PROTO_SRCS "")
 list(APPEND PROTO_HDRS "")
 
-# build protobuf c++ bindings
-foreach(PROTO_FILE ${PROTO_FILES})
-    get_filename_component(ABS_PATH ${PROTO_FILE} ABSOLUTE)
-    get_filename_component(BASE_NAME ${PROTO_FILE} NAME_WE)
-
-    list(APPEND PROTO_SRCS ${OUTPUT_DIR}/protos/${BASE_NAME}.pb.cc)
-    list(APPEND PROTO_HDRS ${OUTPUT_DIR}/protos/${BASE_NAME}.pb.h)
-
-    add_custom_command(
-        OUTPUT "${OUTPUT_DIR}/protos/${BASE_NAME}.pb.cc"
-               "${OUTPUT_DIR}/protos/${BASE_NAME}.pb.h"
-        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
-        ARGS -I ${PROTO_PATH} -I ${PROTO_PATH}/prometheus
-        --cpp_out=${OUTPUT_DIR} ${ABS_PATH}
-        DEPENDS ${ABS_PATH} ${PROTOBUF_PROTOC_EXECUTABLE}
-        COMMENT "Running C++ protobuf compiler on ${PROTO_FILE}"
-        VERBATIM )
-endforeach()
-
 # Build prometheus metrics protos
 list(APPEND PROTO_SRCS ${OUTPUT_DIR}/protos/metrics.pb.cc)
 list(APPEND PROTO_HDRS ${OUTPUT_DIR}/protos/metrics.pb.h)
+
+get_filename_component(ABS_PATH ${PROTO_PATH}/prometheus/metrics.proto ABSOLUTE)
 add_custom_command(
     OUTPUT "${OUTPUT_DIR}/protos/metrics.pb.cc"
            "${OUTPUT_DIR}/protos/metrics.pb.h"
@@ -51,6 +34,25 @@ add_custom_command(
     DEPENDS ${ABS_PATH} ${PROTOBUF_PROTOC_EXECUTABLE}
     COMMENT "Running C++ protobuf compiler on metrics.proto"
     VERBATIM )
+
+# build protobuf c++ bindings
+foreach(PROTO_FILE ${PROTO_FILES})
+    get_filename_component(ABS_PATH ${PROTO_FILE} ABSOLUTE)
+    get_filename_component(BASE_NAME ${PROTO_FILE} NAME_WE)
+    list(APPEND PROTO_SRCS ${OUTPUT_DIR}/protos/${BASE_NAME}.pb.cc)
+    list(APPEND PROTO_HDRS ${OUTPUT_DIR}/protos/${BASE_NAME}.pb.h)
+
+    add_custom_command(
+        OUTPUT "${OUTPUT_DIR}/protos/${BASE_NAME}.pb.cc"
+               "${OUTPUT_DIR}/protos/${BASE_NAME}.pb.h"
+        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
+        ARGS -I ${OPENAIRCN_DIR} -I ${PROTO_PATH}/prometheus
+        --cpp_out=${OUTPUT_DIR} ${ABS_PATH}
+        DEPENDS ${ABS_PATH} ${PROTOBUF_PROTOC_EXECUTABLE}
+        COMMENT "Running C++ protobuf compiler on ${PROTO_FILE}"
+        VERBATIM )
+endforeach()
+
 
 include_directories("${OUTPUT_DIR}")
 
