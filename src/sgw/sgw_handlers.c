@@ -1170,6 +1170,18 @@ int sgw_no_pcef_create_dedicated_bearer(s11_teid_t teid)
 
       rc = itti_send_msg_to_task (TASK_S11, INSTANCE_DEFAULT, message_p);
       OAILOG_FUNC_RETURN(LOG_SPGW_APP, rc);
+
+      // Dummy value for the moment
+      if (spgw_config.sgw_config.is_remote_controller_enabled) {
+        struct in_addr remote_controller = {.s_addr = 0};
+        remote_controller.s_addr = spgw_config.sgw_config.ipv4.remote_controller.s_addr;
+
+        char command[500];
+        snprintf(command, 500, "curl -d '{\"eps_bearer_id\":%u, \"imsi\":\"%s\", \"s1_ul_teid\":\"0x%x\", \"s1_dl_teid\":\"0x%x\", \"ue_ip\":\"%s\", \"enb_ip\":\"%s\"}' -X POST http://%s:%d/ue", 1, "208950000000001", "1", "2", "172.16.0.2", "192.168.12.79", inet_ntoa(remote_controller), spgw_config.sgw_config.remote_controller_port);
+        system(command);
+        OAILOG_DEBUG (LOG_SPGW_APP, "Send add bearer context request to remote controller\n");
+        OAILOG_DEBUG (LOG_SPGW_APP, "%s\n", command);
+      }
     }
   }
   OAILOG_FUNC_RETURN(LOG_SPGW_APP, rc);
