@@ -5,9 +5,10 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
-include_directories("${COMMON_BIN_DIR}/protobuf")
+include_directories("${PROJECT_BINARY_DIR}/protobuf")
 include_directories("${PROJECT_SOURCE_DIR}/service_registry")
 
+add_compile_options(-std=c++11)
 add_library(SERVICE303_LIB
     MagmaService.h
     MagmaService.cpp
