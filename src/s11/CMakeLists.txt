@@ -8,6 +8,7 @@ include_directories(${PROJECT_SOURCE_DIR}/utils/hashtable)
 include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
 include_directories(${PROJECT_SOURCE_DIR}/gtpv2-c/nwgtpv2c-0.11/include)
 include_directories(${PROJECT_SOURCE_DIR}/gtpv2-c/nwgtpv2c-0.11/shared)
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 include_directories(${PROJECT_SOURCE_DIR}/mme_app)
 include_directories(${PROJECT_SOURCE_DIR}/sgw)
 

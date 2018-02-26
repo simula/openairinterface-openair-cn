@@ -60,6 +60,8 @@ int timer_setup(
   void         *timer_arg,
   long         *timer_id);
 
+bool timer_exists (long timer_id);
+
 /** \brief Remove the timer from list
  *  \param timer_id unique timer id
  *  @returns -1 on failure, 0 otherwise

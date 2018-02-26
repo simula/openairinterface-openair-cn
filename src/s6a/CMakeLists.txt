@@ -6,6 +6,7 @@ include_directories(${PROJECT_SOURCE_DIR}/utils)
 include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
 include_directories(${PROJECT_SOURCE_DIR}/utils/hashtable)
 include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 include_directories(${PROJECT_SOURCE_DIR}/mme_app)
 
 # TODO (amar) fix include leak

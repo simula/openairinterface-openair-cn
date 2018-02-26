@@ -78,6 +78,7 @@
 
 #include "oai_mme.h"
 #include "pid_file.h"
+#include "service303_message_utils.h"
 
 int
 main (
@@ -153,6 +154,10 @@ main (
   /*
    * Calling each layer init function
    */
+  CHECK_INIT_RETURN (service303_init(&(mme_config.service303_config)));
+
+  // Service started, but not healthy yet
+  send_app_health_to_service303 (TASK_MME_APP, false);
   CHECK_INIT_RETURN (nas_init (&mme_config));
   CHECK_INIT_RETURN (sctp_init (&mme_config));
   CHECK_INIT_RETURN (udp_init ());

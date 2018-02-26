@@ -1,6 +1,10 @@
+set(ASN1RELDIR r10.5)
 set(ITTI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/itti)
 include_directories(${PROJECT_SOURCE_DIR}/utils/lfds/liblfds6.1.1/liblfds611/inc)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/itti)
+include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/message_utils)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ITTI_ANALYZER)
 include_directories(${PROJECT_SOURCE_DIR}/utils)
 include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
@@ -19,6 +23,7 @@ include_directories("${PROJECT_SOURCE_DIR}/nas/esm/msg")
 include_directories("${PROJECT_SOURCE_DIR}/nas/api/network")
 include_directories("${PROJECT_SOURCE_DIR}/nas/api/mme")
 include_directories("${PROJECT_SOURCE_DIR}/mme_app")
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 
 if (${ENABLE_ITTI})
   set(ITTI_FILES
@@ -29,13 +34,13 @@ if (${ENABLE_ITTI})
       ${ITTI_DIR}/memory_pools.c
       ${ITTI_DIR}/signals.c
       ${ITTI_DIR}/timer.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/message_utils/service303_message_utils.c
       )
   add_library(ITTI ${ITTI_FILES})
 
   set(ITTI_LIB ITTI PARENT_SCOPE)
 endif (${ENABLE_ITTI})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(3GPP_TYPES
   ${CMAKE_CURRENT_SOURCE_DIR}/3gpp_24.008_cc_ies.c
   ${CMAKE_CURRENT_SOURCE_DIR}/3gpp_24.008_common_ies.c

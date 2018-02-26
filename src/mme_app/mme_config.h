@@ -44,6 +44,7 @@
 #include "common_types.h"
 #include "bstrlib.h"
 #include "log.h"
+#include "service303.h"
 
 #define MAX_GUMMEI                2
 
@@ -223,6 +224,7 @@ typedef struct mme_config_s {
   } e_dns_emulation;
 
   log_config_t log_config;
+  service303_data_t service303_config;
 } mme_config_t;
 
 extern mme_config_t mme_config;

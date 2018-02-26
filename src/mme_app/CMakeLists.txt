@@ -10,6 +10,7 @@ include_directories(${PROJECT_SOURCE_DIR}/utils)
 include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
 include_directories(${PROJECT_SOURCE_DIR}/utils/hashtable)
 include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 
 # TODO (amar) fix include leak
 include_directories("${PROJECT_SOURCE_DIR}/nas")
@@ -90,6 +91,8 @@ add_executable(mme
     ${PROJECT_SOURCE_DIR}/common/common_types.c
     ${PROJECT_SOURCE_DIR}/common/itti_free_defined_msg.c
     ${PROJECT_SOURCE_DIR}/nas/nas_mme_task.c
+    ${PROJECT_SOURCE_DIR}/service303/service303_task.c
+    ${PROJECT_SOURCE_DIR}/service303/service303_mme_stats.c
     )
 
 target_link_libraries (mme
@@ -99,5 +102,5 @@ target_link_libraries (mme
             HASHTABLE BSTR
     -Wl,--end-group
     pthread m sctp  rt crypt ${LFDS} ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}
-      ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} gnutls fdproto fdcore 
+      ${NETTLE_LIBRARIES} ${CONFIG_LIBRARIES} gnutls fdproto fdcore SERVICE303 
     )

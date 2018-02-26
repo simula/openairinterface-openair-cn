@@ -186,10 +186,6 @@ if(GIT_FOUND)
 endif()
 
 
-add_list_string_option(GIT_PACKAGE_NAME "NotDefined" "As per attribute name")
-add_definitions("-DGIT_PACKAGE_VERSION=\"Branch: ${GIT_BRANCH} Abrev. Hash: ${GIT_COMMIT_HASH} Date: ${GIT_COMMIT_DATE}\"")
-add_definitions("-DGIT_PACKAGE_BUGREPORT=\"openaircn-user@lists.eurecom.fr\"")
-
 ###############################################################################
 # Include CMake modules to find other library
 ###############################################################################
@@ -310,6 +306,10 @@ endif()
 ################################################################
 # Add sub modules
 ################################################################
+set(COMMON_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/magma_common")
+
+ADD_SUBDIRECTORY(../common
+  "${COMMON_BIN_DIR}")
 
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(gtpv1-u)
@@ -325,5 +325,6 @@ ADD_SUBDIRECTORY(s1ap)
 ADD_SUBDIRECTORY(s6a)
 ADD_SUBDIRECTORY(udp)
 ADD_SUBDIRECTORY(utils)
+ADD_SUBDIRECTORY(service303)
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(test)

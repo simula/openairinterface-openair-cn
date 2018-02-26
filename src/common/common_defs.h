@@ -37,8 +37,9 @@
 
 #ifndef FILE_COMMON_DEFS_SEEN
 #define FILE_COMMON_DEFS_SEEN
+#include <arpa/inet.h>  // htonl, htons
+#include <stdint.h>
 
-#include <arpa/inet.h>
 //------------------------------------------------------------------------------
 #define STOLEN_REF
 #define CLONE_REF

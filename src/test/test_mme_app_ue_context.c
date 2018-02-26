@@ -1,9 +1,15 @@
 #include <check.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include "bstrlib.h"
 
-#include "mme_app_ue_context.h"
+#include "common_types.h"
+#include "3gpp_24.007.h"
+#include "3gpp_24.008.h"
 #include "3gpp_23.003.h"
+#include "3gpp_29.274.h"
+#include "mme_app_ue_context.h"
 
 #define TEST_CASE_COMMON_CONVERT_MAX 10
 

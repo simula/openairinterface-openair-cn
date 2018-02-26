@@ -186,10 +186,6 @@ if(GIT_FOUND)
 endif()
 
 
-add_list_string_option(PACKAGE_NAME "NotDefined" "As per attribute name")
-add_definitions("-DPACKAGE_VERSION=\"Branch: ${GIT_BRANCH} Abrev. Hash: ${GIT_COMMIT_HASH} Date: ${GIT_COMMIT_DATE}\"")
-add_definitions("-DPACKAGE_BUGREPORT=\"openaircn-user@lists.eurecom.fr\"")
-
 ###############################################################################
 # Include CMake modules to find other library
 ###############################################################################
@@ -329,5 +325,6 @@ ADD_SUBDIRECTORY(s1ap)
 ADD_SUBDIRECTORY(s6a)
 ADD_SUBDIRECTORY(udp)
 ADD_SUBDIRECTORY(utils)
+ADD_SUBDIRECTORY(service303)
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(test)

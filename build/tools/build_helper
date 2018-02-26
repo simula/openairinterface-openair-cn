@@ -493,6 +493,145 @@ install_1.1.5_freediameter_from_source() {
 
 #-------------------------------------------------------------------------------
 # arg1 is force (no interactive script)
+
+install_prometheus_cpp_from_source() {
+  if [ $1 -eq 0 ]; then
+    read -p "Do you want to install  prometheus-cpp ? <y/N> " prompt
+    OPTION=""
+  else
+    prompt='y'
+    OPTION="-y"
+  fi
+
+  if [[ "$OS_DISTRO" == "ubuntu" ]]; then
+    # libpq-dev 'may' be not needed
+    PACKAGE_LIST="\
+      cmake \
+      cmake-curses-gui"
+  elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
+    PACKAGE_LIST="\
+      $CMAKE"
+  else
+    echo_fatal "$OS_DISTRO is not a supported distribution."
+  fi
+  $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
+
+  if [[ $prompt =~ [yY](es)* ]]
+  then
+    cd /tmp
+    echo "Downloading prometheus-cpp from source"
+    $SUDO rm -rf /tmp/prometheus-cpp
+    $SUDO git clone https://github.com/jupp0r/prometheus-cpp 
+    cd /tmp/prometheus-cpp
+    $SUDO git submodule update --init
+    $CMAKE .  
+    echo "Compiling prometheus-cpp"
+    make -j`nproc`
+    $SUDO make install
+    cd /tmp
+    $SUDO rm -rf /tmp/prometheus-cpp
+  fi
+
+}
+
+#-------------------------------------------------------------------------------
+# arg1 is force (no interactive script)
+
+install_google_protobuf_from_source() {
+  if [ $1 -eq 0 ]; then
+    read -p "Do you want to install Gogle protobuf ? <y/N> " prompt
+    OPTION=""
+  else
+    prompt='y'
+    OPTION="-y"
+  fi
+
+  if [[ "$OS_DISTRO" == "ubuntu" ]]; then
+    # libpq-dev 'may' be not needed
+    PACKAGE_LIST="\
+      autoconf \
+      automake \
+      libtool \
+      curl \
+      g++ \
+      unzip"
+  elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
+    PACKAGE_LIST="\
+      autoconf \
+      automake \
+      libtool \
+      curl \
+      gcc-c++ \
+      unzip"
+  else
+    echo_fatal "$OS_DISTRO is not a supported distribution."
+  fi
+  $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
+
+  if [[ $prompt =~ [yY](es)* ]]
+  then
+    cd /tmp
+    echo "Downloading google protobuf from source"
+    $SUDO rm -rf /tmp/protobuf
+    $SUDO git clone https://github.com/google/protobuf.git 
+    cd /tmp/protobuf
+    $SUDO ./autogen.sh
+    ./configure
+    echo "Compiling google protobuf"
+    make
+    make check
+    $SUDO make install
+    $SUDO ldconfig
+    cd /tmp
+    $SUDO rm -rf /tmp/protobuf
+  fi
+
+}
+#-------------------------------------------------------------------------------
+# arg1 is force (no interactive script)
+install_grpc_from_source() {
+  if [ $1 -eq 0 ]; then
+    read -p "Do you want to install  gRPC ? <y/N> " prompt
+    OPTION=""
+  else
+    prompt='y'
+    OPTION="-y"
+  fi
+  if [[ "$OS_DISTRO" == "ubuntu" || "$OS_BASEDISTRO" == "fedora" ]]; then
+    # libpq-dev 'may' be not needed
+    PACKAGE_LIST="\
+      autoconf \
+      build-essential \
+      libtool \
+      pkg-config \
+      libgflags-dev \
+      libgtest-dev \
+      clang \
+      curl \
+      libc++-dev"
+  else
+    echo_fatal "$OS_DISTRO is not a supported distribution."
+  fi
+  $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
+
+
+  if [[ $prompt =~ [yY](es)* ]]
+  then
+    cd /tmp
+    echo "Downloading gRPC from source"
+    $SUDO rm -rf /tmp/grpc
+    $SUDO git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc
+    cd /tmp/grpc
+    $SUDO git submodule update --init
+    echo "Compiling grpc"
+    make -j`nproc`
+    $SUDO make install
+    cd /tmp
+    $SUDO rm -rf /tmp/grpc
+  fi
+}
+#-------------------------------------------------------------------------------
+# arg1 is force (no interactive script)
 install_freediameter_from_source() {
   if [ $1 -eq 0 ]; then
     read -p "Do you want to install freeDiameter 1.2.0 ? <y/N> " prompt
@@ -975,10 +1114,12 @@ check_install_mme_software() {
     $SUDO apt-get install -y nettle-dev nettle-bin
     $SUDO apt-get install -y libgnutls-dev
   fi
-  
+  install_grpc_from_source $1 
+  install_prometheus_cpp_from_source  $1
   install_freediameter_from_source $1
   install_asn1c_from_source $1
   install_liblfds7.1.0_from_source $1
+  install_google_protobuf_from_source $1
 
   install_libgtpnl_from_source $1
 
@@ -1031,6 +1172,17 @@ check_install_mme_software() {
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
+
+  if [ $? -ne 0 ]; then
+    echo_fatal "Failed to install package list $PACKAGE_LIST"
+  fi
+
+  if [[ "$OS_DISTRO" == "ubuntu" ]]; then
+    PACKAGE_LIST="\
+      libyaml-cpp-dev \
+      libboost-dev"
+  fi
+  $SUDO apt install $OPTION $PACKAGE_LIST
 
   if [ $? -ne 0 ]; then
     echo_fatal "Failed to install package list $PACKAGE_LIST"

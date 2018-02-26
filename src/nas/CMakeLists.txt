@@ -10,6 +10,7 @@ include_directories(${PROJECT_SOURCE_DIR}/utils)
 include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
 include_directories(${PROJECT_SOURCE_DIR}/utils/hashtable)
 include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 
 # TODO (amar) fix include leak
 include_directories("${PROJECT_SOURCE_DIR}/nas")

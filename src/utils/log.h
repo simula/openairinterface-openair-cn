@@ -89,6 +89,8 @@ extern int fd_g_debug_lvl;
 #define ANSI_COLOR_CONCEALED_ON "\x1b[8m"
 
 #define LOG_CONFIG_STRING_ASYNC_SYSTEM_LOG_LEVEL         "ASYNC_SYSTEM"
+#include <stdint.h>
+#include <stdbool.h>
 #define LOG_CONFIG_STRING_COLOR                          "COLOR"
 #define LOG_CONFIG_STRING_OUTPUT_CONSOLE                 "CONSOLE"
 #define LOG_CONFIG_STRING_GTPV1U_LOG_LEVEL               "GTPV1U_LOG_LEVEL"

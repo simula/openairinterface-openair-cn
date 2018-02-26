@@ -24,6 +24,7 @@ include_directories("${PROJECT_SOURCE_DIR}/nas/esm/msg")
 include_directories("${PROJECT_SOURCE_DIR}/nas/api/network")
 include_directories("${PROJECT_SOURCE_DIR}/nas/api/mme")
 include_directories("${PROJECT_SOURCE_DIR}/mme_app")
+include_directories("${PROJECT_SOURCE_DIR}/service303")
 
 # Override options for S/P GW
 set (  BYTE_ORDER=LITTLE_ENDIAN )
@@ -47,10 +48,12 @@ add_executable(spgw
   oai_sgw.c
   ${PROJECT_SOURCE_DIR}/common/common_types.c
   ${PROJECT_SOURCE_DIR}/common/itti_free_defined_msg.c
+  ${PROJECT_SOURCE_DIR}/service303/service303_task.c
+  ${PROJECT_SOURCE_DIR}/service303/service303_spgw_stats.c
   )
 target_link_libraries (spgw
       -Wl,--start-group
-      BSTR CN_UTILS GTPV1U GTPV2C HASHTABLE 
+      BSTR CN_UTILS GTPV1U GTPV2C HASHTABLE SERVICE303 
       SGW S11_SGW UDP_SERVER ${MSC_LIB} ${ITTI_LIB}  ${3GPP_TYPES_LIB}
       -Wl,--end-group
       pthread m rt ${LFDS} ${GTPNL_LIBRARIES} ${CONFIG_LIBRARIES}

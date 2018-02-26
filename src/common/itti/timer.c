@@ -71,6 +71,7 @@ typedef struct timer_desc_s {
 
 static timer_desc_t                     timer_desc;
 
+static struct timer_elm_s* _find_timer (long timer_id);
 #define TIMER_SEARCH(vAR, tIMERfIELD, tIMERvALUE, tIMERqUEUE)   \
   do {                                                            \
     STAILQ_FOREACH(vAR, tIMERqUEUE, entries) {                  \
@@ -226,6 +227,20 @@ timer_setup (
   return 0;
 }
 
+// Helper function to find a timer in the queue
+static struct timer_elm_s* _find_timer (
+  long timer_id)
+{
+  struct timer_elm_s *timer_p = NULL;
+  pthread_mutex_lock (&timer_desc.timer_list_mutex);
+  TIMER_SEARCH (timer_p, timer, ((timer_t) timer_id), &timer_desc.timer_queue);
+
+  if (timer_p == NULL) {
+    OAILOG_ERROR (LOG_ITTI, "Didn't find timer 0x%lx in list\n", timer_id);
+  }
+  pthread_mutex_unlock (&timer_desc.timer_list_mutex);
+  return timer_p;
+}
 int timer_remove (long timer_id, void ** arg)
 {
   int                                     rc = 0;
@@ -259,6 +274,12 @@ int timer_remove (long timer_id, void ** arg)
   free_wrapper ((void**)&timer_p);
   return rc;
 }
+bool timer_exists (
+  long timer_id)
+{
+  return _find_timer (timer_id) != NULL;
+}
+
 
 int
 timer_init (

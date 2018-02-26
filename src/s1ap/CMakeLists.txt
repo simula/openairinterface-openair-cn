@@ -5,6 +5,7 @@ add_definitions(-DASN1_MINIMUM_VERSION=924)
 include_directories("${PROJECT_SOURCE_DIR}/common")
 include_directories("${PROJECT_SOURCE_DIR}/common/itti")
 include_directories("${PROJECT_SOURCE_DIR}/utils")
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 
 # This is a fork of https://github.com/websnarf/bstrlib
 # Evaluate if we want to pull the src directly from github.
