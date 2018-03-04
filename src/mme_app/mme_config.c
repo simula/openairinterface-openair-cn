@@ -188,6 +188,12 @@ static void mme_config_init (mme_config_t * config_pP)
   config_pP->served_tai.plmn_mnc_len[0] = PLMN_MNC_LEN;
   config_pP->served_tai.tac[0] = PLMN_TAC;
   config_pP->s1ap_config.outcome_drop_timer_sec = S1AP_OUTCOME_TIMER_DEFAULT;
+/*
+  * Set service 303
+  */
+  config_pP->service303_config.name = bfromcstr (SERVICE303_MME_PACKAGE_NAME);
+  config_pP->service303_config.version = bfromcstr (SERVICE303_MME_PACKAGE_VERSION);
+
 }
 
 //------------------------------------------------------------------------------
@@ -893,6 +899,9 @@ static void mme_config_display (mme_config_t * config_pP)
 
   OAILOG_INFO (LOG_CONFIG, "- S6A:\n");
   OAILOG_INFO (LOG_CONFIG, "    conf file ........: %s\n", bdata(config_pP->s6a_config.conf_file));
+  OAILOG_INFO (LOG_CONFIG, "- Service303:\n");
+  OAILOG_INFO (LOG_CONFIG, "    service name ........: %s\n", bdata(config_pP->service303_config.name));
+  OAILOG_INFO (LOG_CONFIG, "    version ........: %s\n", bdata(config_pP->service303_config.version));
   OAILOG_INFO (LOG_CONFIG, "- Logging:\n");
   OAILOG_INFO (LOG_CONFIG, "    Output ..............: %s\n", bdata(config_pP->log_config.output));
   OAILOG_INFO (LOG_CONFIG, "    Output thread safe ..: %s\n", (config_pP->log_config.is_output_thread_safe) ? "true":"false");
