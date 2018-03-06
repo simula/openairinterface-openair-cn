@@ -207,14 +207,18 @@ function main()
     mkdir -m 777 -p -v build
   fi
 
-  cp -rf $OPENAIRCN_DIR/build/CMakeLists.txt $OPENAIRCN_DIR/src/ 
+  cp -rf $OPENAIRCN_DIR/build/CMakeLists.txt $OPENAIRCN_DIR/src/
+  export NETWORK_FUNCTION='mme'
   cd ./build
   $CMAKE $cmake_args $OPENAIRCN_DIR/src/ > /dev/null
+  [[ $? -ne 0 ]] && return $?
 
   compilations mme mme $OPENAIRCN_DIR/build/mme/build/mme_app $verbose
+  [[ $? -ne 0 ]] && return $?
 
   if [ $unit_tests -ne 0 ]; then
     make_test mme mme $OPENAIRCN_DIR/build/mme/build/mme_app $verbose
+    [[ $? -ne 0 ]] && return $?
   fi 
 
   if [ $daemon -ne 0 ]; then
@@ -225,6 +229,7 @@ function main()
     $SUDO killall -q mme
     $SUDO cp -upv $OPENAIRCN_DIR/build/mme/build/mme_app/mme /usr/local/bin && echo_success "mme installed" 
   fi 
+  return 0
 }
 
 

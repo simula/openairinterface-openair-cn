@@ -156,10 +156,13 @@ function main()
   fi
   
   cp -rf $OPENAIRCN_DIR/build/CMakeLists.txt $OPENAIRCN_DIR/src/ 
+  export NETWORK_FUNCTION='spgw'
   cd ./build
   $CMAKE $cmake_args $OPENAIRCN_DIR/src/ > /dev/null
+  [[ $? -ne 0 ]] && return $?
 
   compilations spgw spgw $OPENAIRCN_DIR/build/spgw/build/oai_sgw $verbose
+  [[ $? -ne 0 ]] && return $?
 
   if [ $daemon -ne 0 ]; then
     # TODO /usr/sbin ?
@@ -167,6 +170,7 @@ function main()
   else
     $SUDO cp -upv $OPENAIRCN_DIR/build/spgw/build/oai_sgw/spgw /usr/local/bin && echo_success "spgw installed"
   fi
+  return 0
 }
 
 
