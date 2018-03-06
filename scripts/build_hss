@@ -123,10 +123,15 @@ function main()
   if [ $var_check_install_oai_software -gt 0 ];then
     update_package_db
     check_install_hss_software  $force
-    echo "HSS not compiled, to compile it, re-run build_hss without -i option"
-    exit 0
+    if [ $? -ne 0 ]; then
+        echo_error "Error: HSS software installation failed"
+        return 1
+    else
+        echo_success "HSS software installation successful"
+        echo "HSS not compiled, to compile it, re-run build_hss without -i option"
+        return 0
+    fi
   fi
-  
 
   set_openair_env
   if [[ $verbose -eq 1 ]]; then

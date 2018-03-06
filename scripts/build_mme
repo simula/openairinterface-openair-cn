@@ -154,21 +154,18 @@ function main()
   if [ $var_check_install_oai_software -gt 0 ];then
     update_package_db
     check_install_mme_software  $force
-    echo "MME not compiled, to compile it, re-run build_mme without -i option"
-    exit 0
+    if [ $? -ne 0 ]; then
+        echo_error "Error: MME software installation failed"
+        return 1
+    else
+        echo_success "MME software installation successful"
+        echo "MME not compiled, to compile it, re-run build_mme without -i option"
+        return 0
+    fi
   fi
   
   set_openair_env 
-  $SUDO cp -uv  $OPENAIRCN_DIR/scripts/mme_test_s1_pcap2pdml /usr/local/bin
-  $SUDO chmod 755 /usr/local/bin/mme_test_s1_pcap2pdml
-   
-  $SUDO cp -uv  $OPENAIRCN_DIR/scripts/test_epc              /usr/local/bin
-  $SUDO chmod 755 /usr/local/bin/test_epc 
-  
-  $SUDO mkdir -p -m 755 /usr/share/oai/xsl
-  $SUDO cp -upv  $OPENAIRCN_DIR/src/test/scenarios/play_scenario.xsl    /usr/share/oai/xsl
-  $SUDO cp -upv  $OPENAIRCN_DIR/src/test/scenarios/generic_scenario.xsl /usr/share/oai/xsl
-  
+
   if [[ $verbose -eq 1 ]]; then
     cecho "OPENAIRCN_DIR    = $OPENAIRCN_DIR" $green
   fi

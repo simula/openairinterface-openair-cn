@@ -38,7 +38,8 @@ case "$OS_DISTRO" in
   ubuntu) OS_BASEDISTRO="debian"; INSTALLER="apt-get"; CMAKE="cmake" ;;
 esac
 
-SUPPORTED_KERNEL_VERSION="4.9.0"
+DATA_PLANE_SUPPORTED_KERNEL_MIN_VERSION="4.9.1"
+DATA_PLANE_SUPPORTED_KERNEL_MAX_VERSION="4.9.86"
 
 SUDO='sudo -S -E'
 
@@ -75,6 +76,30 @@ echo_warning() { cecho "$*" $yellow       ;}
 echo_success() { cecho "$*" $green        ;}
 echo_info()    { cecho "$*" $blue         ;}
 
+#-------------------------------------------------------------------------------
+# From https://stackoverflow.com/questions/4023830/how-to-compare-two-strings-in-dot-separated-version-format-in-bash
+# arg1 is a dotted (or not) version number (ex 4.10.6.56-ubunutu) 
+# arg2 is a dotted (or not) version number (ex 4.10.6.56-ubunutu)
+# return 0 if $1 lower or equal $2, else 1
+version_le() {
+  [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
+}
+
+# From https://stackoverflow.com/questions/4023830/how-to-compare-two-strings-in-dot-separated-version-format-in-bash
+version_lt() {
+  [ "$1" = "$2" ] && return 1 || version_le $1 $2
+}
+
+# From https://stackoverflow.com/questions/4023830/how-to-compare-two-strings-in-dot-separated-version-format-in-bash
+version_ge() {
+  [  "$1" = "`echo -e "$1\n$2" | sort -V | tail -n1`" ]
+}
+
+# From https://stackoverflow.com/questions/4023830/how-to-compare-two-strings-in-dot-separated-version-format-in-bash
+version_gt() {
+  [ "$1" = "$2" ] && return 1 || version_ge $1 $2
+}
+
 ########################
 # distribution helpers #
 ########################
@@ -88,9 +113,9 @@ echo_info()    { cecho "$*" $blue         ;}
 #   debian8.5
 get_distribution_release() {
     if [[ ! -z "$OS_DISTRO$OS_RELEASE" ]]; then
-        echo "$OS_DISTRO$OS_RELEASE"
+        echo -n "$OS_DISTRO$OS_RELEASE"
     else
-        echo Unknown
+        echo -n Unknown
     fi
 }
 
@@ -111,38 +136,38 @@ check_supported_distribution() {
 
 #-------------------------------------------------------------------------------
 clean_kernel() {
-    $SUDO modprobe ip_tables
-    $SUDO modprobe x_tables
-    $SUDO iptables -P INPUT ACCEPT
-    $SUDO iptables -F INPUT
-    $SUDO iptables -P OUTPUT ACCEPT
-    $SUDO iptables -F OUTPUT
-    $SUDO iptables -P FORWARD ACCEPT
-    $SUDO iptables -F FORWARD
-    $SUDO iptables -t nat -F
-    $SUDO iptables -t mangle -F
-    $SUDO iptables -t filter -F
-    $SUDO iptables -t raw -F
-    echo_info "Flushed iptables"
+  $SUDO modprobe ip_tables
+  $SUDO modprobe x_tables
+  $SUDO iptables -P INPUT ACCEPT
+  $SUDO iptables -F INPUT
+  $SUDO iptables -P OUTPUT ACCEPT
+  $SUDO iptables -F OUTPUT
+  $SUDO iptables -P FORWARD ACCEPT
+  $SUDO iptables -F FORWARD
+  $SUDO iptables -t nat -F
+  $SUDO iptables -t mangle -F
+  $SUDO iptables -t filter -F
+  $SUDO iptables -t raw -F
+  echo_info "Flushed iptables"
 }
 
 #-------------------------------------------------------------------------------
 clean_all_files() {
- set_openair_env
- dir=$OPENAIRCN_DIR/build
- rm -rf $dir/log 
- rm -rf $dir/epc/build $dir/epc/CMakeLists.txt
- rm -rf $dir/mme/build $dir/mme/CMakeLists.txt
- rm -rf $dir/hss/build
- rm -rf $dir/autotests/BIN $dir/autotests/log $dir/autotests/*/build
+  set_openair_env
+  dir=$OPENAIRCN_DIR/build
+  rm -rf $dir/log 
+  rm -rf $dir/epc/build $dir/epc/CMakeLists.txt
+  rm -rf $dir/mme/build $dir/mme/CMakeLists.txt
+  rm -rf $dir/hss/build
+  rm -rf $dir/autotests/BIN $dir/autotests/log $dir/autotests/*/build
 }
 
 #-------------------------------------------------------------------------------
 # Remove Nettle installation which was done from sources (only done for Ubuntu distro)
 remove_nettle_from_source() {
-    nettle_uninstall_log=$OPENAIRCN_DIR/build/log/nettle_uninstall_log.txt
-    echo_info "\nUn-Installing Nettle from sources. The log file for nettle un-installation is here: $nettle_uninstall_log "
-    (
+  nettle_uninstall_log=$OPENAIRCN_DIR/build/log/nettle_uninstall_log.txt
+  #echo_info "\nUn-Installing Nettle from sources. The log file for nettle un-installation is here: $nettle_uninstall_log "
+  (
     $SUDO apt-get remove -y nettle-dev nettle-bin 
     cd /tmp
     echo "Downloading nettle archive"
@@ -154,21 +179,22 @@ remove_nettle_from_source() {
     if [ ! -f nettle-2.5.tar.gz ]; then
       echo_error "Could not download nettle source files"
       cd -
-      return
+      return 1
     fi
     tar -xzf nettle-2.5.tar.gz
     cd nettle-2.5/
     ./configure --disable-openssl --enable-shared --prefix=/usr 
     $SUDO make uninstall || true 
-    ) >& $nettle_uninstall_log
+  ) >& $nettle_uninstall_log
+  return 0
 }
 
 #-------------------------------------------------------------------------------
 # Remove Gnutls from source (only done for Ubuntu distro)
 remove_gnutls_from_source(){
-    gnutls_uninstall_log=$OPENAIRCN_DIR/build/log/gnutls_uninstall_log.txt
-    echo_info "\nUn-Installing Gnutls. The log file for Gnutls un-installation is here: $gnutls_uninstall_log "
-    (
+  gnutls_uninstall_log=$OPENAIRCN_DIR/build/log/gnutls_uninstall_log.txt
+  #echo_info "\nUn-Installing Gnutls. The log file for Gnutls un-installation is here: $gnutls_uninstall_log "
+  (
     $SUDO apt-get remove -y libgnutls-dev
     cd /tmp 
     echo "Downloading gnutls archive"
@@ -178,13 +204,14 @@ remove_gnutls_from_source(){
     if [ ! -f gnutls-3.1.23.tar.xz ]; then
       echo_error "Could not download gnutls source files"
       cd -
-      return
+      return 1
     fi
     tar -xJf gnutls-3.1.23.tar.xz
     cd gnutls-3.1.23/
     ./configure --prefix=/usr
     $SUDO make uninstall || true
-    )>& $gnutls_uninstall_log
+  )>& $gnutls_uninstall_log
+  return 0
 }
 
 #-------------------------------------------------------------------------------
@@ -194,7 +221,7 @@ remove_gnutls_from_source(){
 #
 
 function version_gt() { 
-	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; 
+  test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; 
 }
 
 
@@ -300,56 +327,6 @@ make_certs(){
 ############################################
 
 #-------------------------------------------------------------------------------
-# This function is for internal use of EURECOM developers (no support)
-# arg1 is force (no interactive script)
-install_netmap() {
-  if [ $1 -gt 0 ]; then
-    OPTION="-y"
-  else
-    OPTION=""
-  fi
-
-  # Compilers, generators, ...
-  $SUDO apt-get install $OPTION \
-    autoconf  \
-    automake  \
-    build-essential \
-    linux-source \
-    qt4-dev-tools
-
-  $SUDO  apt-get build-dep linux-image-$(uname -r)
-  if [ $1 -eq 0 ]; then
-    read -p "Do you want to install netmap ? <y/N> " prompt
-  else
-    prompt='y'
-  fi
-  if [[ $prompt =~ [yY](es)* ]]
-  then
-    # TODO: check operations
-    current_kernel_release=`uname -r | cut -d '-' -f1`
-    if [ ! -f /usr/src/linux-source-"$current_kernel_release"/"$current_kernel_release"/.config ]; then
-      if [ ! -f /usr/src/linux-source-"$current_kernel_release"/"$current_kernel_release" ]; then
-        echo "Untar kernel source code"
-        cd /usr/src/linux-source-"$current_kernel_release"
-        $SUDO tar xjf *.tar.bz2
-      fi
-      cd linux-source-"$current_kernel_release"
-      $SUDO make oldconfig
-      $SUDO make
-      $SUDO make modules_install
-      $SUDO make install
-      echo_warning "check CONFIG_VIRTIO_NET=m for full performance"
-      echo_fatal "Please reboot your computer on the new installed kernel (do your own stuff in grub.cfg): $current_kernel_release"
-    fi
-
-    echo "Downloading netmap"
-    cd $OPENAIRCN_DIR/..
-    git clone https://github.com/luigirizzo/netmap.git
-    cd netmap
-    ./configure --kernel-sources=/usr/src/linux-source-"$current_kernel_release"/"$current_kernel_release"
-  fi
-}
-#-------------------------------------------------------------------------------
 
 install_libgtpnl_from_source() {
   if [ $1 -gt 0 ]; then
@@ -411,9 +388,6 @@ install_liblfds7.1.0_from_source() {
     OPTION=""
   fi
 
-  # Compilers, generators, ...
-  $SUDO apt-get install $OPTION \
-    build-essential 
 
   if [ $1 -eq 0 ]; then
     read -p "Do you want to install liblfds7.1.0 ? <y/N> " prompt
@@ -422,17 +396,27 @@ install_liblfds7.1.0_from_source() {
   fi
   if [[ $prompt =~ [yY](es)* ]]
   then
+    step "Install liblfds7.1.0 from source"
+    # Compilers, generators, ...
+    $SUDO apt-get install $OPTION build-essential
+    [[ $? -ne 0 ]] && return $?
     cd /tmp
     echo "Downloading liblfds7.1.0 archive"
     $SUDO rm -rf /tmp/liblfds*
     git clone https://github.com/liblfds/liblfds.git
+    [[ $? -ne 0 ]] && return $?
     cd liblfds/liblfds/liblfds7.1.0/liblfds710/build/gcc_gnumake
+    [[ $? -ne 0 ]] && return $?
     #make so_rel # do a selector
     make so_dbg
+    [[ $? -ne 0 ]] && return $?
     $SUDO rm -f /usr/local/lib//liblfds710.so
+    [[ $? -ne 0 ]] && return $?
     $SUDO make so_install
+    [[ $? -ne 0 ]] && return $?
     $SUDO rm -rf /tmp/liblfds*
   fi
+  return 0
 }
 
 #-------------------------------------------------------------------------------
@@ -446,6 +430,7 @@ install_1.1.5_freediameter_from_source() {
     OPTION="-y"
   fi
 
+  echo "Install freeDiameter 1.1.5 from source"
   # libpq-dev 'may' be not needed
   $SUDO apt-get install $OPTION \
     autoconf  \
@@ -470,6 +455,7 @@ install_1.1.5_freediameter_from_source() {
     python-dev \
     ssl-cert \
     swig
+  [[ $? -ne 0 ]] && return $?
 
   if [[ $prompt =~ [yY](es)* ]]
   then
@@ -477,18 +463,24 @@ install_1.1.5_freediameter_from_source() {
     echo "Downloading 1.1.5 freeDiameter archive"
     $SUDO rm -rf /tmp/1.1.5.tar.gz /tmp/freeDiameter-1.1.5 /tmp/freediameter
     GIT_SSL_NO_VERIFY=true git clone https://gitlab.eurecom.fr/oai/freediameter.git -b eurecom-1.1.5
+    [[ $? -ne 0 ]] && return $?
     cd /tmp/freediameter
     #patch -p1 < $OPENAIRCN_DIR/src/s6a/freediameter/freediameter-1.1.5.patch
     mkdir build
+    [[ $? -ne 0 ]] && return $?
     cd build
     cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../
+    [[ $? -ne 0 ]] && return $?
     echo "Compiling freeDiameter"
     make -j`nproc`
+    [[ $? -ne 0 ]] && return $?
     #make test
     $SUDO make install
+    [[ $? -ne 0 ]] && return $?
     cd /tmp
     rm -rf /tmp/1.1.5.tar.gz /tmp/freeDiameter-1.1.5 /tmp/freediameter
   fi
+  return $?
 }
 
 #-------------------------------------------------------------------------------
@@ -563,13 +555,16 @@ install_freediameter_from_source() {
     mkdir build
     cd build
     $CMAKE -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ../
-    echo "Compiling freeDiameter"
+    [[ $? -ne 0 ]] && return $?
     make -j`nproc`
+    [[ $? -ne 0 ]] && return $?
     #make test
     $SUDO make install
+    [[ $? -ne 0 ]] && return $?
     cd /tmp
     rm -rf /tmp/1.2.0.tar.gz /tmp/freeDiameter-1.2.0 /tmp/freediameter
   fi
+  return 0
 }
 
 #-------------------------------------------------------------------------------
@@ -640,53 +635,93 @@ install_ovs_from_source(){
   if [[ $prompt =~ [yY](es)* ]]
   then
     # optional but recommended for secure connection towards controller
-    $SUDO apt-get install $OPTION libssl-dev libcap-ng-dev python-pip
+    $SUDO apt-get install $OPTION libssl-dev libcap-ng-dev python-pip python-six
+    [[ $? -ne 0 ]] && return $?
 
     # required by ovs
-    pip install six
+    # if problems with locale:
+    # locale
+    # sudo locale-gen "en_US.UTF-8"
+    # sudo dpkg-reconfigure locales
+    
+    #echo 'OVS: Upgrading pip'
+    # sudo -H python -m pip install --upgrade pip
+    #sudo -H pip install --upgrade pip
+    #[[ $? -ne 0 ]] && return $?
+    
+    #echo 'OVS: Installing six'
+    #sudo -H python -m pip install six
+    #sudo -H pip install six
+    #echo $?
+    #[[ $? -ne 0 ]] && return $?
+
+    $SUDO modprobe --quiet --remove gtp
+    $SUDO modprobe --quiet --remove openvswitch  
 
     $SUDO rm -rf /tmp/gtp
     mkdir /tmp/gtp
     cd /tmp/gtp
-    git clone https://gitlab.eurecom.fr/oai/openair-cn-extras.git
+    echo 'OVS: Cloning openair-cn-extras'
+    git clone https://github.com/OPENAIRINTERFACE/openair-cn-extras.git
+    [[ $? -ne 0 ]] && return $?
 
     cd openair-cn-extras/linux-4.9.0-gtp-module/
     make
+    [[ $? -ne 0 ]] && return $?
     $SUDO make install
+    [[ $? -ne 0 ]] && return $?
+    $SUDO sync
+    $SUDO depmod -a
     $SUDO modprobe udp_tunnel
     $SUDO modprobe ip6_udp_tunnel
     $SUDO modprobe gtp
+    [[ $? -ne 0 ]] && return $?
 
     git_username=`git config --get user.name`
     if [ "$git_username" == "" ]; then
-      echo "You haven't configured your Git yet. Please, provide a name and e-mail address."
-      echo -n 'Name:' 
-      read git_username
-      echo -n 'E-mail:' 
-      read git_email
-      git config --global user.name "$git_username"
-      git config --global user.email "$git_email"
+      if [ $1 -eq 0 ]; then
+        echo "You haven't configured your Git yet. Please, provide a name and e-mail address."
+        echo -n 'Name:' 
+        read git_username
+        echo -n 'E-mail:' 
+        read git_email
+        git config --global user.name "$git_username"
+        git config --global user.email "$git_email"
+      else
+        git config --global user.name "ciopenaircn"
+        git config --global user.email "ciopenaircn@openairinterface.org"
+      fi
     fi
 
     $SUDO rm -rf /tmp/ovs
     cd /tmp
     git clone https://github.com/openvswitch/ovs.git
+    [[ $? -ne 0 ]] && return $?
     cd ovs
     git checkout 31b88c97512b5dca9f1f6f73bb33292618eee88a
+    [[ $? -ne 0 ]] && return $?
     git am /tmp/gtp/openair-cn-extras/ovs/0001-datapath-GPRS-Tunneling-Protocol-GTP-support.patch
+    [[ $? -ne 0 ]] && return $?
     git am /tmp/gtp/openair-cn-extras/ovs/0002-userspace-GPRS-Tunneling-Protocol-GTP-support.patch
+    [[ $? -ne 0 ]] && return $?
 
     ./boot.sh
     ./configure --with-linux=/lib/modules/`uname -r`/build
+    [[ $? -ne 0 ]] && return $?
     make -j`nproc`
+    [[ $? -ne 0 ]] && return $?
     cat /tmp/gtp/openair-cn-extras/linux-4.9.0-gtp-module/Module.symvers >> datapath/linux/Module.symvers
     make
     $SUDO make modules_install  # this overwrites openvswitch.ko, vport.ko, vport-gtp.ko, etc.
+    [[ $? -ne 0 ]] && return $?
     $SUDO make install
+    [[ $? -ne 0 ]] && return $?
     $SUDO mkdir -p /usr/local/etc/openvswitch
     $SUDO mkdir -p /usr/local/var/run/openvswitch
     $SUDO ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema
+    [[ $? -ne 0 ]] && return $?
   fi
+  return 0
 }
 
 
@@ -709,14 +744,19 @@ test_install_package() {
 update_package_db() {
   if [ ! -f /tmp/no_more_update_package_db ]; then
     $SUDO $INSTALLER update
+    [[ $? -ne 0 ]] && return $?
     touch /tmp/no_more_update_package_db
+    [[ $? -ne 0 ]] && return $?
   else
     let elapsed_time=$(expr `date +%s` - `stat -c %Y /tmp/no_more_update_package_db`)
     if [ $elapsed_time -gt 3600 ]; then
       $SUDO $INSTALLER update
+      [[ $? -ne 0 ]] && return $?
       touch /tmp/no_more_update_package_db
+      [[ $? -ne 0 ]] && return $?
     fi
   fi
+  return 0
 }
 
 #-------------------------------------------------------------------------------
@@ -761,9 +801,7 @@ check_install_hss_software() {
       doxygen-gui \
       flex \
       gdb \
-      pkg-config \
-      git \
-      subversion"
+      git"
   elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
     PACKAGE_LIST="\
       autoconf  \
@@ -774,12 +812,12 @@ check_install_hss_software() {
       flex  \
       gdb  \
       pkgconfig \
-      git \
-      subversion"
+      git"
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
+  [[ $? -ne 0 ]] && return $?
 
   # Libraries
   if [[ $OS_DISTRO == "ubuntu" ]]; then
@@ -817,6 +855,7 @@ check_install_hss_software() {
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
+  [[ $? -ne 0 ]] && return $?
 
   if [[ $OS_BASEDISTRO == 'fedora' ]]; then
     $SUDO systemctl enable mariadb
@@ -827,33 +866,29 @@ check_install_hss_software() {
     #Remove old gnutls/nettle installation that was done from sources
     remove_nettle_from_source
     $SUDO $INSTALLER install -y nettle-dev nettle-bin
+    [[ $? -ne 0 ]] && return $?
   fi
 
   install_freediameter_from_source $1
+  [[ $? -ne 0 ]] && return $?
 
   case "$(get_distribution_release)" in
     "ubuntu14.04")
       PACKAGE_LIST="\
-        php5 \
-        phpmyadmin \
-        python-pexpect \
-        libapache2-mod-php*"
+        python-mysqldb \
+        pkg-config"
       ;;
     "ubuntu16.04")
       PACKAGE_LIST="\
-        php \
-        phpmyadmin \
         python-pexpect \
-        libapache2-mod-php*"
+        python-mysqldb"
       ;;
     "rhel7" | "centos7")
       PACKAGE_LIST="\
-        phpmyadmin \
         pexpect"
       ;;
     "fedora")
       PACKAGE_LIST="\
-        phpmyadmin \
         python2-pexpect"
       ;;
     *)
@@ -861,7 +896,8 @@ check_install_hss_software() {
       ;;
   esac
 
-  $SUDO $INSTALLER install $OPTION $PACKAGE_LIST 
+  $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
+  return $? 
 }
 
 #-------------------------------------------------------------------------------
@@ -869,7 +905,7 @@ check_install_hss_software() {
 check_install_mme_software() {
   if ! check_supported_distribution; then
     echo_error "Your distribution $(get_distribution_release) is not supported by openair-cn"
-    exit 1
+    return 1
   fi
   if [ $1 -gt 0 ]; then 
     OPTION="-y"
@@ -887,15 +923,11 @@ check_install_mme_software() {
       bison \
       build-essential \
       cmake \
-      cmake-curses-gui \
       doxygen \
-      doxygen-gui \
       flex \
       gccxml \
       gdb \
-      git \
-      pkg-config \
-      subversion"
+      git"
   elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
     PACKAGE_LIST="\
       autoconf \
@@ -906,15 +938,13 @@ check_install_mme_software() {
       flex \
       gdb \
       git \
-      pkgconfig \
-      subversion"
+      pkgconfig"
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
+  echo "Install build packages"
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
-  if [ $? -ne 0 ]; then
-    echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi
+  [[ $? -ne 0 ]] && return $?
 
   # Libraries
   if [[ $OS_DISTRO == "ubuntu" ]]; then
@@ -924,7 +954,6 @@ check_install_mme_software() {
       libgcrypt11-dev \
       libgmp-dev \
       libhogweed? \
-      libgtk-3-dev \
       libidn2-0-dev \
       libidn11-dev \
       libpthread-stubs0-dev \
@@ -934,10 +963,9 @@ check_install_mme_software() {
       libtool \
       libxml2 \
       libxml2-dev \
-      mscgen \
       openssl \
-      check \
-      python"
+      python \
+      pkg-config"
   elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
     PACKAGE_LIST="\
       guile-devel \
@@ -963,22 +991,25 @@ check_install_mme_software() {
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
+  echo "Install libraries"
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
-  if [ $? -ne 0 ]; then
-    echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi 
+  [[ $? -ne 0 ]] && return $?
 
   if [[ $OS_DISTRO == 'ubuntu' ]]; then
     #Remove old gnutls/nettle installation that was done from sources
-    remove_nettle_from_source
-    remove_gnutls_from_source
+    echo "Install gnutls/nettle"
     $SUDO apt-get install -y nettle-dev nettle-bin
+    [[ $? -ne 0 ]] && return $?
     $SUDO apt-get install -y libgnutls-dev
+    [[ $? -ne 0 ]] && return $?
   fi
   
   install_freediameter_from_source $1
+  [[ $? -ne 0 ]] && return $?
   install_asn1c_from_source $1
+  [[ $? -ne 0 ]] && return $?
   install_liblfds7.1.0_from_source $1
+  [[ $? -ne 0 ]] && return $?
 
   install_libgtpnl_from_source $1
 
@@ -987,34 +1018,28 @@ check_install_mme_software() {
     PACKAGE_LIST="\
       ethtool \
       iproute \
-      vlan \
-      tshark"
+      vlan"
   elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
     PACKAGE_LIST="\
       ethtool \
       iproute \
-      vconfig \
-      wireshark"
+      vconfig "
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
+  echo "Install networking packages"
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
-  if [ $? -ne 0 ]; then
-    echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi
+  [[ $? -ne 0 ]] && return $?
 
   if [[ "$OS_DISTRO" == "ubuntu" ]]; then
     PACKAGE_LIST="\
       check \
-      phpmyadmin \
       python-dev \
-      python-pexpect \
       unzip"
   elif [[ "$OS_DISTRO" == "rhel" ]] || [[ "$OS_DISTRO" == "centos" ]]; then
     PACKAGE_LIST="\
       check \
       check-devel \
-      phpmyadmin \
       python-devel \
       pexpect \
       psmisc \
@@ -1023,54 +1048,66 @@ check_install_mme_software() {
     PACKAGE_LIST="\
       check \
       check-devel \
-      phpmyadmin \
       python-devel \
       python2-pexpect \
       unzip"
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
+  echo "Install misc packages"
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
-
-  if [ $? -ne 0 ]; then
-    echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi
+  return $?
 }
 
 #-------------------------------------------------------------------------------
 #arg1 is force (no interactive script)
 check_install_spgw_software() {
 
-  required_gcc_version=4.9.0
-
-  if ! check_supported_distribution; then
-    echo_error "Your distribution $(get_distribution_release) is not supported by openair-cn"
-    exit 1
-  fi
-  
-  current_kernel_release=`uname -r | cut -d '-' -f1`
-  if [ "$current_kernel_release" != "$SUPPORTED_KERNEL_VERSION" ]; then
-    echo_error "Kernel $SUPPORTED_KERNEL_VERSION is required. Aborting installation"
-    #exit 1
-  fi
-  
-  gcc_version=`gcc --version | head -n1 | cut -d" " -f4`
-  if ! version_gt $gcc_version $required_gcc_version; then
-    read -p "gcc-$required_gcc_version is required. Do you want to upgrade gcc? <y/N> " prompt
-    if [[ $prompt =~ [yY](es)* ]]; then
-      add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      apt-get update
-    else
-      exit 1
-    fi
-  fi
-    
-  
   if [ $1 -gt 0 ]; then 
     OPTION="-y"
   else
     OPTION=""
   fi
+
+  required_gcc_version=4.9.0
+
+  echo "Check supported distribution"
+  check_supported_distribution
+  [[ $? -ne 0 ]] && return $?
+
+  echo "Check kernel"
+  current_kernel_release=`uname -r | cut -d '-' -f1`
+
+  version_le $current_kernel_release $DATA_PLANE_SUPPORTED_KERNEL_MAX_VERSION
+  if [ $? -ne 0 ]; then
+    echo_error "Kernel in $DATA_PLANE_SUPPORTED_KERNEL_MIN_VERSION...$DATA_PLANE_SUPPORTED_KERNEL_MAX_VERSION required. Aborting installation"
+    return 1
+  fi
+  version_ge $current_kernel_release $DATA_PLANE_SUPPORTED_KERNEL_MIN_VERSION
+  if [ $? -ne 0 ]; then
+    echo_error "Kernel in $DATA_PLANE_SUPPORTED_KERNEL_MIN_VERSION...$DATA_PLANE_SUPPORTED_KERNEL_MAX_VERSION required. Aborting installation"
+    return 1
+  fi
+
+
+  gcc_version=`gcc --version | head -n1 | cut -d" " -f4`
+  if ! version_gt $gcc_version $required_gcc_version; then
+    if [ x$OPTION = x"-y" ]; then 
+    prompt='y'
+    else
+      read -p "gcc-$required_gcc_version is required. Do you want to upgrade gcc? <y/N> " prompt
+    fi
+    if [[ $prompt =~ [yY](es)* ]]; then
+      echo "Upgrade gcc"
+      add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      [[ $? -ne 0 ]] && return $?
+      apt-get update
+      [[ $? -ne 0 ]] && return $?
+    else
+      return 1
+    fi
+  fi
+    
 
   check_enable_epel_repos
 
@@ -1082,15 +1119,10 @@ check_install_spgw_software() {
       bison \
       build-essential \
       cmake \
-      cmake-curses-gui \
       doxygen \
-      doxygen-gui \
       flex \
-      gccxml \
       gdb \
-      git \
-      pkg-config \
-      subversion"
+      git"
   elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
     PACKAGE_LIST="\
       autoconf \
@@ -1099,19 +1131,14 @@ check_install_spgw_software() {
       $CMAKE \
       doxygen \
       flex \
-      gccxml \
       gdb \
-      git \
-      pkgconfig \
-      subversion"
+      git"
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
+  echo "Install build tools"
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
-
-  if [ $? -ne 0 ]; then
-    echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi
+  [[ $? -ne 0 ]] && return $?
   
   update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
   update-alternatives --config gcc
@@ -1121,26 +1148,25 @@ check_install_spgw_software() {
     PACKAGE_LIST="\
       guile-2.0-dev \
       libconfig8-dev \
+      libcurl4-gnutls-dev \
       libgcrypt11-dev \
       libgmp-dev \
       libhogweed? \
-      libgtk-3-dev \
       libidn2-0-dev \
       libidn11-dev \
       libpthread-stubs0-dev \
       libtool \
       libxml2 \
       libxml2-dev \
-      mscgen \
       openssl \
-      python"
+      python \
+      pkg-config"
   elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
     PACKAGE_LIST="\
       guile-devel \
       libconfig-devel \
       libgcrypt-devel \
       gmp-devel \
-      gtk3-devel \
       libidn2-devel \
       libidn-devel \
       lksctp-tools \
@@ -1149,17 +1175,16 @@ check_install_spgw_software() {
       libtool \
       libxml2 \
       libxml2-devel \
-      mscgen \
       openssl \
       check \
-      python"
+      python \
+      pkgconfig"
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
+  echo "Install distro libs"
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
-  if [ $? -ne 0 ]; then
-    echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi
+  [[ $? -ne 0 ]] && return $?
 
   # Networking
   if [[ $OS_DISTRO == "ubuntu" ]]; then
@@ -1167,22 +1192,19 @@ check_install_spgw_software() {
       ethtool \
       iperf \
       iproute \
-      vlan \
-      tshark"
+      vlan"
   elif [[ "$OS_BASEDISTRO" == "fedora" ]]; then
     PACKAGE_LIST="\
       ethtool \
       iperf \
       iproute \
-      vconfig \
-      wireshark"
+      vconfig"
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
+  echo "Install networking tools"
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
-  if [ $? -ne 0 ]; then
-    echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi
+  [[ $? -ne 0 ]] && return $?
 
   if [[ "$OS_DISTRO" == "ubuntu" ]]; then
     PACKAGE_LIST="\
@@ -1205,14 +1227,16 @@ check_install_spgw_software() {
   else
     echo_fatal "$OS_DISTRO is not a supported distribution."
   fi
+  echo "Install $PACKAGE_LIST"
   $SUDO $INSTALLER install $OPTION $PACKAGE_LIST
-  if [ $? -ne 0 ]; then
-    echo_fatal "Failed to install package list $PACKAGE_LIST"
-  fi
+  [[ $? -ne 0 ]] && return $?
 
   install_libgtpnl_from_source $1
+  [[ $? -ne 0 ]] && return $?
   install_liblfds7.1.0_from_source $1
+  [[ $? -ne 0 ]] && return $?
   install_ovs_from_source $1
+  return $?
 }
 
 
@@ -1254,11 +1278,16 @@ install_asn1c_from_source(){
     $SUDO rm -rf /tmp/asn1c
     mkdir -p /tmp/asn1c
     GIT_SSL_NO_VERIFY=true git clone https://gitlab.eurecom.fr/oai/asn1c.git /tmp/asn1c
+    [[ $? -ne 0 ]] && return $?
     cd /tmp/asn1c
     ./configure
+    [[ $? -ne 0 ]] && return $?
     make > /tmp/log_compile_asn1c 2>&1
+    [[ $? -ne 0 ]] && return $?
     $SUDO make install
+    return $?
   fi
+  return 0
 }
 
 #-------------------------------------------------------------------------------
@@ -1501,13 +1530,13 @@ set_enb_network_interfaces(){
 ###############################
 #-------------------------------------------------------------------------------
 set_openair_env(){
-    fullpath=`readlink -f $BASH_SOURCE`
-    [ -f "/.$fullpath" ] || fullpath=`readlink -f $PWD/$fullpath`
-    openair_path=${fullpath%/build/*}
-    openair_path=${openair_path%/scripts/*}
-    openair_path=${openair_path%/src/nas/*}
-    openair_path=${openair_path%/src/s6a/*}
-    export OPENAIRCN_DIR=$openair_path
+  fullpath=`readlink -f $BASH_SOURCE`
+  [ -f "/.$fullpath" ] || fullpath=`readlink -f $PWD/$fullpath`
+  openair_path=${fullpath%/build/*}
+  openair_path=${openair_path%/scripts/*}
+  openair_path=${openair_path%/src/nas/*}
+  openair_path=${openair_path%/src/s6a/*}
+  export OPENAIRCN_DIR=$openair_path
 }
 
 
@@ -1517,39 +1546,39 @@ set_openair_env(){
 
 #-------------------------------------------------------------------------------
 function handle_ctrl_c(){
-CURPID=$$
-ppid=$$
-arraycounter=1
-echo_info "** Trapped CTRL-C. Killing all subprocesses now..."
-sync
-while true
-do
-        FORLOOP=FALSE
-        # Get all the child process id
-        for i in `ps -ef| awk '$3 == '$ppid' { print $2 }'`
-        do
-                if [ $i -ne $CURPID ] ; then
-                        procid[$arraycounter]=$i
-                        arraycounter=`expr $arraycounter + 1`
-                        ppid=$i
-                        FORLOOP=TRUE
-                fi
-        done
-        if [ "$FORLOOP" = "FALSE" ] ; then
-           arraycounter=`expr $arraycounter - 1`
-           ## We want to kill child process id first and then parent id's
-           while [ $arraycounter -ne 0 ]
-           do
-             echo "first we send ctrl-c to program"
-             $SUDO kill -INT "${procid[$arraycounter]}"
-             sleep 5
-             echo "Now we force kill if that didn't work"
-             $SUDO kill -9 "${procid[$arraycounter]}"
-             arraycounter=`expr $arraycounter - 1`
-           done
-         exit
-        fi
-done
+  CURPID=$$
+  ppid=$$
+  arraycounter=1
+  echo_info "** Trapped CTRL-C. Killing all subprocesses now..."
+  sync
+  while true
+  do
+    FORLOOP=FALSE
+    # Get all the child process id
+    for i in `ps -ef| awk '$3 == '$ppid' { print $2 }'`
+    do
+      if [ $i -ne $CURPID ] ; then
+        procid[$arraycounter]=$i
+        arraycounter=`expr $arraycounter + 1`
+        ppid=$i
+        FORLOOP=TRUE
+      fi
+    done
+    if [ "$FORLOOP" = "FALSE" ] ; then
+      arraycounter=`expr $arraycounter - 1`
+      ## We want to kill child process id first and then parent id's
+      while [ $arraycounter -ne 0 ]
+      do
+        echo "first we send ctrl-c to program"
+        $SUDO kill -INT "${procid[$arraycounter]}"
+        sleep 5
+        echo "Now we force kill if that didn't work"
+        $SUDO kill -9 "${procid[$arraycounter]}"
+        arraycounter=`expr $arraycounter - 1`
+      done
+      exit
+    fi
+  done
 }
 
 
