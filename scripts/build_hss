@@ -139,7 +139,8 @@ function main()
   fi
   
   if [[ z$OPENAIRCN_DIR = z ]]; then
-    echo_fatal "OPENAIRCN_DIR env variable not set, exiting"
+    echo_error "OPENAIRCN_DIR env variable not set, exiting"
+    [[ $? -ne 0 ]] && return $?
   fi
 
 
@@ -164,7 +165,9 @@ function main()
   fi
   cd ./build
   $CMAKE $cmake_args .. > /dev/null 
+  [[ $? -ne 0 ]] && return $?
   make $make_args
+  [[ $? -ne 0 ]] && return $?
   chmod -f 777 *
   if [ $daemon -ne 0 ]; then
     do_stop_daemon
@@ -173,6 +176,7 @@ function main()
     $SUDO killall -q oai_hss
     $SUDO cp -upv $OPENAIRCN_DIR/build/hss/build/oai_hss /usr/local/bin/ && echo_success "oai_hss installed"
   fi
+  return 0
 }
 
 

@@ -237,6 +237,7 @@ compilations() {
   echo_info "Compilation log for $3 is here: $dlog/$2.txt"
   cd $OPENAIRCN_DIR/build/$1/build
   if [ "a$4" == "a1" ]; then 
+    set -o pipefail
     {
       rm -f $3
       make $make_args $2
