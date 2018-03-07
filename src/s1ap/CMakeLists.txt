@@ -2,31 +2,31 @@ add_list1_option(S1AP_VERSION R10 "S1AP Asn.1 grammar version" R8 R9 R10)
 add_definitions(-DASN1_MINIMUM_VERSION=924)
 
 # Common headers
-include_directories("${PROJECT_SOURCE_DIR}/common")
-include_directories("${PROJECT_SOURCE_DIR}/common/itti")
-include_directories("${PROJECT_SOURCE_DIR}/utils")
+include_directories("${SRC_TOP_DIR}/common")
+include_directories("${SRC_TOP_DIR}/common/itti")
+include_directories("${SRC_TOP_DIR}/utils")
 
 # This is a fork of https://github.com/websnarf/bstrlib
 # Evaluate if we want to pull the src directly from github.
-include_directories("${PROJECT_SOURCE_DIR}/utils/bstr")
-include_directories("${PROJECT_SOURCE_DIR}/utils/hashtable")
+include_directories("${SRC_TOP_DIR}/utils/bstr")
+include_directories("${SRC_TOP_DIR}/utils/hashtable")
 # Possibly unused.
-include_directories("${PROJECT_SOURCE_DIR}/utils/msc")
+include_directories("${SRC_TOP_DIR}/utils/msc")
 
 # Nas message headers
-include_directories("${PROJECT_SOURCE_DIR}/nas")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm/msg")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm/sap")
-include_directories("${PROJECT_SOURCE_DIR}/nas/ies")
-include_directories("${PROJECT_SOURCE_DIR}/nas/util")
-include_directories("${PROJECT_SOURCE_DIR}/nas/esm")
-include_directories("${PROJECT_SOURCE_DIR}/nas/esm/msg")
-include_directories("${PROJECT_SOURCE_DIR}/nas/api/network")
-include_directories("${PROJECT_SOURCE_DIR}/nas/api/mme")
+include_directories("${SRC_TOP_DIR}/nas")
+include_directories("${SRC_TOP_DIR}/nas/emm")
+include_directories("${SRC_TOP_DIR}/nas/emm/msg")
+include_directories("${SRC_TOP_DIR}/nas/emm/sap")
+include_directories("${SRC_TOP_DIR}/nas/ies")
+include_directories("${SRC_TOP_DIR}/nas/util")
+include_directories("${SRC_TOP_DIR}/nas/esm")
+include_directories("${SRC_TOP_DIR}/nas/esm/msg")
+include_directories("${SRC_TOP_DIR}/nas/api/network")
+include_directories("${SRC_TOP_DIR}/nas/api/mme")
 
 # Possible header leak
-include_directories("${PROJECT_SOURCE_DIR}/mme_app")
+include_directories("${SRC_TOP_DIR}/mme_app")
 
 ###############################################################################
 # A difficulty: asn1c generates C code of a un-predictable list of files
@@ -50,9 +50,11 @@ set(S1AP_ASN_FILES
     )
 set(S1AP_C_DIR ${asn1_generated_dir}/${ASN1RELDIR})
 
+include_directories("${S1AP_C_DIR}")
+include_directories("${S1AP_DIR}")
+
 execute_process(COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES})
 file(GLOB S1AP_source ${S1AP_C_DIR}/*.c)
-
 
 set(S1AP_OAI_generated
     ${S1AP_C_DIR}/s1ap_decoder.c
@@ -76,9 +78,6 @@ add_library(S1AP_LIB
     ${S1AP_source}
     s1ap_common.c
     )
-
-include_directories("${S1AP_C_DIR}")
-include_directories("${S1AP_DIR}")
 
 if(${MOBILITY_REPO})
   include_directories ("${MOBILITY_REPO_SRC}/src/s1ap/")

@@ -1,52 +1,7 @@
-set(ASN1RELDIR r10.5)
-include_directories(${PROJECT_SOURCE_DIR}/common)
-include_directories(${PROJECT_SOURCE_DIR}/common/itti)
-include_directories(${PROJECT_SOURCE_DIR}/common/message_utils)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
-include_directories(${PROJECT_SOURCE_DIR}/secu)
-include_directories(${PROJECT_SOURCE_DIR}/sgw)
-include_directories(${PROJECT_SOURCE_DIR}/s1ap)
-include_directories(${PROJECT_SOURCE_DIR}/utils)
-include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
-include_directories(${PROJECT_SOURCE_DIR}/utils/hashtable)
-include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
-
-# TODO (amar) fix include leak
-include_directories("${PROJECT_SOURCE_DIR}/nas")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm/msg")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm/sap")
-include_directories("${PROJECT_SOURCE_DIR}/nas/ies")
-include_directories("${PROJECT_SOURCE_DIR}/nas/util")
-include_directories("${PROJECT_SOURCE_DIR}/nas/esm")
-include_directories("${PROJECT_SOURCE_DIR}/nas/esm/msg")
-include_directories("${PROJECT_SOURCE_DIR}/nas/api/network")
-include_directories("${PROJECT_SOURCE_DIR}/nas/api/mme")
-include_directories("${PROJECT_SOURCE_DIR}/mme_app")
-
-
-# Override options for MME
-set (  BYTE_ORDER=LITTLE_ENDIAN )
-set (  DISABLE_ITTI_DETECT_SUB_TASK_ID True )
-set (  DISPLAY_LICENCE_INFO            False )
-set (  ENABLE_ITTI                     True )
-set (  ENABLE_ITTI_ANALYZER            False )
-set (  ITTI_TASK_STACK_SIZE            2097152 )
-set (  ITTI_LITE                       False )
-set (  LOG_OAI                         True )
-set (  LOG_OAI_CLEAN_HARD              False )
-set (  MESSAGE_CHART_GENERATOR         True )
-set (  MEMORY_CHECK                    False )
-set (  MME_BUILD                       True )
-set (  S1AP_DEBUG_LIST                 False )
-set (  SECU_DEBUG                      False )
-set (  SCTP_DUMP_LIST                  False )
-set (  TRACE_HASHTABLE                 False )
-set (  TRACE_3GPP_SPEC                 False )
 add_definitions("-DPACKAGE_NAME=\"MME\"")
 #TODO: TBD
-add_definitions("-DPACKAGE_VERSION=\"0.1\"")
-add_definitions("-DPACKAGE_BUGREPORT=\"TBD\"")
+# set in parent CMakeLists.txt: add_definitions("-DPACKAGE_VERSION=\"0.1\"")
+# set in parent CMakeLists.txt: add_definitions("-DPACKAGE_BUGREPORT=\"TBD\"")
 
 # Dependencies
 pkg_search_module(OPENSSL openssl REQUIRED)
@@ -54,6 +9,33 @@ include_directories(${OPENSSL_INCLUDE_DIRS})
 
 pkg_search_module(CRYPTO libcrypto REQUIRED)
 include_directories(${CRYPTO_INCLUDE_DIRS})
+
+
+set(ASN1RELDIR r10.5)
+include_directories(${SRC_TOP_DIR}/common)
+include_directories(${SRC_TOP_DIR}/common/itti)
+include_directories(${SRC_TOP_DIR}/common/message_utils)
+include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
+include_directories(${SRC_TOP_DIR}/secu)
+include_directories(${SRC_TOP_DIR}/sgw)
+include_directories(${SRC_TOP_DIR}/s1ap)
+include_directories(${SRC_TOP_DIR}/utils)
+include_directories(${SRC_TOP_DIR}/utils/bstr)
+include_directories(${SRC_TOP_DIR}/utils/hashtable)
+include_directories(${SRC_TOP_DIR}/utils/msc)
+
+# TODO (amar) fix include leak
+include_directories("${SRC_TOP_DIR}/nas")
+include_directories("${SRC_TOP_DIR}/nas/emm")
+include_directories("${SRC_TOP_DIR}/nas/emm/msg")
+include_directories("${SRC_TOP_DIR}/nas/emm/sap")
+include_directories("${SRC_TOP_DIR}/nas/ies")
+include_directories("${SRC_TOP_DIR}/nas/util")
+include_directories("${SRC_TOP_DIR}/nas/esm")
+include_directories("${SRC_TOP_DIR}/nas/esm/msg")
+include_directories("${SRC_TOP_DIR}/nas/api/network")
+include_directories("${SRC_TOP_DIR}/nas/api/mme")
+include_directories("${SRC_TOP_DIR}/mme_app")
 
 add_library(MME_APP
     mme_app_capabilities.c
@@ -77,25 +59,25 @@ add_library(MME_APP
     mme_config.c
     )
 
-include_directories(${PROJECT_SOURCE_DIR}/sctp)
-include_directories(${PROJECT_SOURCE_DIR}/udp)
-include_directories(${PROJECT_SOURCE_DIR}/s11)
-include_directories(${PROJECT_SOURCE_DIR}/s6a)
+include_directories(${SRC_TOP_DIR}/sctp)
+include_directories(${SRC_TOP_DIR}/udp)
+include_directories(${SRC_TOP_DIR}/s11)
+include_directories(${SRC_TOP_DIR}/s6a)
 
 # MME executable
 ################################
 add_executable(mme
-    ${PROJECT_SOURCE_DIR}/oai_mme/oai_mme_log.c
-    ${PROJECT_SOURCE_DIR}/oai_mme/oai_mme.c
-    ${PROJECT_SOURCE_DIR}/common/common_types.c
-    ${PROJECT_SOURCE_DIR}/common/itti_free_defined_msg.c
-    ${PROJECT_SOURCE_DIR}/nas/nas_mme_task.c
+    ../oai_mme/oai_mme_log.c
+    ../oai_mme/oai_mme.c
+    ../common/common_types.c
+    ../common/itti_free_defined_msg.c
+    ../nas/nas_mme_task.c
     )
 
 target_link_libraries (mme
     -Wl,--start-group
     LIB_NAS_MME S1AP_LIB S1AP_EPC S11_MME GTPV2C SCTP_SERVER UDP_SERVER SECU_CN  S6A MME_APP
-            ${MSC_LIB} ${ITTI_LIB}  ${3GPP_TYPES_LIB} CN_UTILS
+            ${MSC_LIB} ITTI  3GPP_TYPES CN_UTILS
             HASHTABLE BSTR
     -Wl,--end-group
     pthread m sctp  rt crypt ${LFDS} ${CRYPTO_LIBRARIES} ${OPENSSL_LIBRARIES}

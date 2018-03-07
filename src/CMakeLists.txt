@@ -23,13 +23,6 @@
 
 cmake_minimum_required (VERSION 3.0.2)
 
-#############################################
-# Base directories, compatible with legacy OAI building
-################################################
-set (OPENAIRCN_DIR   $ENV{OPENAIRCN_DIR})
-set (BUILD_TOP_DIR   ${OPENAIRCN_DIR}/build)
-set (OPENAIRCN_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY})
-
 project (OpenAirInterface)
 
 ###########################################
@@ -186,7 +179,6 @@ if(GIT_FOUND)
 endif()
 
 
-add_list_string_option(PACKAGE_NAME "NotDefined" "As per attribute name")
 add_definitions("-DPACKAGE_VERSION=\"Branch: ${GIT_BRANCH} Abrev. Hash: ${GIT_COMMIT_HASH} Date: ${GIT_COMMIT_DATE}\"")
 add_definitions("-DPACKAGE_BUGREPORT=\"openaircn-user@lists.eurecom.fr\"")
 
@@ -227,14 +219,14 @@ add_boolean_option( ASSERT_MUTEX                    False    "Raise segfault if 
 
 add_boolean_option( DISABLE_ITTI_DETECT_SUB_TASK_ID False    " ")
 add_boolean_option( DISPLAY_LICENCE_INFO            False    "If a module has a licence banner to show")
-add_boolean_option( ENABLE_ITTI                     True     "ITTI is internal messaging, should remain enabled for most targets")
 add_integer_option( ITTI_TASK_STACK_SIZE            0        "pthread allocated stack size in bytes of an ITTI task, if 0, use default stack size ") 
 add_boolean_option( ITTI_LITE                       False    "Do not use ITTI systematically for each message exchanged between layer modules") 
 add_boolean_option( MESSAGE_CHART_GENERATOR         False    "For generating sequence diagrams")
 add_boolean_option( DISABLE_EXECUTE_SHELL_COMMAND   False    "disable execution of C int system(const char *command);")
 # NAS LAYER OPTIONS
 ##########################
-add_boolean_option( EPC_BUILD                       False    "BUILD MME-xGW executable")
+add_boolean_option( MME_BUILD                       False    "BUILD MME executable")
+add_boolean_option( SPGW_BUILD                      False    "BUILD SPGW executable")
 add_boolean_option( GTPV1U_LINEAR_TEID_ALLOCATION   False    "Teid allocation id mode versus pseudo random")
 add_boolean_option( ENABLE_SDF_MARKING              False    "Should be set to true if you want to use patched GTP kernel module (old iptables/netfilter based design with marking)")
 # S1AP LAYER OPTIONS
@@ -254,9 +246,9 @@ add_boolean_option( TRACE_3GPP_SPEC                 True     "Log hits of 3GPP s
 # Split repository for licensing reasons
 ###############################################################################
 if(${MOBILITY_REPO})
-  message ("Extra mobility repo configured")
+  message ("mobility-extra repo configured")
 else (${MOBILITY_REPO})
-  message ("No mobility extra repo configured")
+  message ("No mobility-extra repo configured")
 endif (${MOBILITY_REPO})
 
 
@@ -265,44 +257,13 @@ endif (${MOBILITY_REPO})
 # or cmake provide a generic interface to pkg-config that widely used
 ###################################
 
-pkg_search_module(NETTLE nettle REQUIRED)
-if(NOT ${NETTLE_FOUND})
-  message( FATAL_ERROR "PACKAGE nettle not found: some targets will fail. Run SCRIPTS/build_mme -i or SCRIPTS/build_hss -i  again!")
-else()
-  include_directories(${NETTLE_INCLUDE_DIRS})
-endif()
-
-string(REGEX REPLACE "([0-9]+).*" "\\1" NETTLE_VERSION_MAJOR ${NETTLE_VERSION})
-string(REGEX REPLACE "[0-9]+\\.([0-9]+).*" "\\1" NETTLE_VERSION_MINOR ${NETTLE_VERSION})
-message ("NETTLE_VERSION_INSTALLED  = ${NETTLE_VERSION}")
-message ("NETTLE_VERSION_MAJOR = ${NETTLE_VERSION_MAJOR}")
-message ("NETTLE_VERSION_MINOR = ${NETTLE_VERSION_MINOR}")
-if ("${NETTLE_VERSION_MAJOR}" STREQUAL "" OR "${NETTLE_VERSION_MINOR}" STREQUAL "")
-    message( FATAL_ERROR "The nettle version is not detected properly..." )
-endif()
-
-add_definitions("-DNETTLE_VERSION_MAJOR=${NETTLE_VERSION_MAJOR}")
-add_definitions("-DNETTLE_VERSION_MINOR=${NETTLE_VERSION_MINOR}")
-
 pkg_search_module(CONFIG libconfig REQUIRED)
 include_directories(${CONFIG_INCLUDE_DIRS})
+
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-pkg_search_module(LIBXML2 libxml-2.0 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIRS})
-
-pkg_search_module(OPENSSL openssl REQUIRED)
-include_directories(${OPENSSL_INCLUDE_DIRS})
-
-pkg_search_module(CRYPTO libcrypto REQUIRED)
-include_directories(${CRYPTO_INCLUDE_DIRS})
-
-pkg_search_module(GTPNL libgtpnl REQUIRED)
-
-
 find_library(LFDS lfds710 PATHS /usr/local/lib /usr/lib )
-
 if ("${LFDS}" STREQUAL "LFDS-NOTFOUND")
   message(FATAL_ERROR "LIB LFDS not found, please install it" )
 endif()
@@ -310,24 +271,14 @@ endif()
 ################################################################
 # Add sub modules
 ################################################################
-set(COMMON_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/magma_common")
 
-ADD_SUBDIRECTORY(../common
-  "${COMMON_BIN_DIR}")
+#ADD_SUBDIRECTORY(../common)
 
-ADD_SUBDIRECTORY(common)
-ADD_SUBDIRECTORY(gtpv1-u)
-ADD_SUBDIRECTORY(gtpv2-c)
-ADD_SUBDIRECTORY(s11)
-ADD_SUBDIRECTORY(mme_app)
-ADD_SUBDIRECTORY(nas)
-ADD_SUBDIRECTORY(oai_sgw)
-ADD_SUBDIRECTORY(sctp)
-ADD_SUBDIRECTORY(secu)
-ADD_SUBDIRECTORY(sgw)
-ADD_SUBDIRECTORY(s1ap)
-ADD_SUBDIRECTORY(s6a)
-ADD_SUBDIRECTORY(udp)
-ADD_SUBDIRECTORY(utils)
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/common ${CMAKE_CURRENT_BINARY_DIR}/common)
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/gtpv2-c ${CMAKE_CURRENT_BINARY_DIR}/gtpv2-c)
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/s11 ${CMAKE_CURRENT_BINARY_DIR}/s11)
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/udp ${CMAKE_CURRENT_BINARY_DIR}/udp)
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/utils ${CMAKE_CURRENT_BINARY_DIR}/utils)
+
 ENABLE_TESTING()
-ADD_SUBDIRECTORY(test)
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/test ${CMAKE_CURRENT_BINARY_DIR}/test)

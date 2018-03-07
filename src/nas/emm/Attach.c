@@ -1757,8 +1757,9 @@ static int _emm_attach_update (emm_context_t * const emm_context, emm_attach_req
 {
 
   OAILOG_FUNC_IN (LOG_NAS_EMM);
+#if TRACE_IS_ON
   ue_mm_context_t *ue_mm_context = PARENT_STRUCT(emm_context, struct ue_mm_context_s, emm_context);
-
+#endif
   /*
    * Emergency bearer services indicator
    */

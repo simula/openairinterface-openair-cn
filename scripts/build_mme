@@ -207,10 +207,8 @@ function main()
     mkdir -m 777 -p -v build
   fi
 
-  cp -rf $OPENAIRCN_DIR/build/CMakeLists.txt $OPENAIRCN_DIR/src/
-  export NETWORK_FUNCTION='mme'
   cd ./build
-  $CMAKE $cmake_args $OPENAIRCN_DIR/src/ > /dev/null
+  $CMAKE $cmake_args .. > /dev/null
   [[ $? -ne 0 ]] && return $?
 
   compilations mme mme $OPENAIRCN_DIR/build/mme/build/mme_app $verbose

@@ -72,6 +72,7 @@ void itti_free_msg_content (MessageDef * const message_p)
     // UNUSED actually
     break;
 
+#if SPGW_BUILD
   case SGI_CREATE_ENDPOINT_REQUEST:
     break;
 
@@ -86,7 +87,9 @@ void itti_free_msg_content (MessageDef * const message_p)
   case SGI_DELETE_ENDPOINT_RESPONSE:
     // DO nothing
     break;
+#endif
 
+#if MME_BUILD
   case MME_APP_CONNECTION_ESTABLISHMENT_CNF:
   break;
 
@@ -148,6 +151,7 @@ void itti_free_msg_content (MessageDef * const message_p)
   case NAS_PDN_CONNECTIVITY_FAIL:
     // DO nothing
     break;
+#endif
 
   case S11_CREATE_SESSION_REQUEST: {
     clear_protocol_configuration_options(&message_p->ittiMsg.s11_create_session_request.pco);
@@ -185,6 +189,7 @@ void itti_free_msg_content (MessageDef * const message_p)
     // DO nothing (trxn)
     break;
 
+#if MME_BUILD
   case S1AP_UPLINK_NAS_LOG:
   case S1AP_UE_CAPABILITY_IND_LOG:
   case S1AP_INITIAL_CONTEXT_SETUP_LOG:
@@ -231,6 +236,7 @@ void itti_free_msg_content (MessageDef * const message_p)
   case SCTP_CLOSE_ASSOCIATION:
     // DO nothing
     break;
+#endif
 
   case UDP_INIT:
   case UDP_DATA_REQ:

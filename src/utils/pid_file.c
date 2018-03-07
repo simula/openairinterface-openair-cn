@@ -101,11 +101,18 @@ bool is_pid_file_lock_success(char const *pid_file_name)
     return false;
   }
   // fruncate file content
-  ftruncate(g_fd_pid_file, 0);
+  if (ftruncate(g_fd_pid_file, 0)) {
+    printf("truncate of filename %s to 0 failed %d:%s\n", pid_file_name, errno, strerror(errno));
+    close(g_fd_pid_file);
+    return false;
+  }
   // write PID in file
   g_pid = getpid();
   snprintf(pid_dec, 64 /* should be big enough */, "%ld", (long)g_pid);
-  write(g_fd_pid_file, pid_dec, strlen(pid_dec));
+  if ((ssize_t)-1 == write(g_fd_pid_file, pid_dec, strlen(pid_dec))) {
+    printf("write PID to filename %s failed %d:%s\n", pid_file_name, errno, strerror(errno));
+    return false;
+  }
   return true;
 }
 

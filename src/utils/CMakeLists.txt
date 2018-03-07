@@ -23,7 +23,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/hashtable)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # log.h pulls in gcc_diag.h
 set(ASN1RELDIR r10.5)
-include_directories(${PROJECT_SOURCE_DIR}/common)
+include_directories(${SRC_TOP_DIR}/common)
 include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 
 
@@ -34,28 +34,28 @@ include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 # log.c pulls in liblfds611.h
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lfds/liblfds6.1.1/liblfds611/inc)
 # log.c pulls in intertask_interface.h
-include_directories(${PROJECT_SOURCE_DIR}/common/itti)
+include_directories(${SRC_TOP_DIR}/common/itti)
 
 # log.c pulls in nas_messages_types.h which brings in the entire universe.
 # TODO (amar) fix include leak
-include_directories("${PROJECT_SOURCE_DIR}/nas")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm/msg")
-include_directories("${PROJECT_SOURCE_DIR}/nas/emm/sap")
-include_directories("${PROJECT_SOURCE_DIR}/nas/ies")
-include_directories("${PROJECT_SOURCE_DIR}/nas/util")
-include_directories("${PROJECT_SOURCE_DIR}/nas/esm")
-include_directories("${PROJECT_SOURCE_DIR}/nas/esm/msg")
-include_directories("${PROJECT_SOURCE_DIR}/nas/api/network")
-include_directories("${PROJECT_SOURCE_DIR}/nas/api/mme")
-include_directories("${PROJECT_SOURCE_DIR}/mme_app")
-include_directories(${PROJECT_SOURCE_DIR}/service303)
+include_directories("${SRC_TOP_DIR}/nas")
+include_directories("${SRC_TOP_DIR}/nas/emm")
+include_directories("${SRC_TOP_DIR}/nas/emm/msg")
+include_directories("${SRC_TOP_DIR}/nas/emm/sap")
+include_directories("${SRC_TOP_DIR}/nas/ies")
+include_directories("${SRC_TOP_DIR}/nas/util")
+include_directories("${SRC_TOP_DIR}/nas/esm")
+include_directories("${SRC_TOP_DIR}/nas/esm/msg")
+include_directories("${SRC_TOP_DIR}/nas/api/network")
+include_directories("${SRC_TOP_DIR}/nas/api/mme")
+include_directories("${SRC_TOP_DIR}/mme_app")
+include_directories(${SRC_TOP_DIR}/service303)
 
 if (MESSAGE_CHART_GENERATOR)
   add_library(MSC
       ${CMAKE_CURRENT_SOURCE_DIR}/msc/msc.c
       )
-  set(MSC_LIB MSC)
+  set(MSC_LIB MSC PARENT_SCOPE)
 endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/msc)
 
