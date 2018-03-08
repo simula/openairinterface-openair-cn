@@ -25,6 +25,11 @@
 #include "common_types.h"
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum SGIStatus_e {
   SGI_STATUS_OK                                           = 16,
   SGI_STATUS_ERROR_CONTEXT_NOT_FOUND                      = 64,
@@ -89,4 +94,7 @@ typedef struct {
   paa_t            paa;                 ///< PDN Address Allocation
 } itti_sgi_delete_end_point_response_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_SGI_FORWARD_MESSAGES_TYPES_SEEN */

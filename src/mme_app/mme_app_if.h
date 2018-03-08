@@ -24,6 +24,9 @@
 #ifndef FILE_MME_APP_IF_SEEN
 #define FILE_MME_APP_IF_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * IF method called by lower layers (S1AP) delivering the content of initial NAS UE message
@@ -44,5 +47,8 @@ int itf_mme_app_nas_initial_ue_message(
     const void       const * opt_cell_gw_transport_address,
     const void       const * opt_relay_node_indicator);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_MME_APP_IF_SEEN */

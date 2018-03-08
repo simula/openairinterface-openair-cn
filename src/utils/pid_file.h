@@ -29,6 +29,9 @@
 #define FILE_PID_FILE_SEEN
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Generate the exe absolute path using a specified basepath.
@@ -43,5 +46,9 @@ char* get_exe_absolute_path(char const *basepath);
 bool is_pid_file_lock_success(char const *pid_file_name);
 
 void pid_file_unlock(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

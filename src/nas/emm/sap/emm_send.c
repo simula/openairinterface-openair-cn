@@ -64,6 +64,10 @@
 #include "emm_data.h"
 #include "mme_app_ue_context.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -1005,6 +1009,9 @@ emm_send_security_mode_command (
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, size);
 }
 
+#ifdef __cplusplus
+}
+#endif
 
 /****************************************************************************/
 /*********************  L O C A L    F U N C T I O N S  *********************/

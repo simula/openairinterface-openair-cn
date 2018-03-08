@@ -55,6 +55,10 @@
 #include "mme_app_statistics.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern hash_table_ts_t g_s1ap_enb_coll; // contains eNB_description_s, key is eNB_description_s.assoc_id
 
 static const char * const s1_enb_state_str [] = {"S1AP_INIT", "S1AP_RESETTING", "S1AP_READY", "S1AP_SHUTDOWN"};
@@ -1492,3 +1496,8 @@ int s1ap_mme_handle_erab_setup_failure (const sctp_assoc_id_t assoc_id,
 {
   AssertFatal(0, "TODO");
 }
+
+#ifdef __cplusplus
+}
+#endif
+

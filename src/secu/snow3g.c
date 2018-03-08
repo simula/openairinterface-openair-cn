@@ -27,6 +27,10 @@
 #include "rijndael.h"
 #include "snow3g.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static uint8_t                          _MULx (
   uint8_t V,
   uint8_t c);
@@ -343,3 +347,8 @@ snow3g_generate_key_stream (
     _snow3g_clock_LFSR_key_stream_mode (snow_3g_context_pP);    /* STEP 3 */
   }
 }
+
+#ifdef __cplusplus
+}
+#endif
+

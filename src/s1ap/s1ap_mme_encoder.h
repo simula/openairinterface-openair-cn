@@ -25,7 +25,15 @@
 #ifndef FILE_S1AP_MME_ENCODER_SEEN
 #define FILE_S1AP_MME_ENCODER_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int s1ap_mme_encode_pdu(s1ap_message *message, uint8_t **buffer, uint32_t *len)
 __attribute__ ((warn_unused_result));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S1AP_MME_ENCODER_SEEN */

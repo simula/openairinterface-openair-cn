@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "UeRadioCapabilityInformationUpdateNeeded.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_ue_radio_capability_information_update_needed (
   ue_radio_capability_information_update_needed_t * ueradiocapabilityinformationupdateneeded,
@@ -96,3 +100,7 @@ uint8_t encode_u8_ue_radio_capability_information_update_needed (
   encoded++;
   return bufferReturn;
 }
+
+#ifdef __cplusplus
+}
+#endif

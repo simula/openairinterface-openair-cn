@@ -41,6 +41,10 @@
 
 #include "enum_string.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum_to_string_t                        rat_to_string[NUMBER_OF_RAT_TYPE] = {
   {RAT_WLAN, "WLAN"}
   ,
@@ -122,3 +126,7 @@ enum_to_string (
 
   return res->enum_value_name;
 }
+
+#ifdef __cplusplus
+}
+#endif

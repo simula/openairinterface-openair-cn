@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "TrackingAreaUpdateComplete.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_tracking_area_update_complete (
   tracking_area_update_complete_msg * tracking_area_update_complete,
@@ -63,3 +67,7 @@ encode_tracking_area_update_complete (
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, TRACKING_AREA_UPDATE_COMPLETE_MINIMUM_LENGTH, len);
   return encoded;
 }
+#ifdef __cplusplus
+}
+#endif
+

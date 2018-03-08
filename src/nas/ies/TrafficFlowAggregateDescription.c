@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 //#include "TrafficFlowAggregateDescription.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_traffic_flow_aggregate_description (
     traffic_flow_aggregate_description_t * trafficflowaggregatedescription,
@@ -51,3 +55,7 @@ int encode_traffic_flow_aggregate_description (
   AssertFatal(0, "The Traffic flow aggregate description information element is encoded using the same format as the Traffic flow template (TFT) information element");
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

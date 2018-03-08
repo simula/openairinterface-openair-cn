@@ -26,6 +26,10 @@
 #define ADDITIONAL_UPDATE_TYPE_MINIMUM_LENGTH 1
 #define ADDITIONAL_UPDATE_TYPE_MAXIMUM_LENGTH 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
   NO_ADDITIONAL_INFORMATION = 0x0,
   SMS_ONLY                  = 0x1,
@@ -36,6 +40,10 @@ typedef enum {
 int encode_additional_update_type(additional_update_type_t *additionalupdatetype, uint8_t iei, uint8_t *buffer, uint32_t len);
 
 int decode_additional_update_type(additional_update_type_t *additionalupdatetype, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ADDITIONAL_UPDATE_TYPE_SEEN */
 

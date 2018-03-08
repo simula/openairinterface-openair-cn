@@ -54,6 +54,10 @@
 #include "3gpp_33.401.h"
 #include "intertask_interface_conf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct mme_config_s                       mme_config = {.rw_lock = PTHREAD_RWLOCK_INITIALIZER, 0};
 
 //------------------------------------------------------------------------------
@@ -981,3 +985,7 @@ mme_config_parse_opt_line (
   mme_config_display (config_pP);
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

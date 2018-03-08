@@ -29,6 +29,10 @@
 #ifndef FILE_SCTP_MESSAGES_TYPES_SEEN
 #define FILE_SCTP_MESSAGES_TYPES_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SCTP_DATA_IND(mSGpTR)           (mSGpTR)->ittiMsg.sctp_data_ind
 #define SCTP_DATA_REQ(mSGpTR)           (mSGpTR)->ittiMsg.sctp_data_req
 #define SCTP_DATA_CNF(mSGpTR)           (mSGpTR)->ittiMsg.sctp_data_cnf
@@ -91,4 +95,7 @@ typedef struct sctp_new_peer_s {
   sctp_assoc_id_t assoc_id;
 } sctp_new_peer_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_SCTP_MESSAGES_TYPES_SEEN */

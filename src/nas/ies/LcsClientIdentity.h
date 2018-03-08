@@ -22,6 +22,10 @@
 #ifndef LCS_CLIENT_IDENTITY_SEEN
 #define LCS_CLIENT_IDENTITY_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LCS_CLIENT_IDENTITY_MINIMUM_LENGTH 3
 #define LCS_CLIENT_IDENTITY_MAXIMUM_LENGTH 257
 
@@ -31,5 +35,8 @@ int encode_lcs_client_identity(LcsClientIdentity lcsclientidentity, uint8_t iei,
 
 int decode_lcs_client_identity(LcsClientIdentity *lcsclientidentity, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* LCS_CLIENT_IDENTITY_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* LCS_CLIENT_IDENTITY_SEEN */

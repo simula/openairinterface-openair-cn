@@ -35,6 +35,10 @@
 #include "TLVDecoder.h"
 #include "AuthenticationFailure.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_authentication_failure (
   authentication_failure_msg * authentication_failure,
@@ -118,3 +122,7 @@ encode_authentication_failure (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

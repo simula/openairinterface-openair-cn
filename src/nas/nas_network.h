@@ -40,6 +40,10 @@ Description NAS procedure functions triggered by the network
 #ifndef FILE_NAS_NETWORK_SEEN
 #define FILE_NAS_NETWORK_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -64,5 +68,9 @@ void nas_network_cleanup(void);
 int nas_network_process_data(int command_id, const void *data);
 
 const void *nas_network_get_data(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_NAS_NETWORK_SEEN*/

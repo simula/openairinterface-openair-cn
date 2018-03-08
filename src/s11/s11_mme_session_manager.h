@@ -29,6 +29,10 @@
 #ifndef FILE_S11_MME_SESSION_MANAGER_SEEN
 #define FILE_S11_MME_SESSION_MANAGER_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* @brief Create a new Create Session Request and send it to provided S-GW. */
 int s11_mme_create_session_request(nw_gtpv2c_stack_handle_t *stack_p, itti_s11_create_session_request_t *create_session_p);
 
@@ -43,5 +47,8 @@ int s11_mme_handle_delete_session_response (nw_gtpv2c_stack_handle_t * stack_p, 
 /* @brief Create a new Modify Bearer Request and send it to provided S-GW. */
 int s11_mme_modify_bearer_request(nw_gtpv2c_stack_handle_t *stack_p, itti_s11_modify_bearer_request_t *modify_bearer_p);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S11_MME_SESSION_MANAGER_SEEN */

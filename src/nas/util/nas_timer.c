@@ -53,6 +53,10 @@
 #include "common_defs.h"
 #include "dynamic_memory_check.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int nas_timer_init (void)
 {
@@ -121,3 +125,7 @@ void nas_timer_handle_signal_expiry (long timer_id, nas_itti_timer_arg_t *nas_it
   // assuming timer type is TIMER_ONE_SHOT
   free_wrapper((void**)&nas_itti_timer_arg);
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -30,10 +30,18 @@
 #ifndef UDP_PRIMITIVES_SERVER_H_
 #define UDP_PRIMITIVES_SERVER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** \brief UDP task init function.
  @returns -1 on error, 0 otherwise.
  **/
 int udp_init(void);
 void udp_exit (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* UDP_PRIMITIVES_SERVER_H_ */

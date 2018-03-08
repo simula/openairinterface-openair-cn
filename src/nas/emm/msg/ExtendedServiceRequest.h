@@ -31,6 +31,9 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define EXTENDED_SERVICE_REQUEST_MINIMUM_LENGTH ( \
@@ -69,6 +72,10 @@ typedef struct extended_service_request_msg_tag {
 int decode_extended_service_request(extended_service_request_msg *extendedservicerequest, uint8_t *buffer, uint32_t len);
 
 int encode_extended_service_request(extended_service_request_msg *extendedservicerequest, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_EXTENDED_SERVICE_REQUEST_SEEN) */
 

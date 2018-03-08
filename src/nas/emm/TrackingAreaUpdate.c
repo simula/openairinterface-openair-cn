@@ -69,6 +69,9 @@
 #include "mme_config.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -582,3 +585,7 @@ void free_emm_tau_request_ies(emm_tau_request_ies_t ** const ies)
   }
   free_wrapper((void**)ies);
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -45,6 +45,10 @@
 #include "s1ap_mme_handlers.h"
 #include "dynamic_memory_check.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int
 s1ap_mme_decode_initiating (
   s1ap_message *message,
@@ -261,3 +265,8 @@ int s1ap_free_mme_decode_pdu(
 
   }
 }
+
+#ifdef __cplusplus
+}
+#endif
+

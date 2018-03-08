@@ -46,6 +46,10 @@
 #include "mme_app_ue_context.h"
 #include "mme_app_bearer_context.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static mme_ue_s1ap_id_t mme_app_ue_s1ap_id_generator = 1;
 
 /**
@@ -156,3 +160,7 @@ mme_ue_s1ap_id_t mme_app_ctx_get_new_ue_id(void)
   tmp = __sync_fetch_and_add (&mme_app_ue_s1ap_id_generator, 1);
   return tmp;
 }
+
+#ifdef __cplusplus
+}
+#endif

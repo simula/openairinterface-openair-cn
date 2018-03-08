@@ -77,6 +77,10 @@
 #include "nas_itti_messaging.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -1161,3 +1165,7 @@ static int _authentication_abort (emm_context_t *emm_ctx, struct nas_base_proc_s
 
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

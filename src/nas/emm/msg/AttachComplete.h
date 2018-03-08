@@ -30,6 +30,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define ATTACH_COMPLETE_MINIMUM_LENGTH ( \
     ESM_MESSAGE_CONTAINER_MINIMUM_LENGTH )
@@ -57,6 +61,10 @@ typedef struct attach_complete_msg_tag {
 int decode_attach_complete(attach_complete_msg *attachcomplete, uint8_t *buffer, uint32_t len);
 
 int encode_attach_complete(attach_complete_msg *attachcomplete, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_ATTACH_COMPLETE_SEEN) */
 

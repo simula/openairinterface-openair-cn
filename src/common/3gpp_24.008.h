@@ -29,6 +29,9 @@
 #define FILE_3GPP_24_008_SEEN
 
 #include "3gpp_23.003.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //#warning "Set it to max size of message"
 #define IE_UNDEFINED_MAX_LENGTH 1024
@@ -1046,4 +1049,7 @@ int encode_gprs_timer_ie(gprs_timer_t *gprstimer, uint8_t iei, uint8_t *buffer, 
 int decode_gprs_timer_ie(gprs_timer_t *gprstimer, uint8_t iei, uint8_t *buffer, const uint32_t len);
 long gprs_timer_value(gprs_timer_t *gprstimer);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_24_008_SEEN */

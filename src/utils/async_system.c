@@ -49,6 +49,11 @@
 #include "dynamic_memory_check.h"
 #include "itti_free_defined_msg.h"
 #include "common_defs.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //-------------------------------
 void async_system_exit (void);
 void* async_system_task (__attribute__ ((unused)) void *args_p);
@@ -147,5 +152,6 @@ void async_system_exit (void)
   OAI_FPRINTF_INFO("TASK_ASYNC_SYSTEM terminated");
 }
 
-
-
+#ifdef __cplusplus
+}
+#endif

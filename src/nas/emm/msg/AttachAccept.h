@@ -36,6 +36,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define ATTACH_ACCEPT_MINIMUM_LENGTH ( \
     EPS_ATTACH_RESULT_MINIMUM_LENGTH + \
@@ -120,6 +124,10 @@ typedef struct attach_accept_msg_tag {
 int decode_attach_accept(attach_accept_msg *attachaccept, uint8_t *buffer, uint32_t len);
 
 int encode_attach_accept(attach_accept_msg *attachaccept, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_ATTACH_ACCEPT_SEEN) */
 

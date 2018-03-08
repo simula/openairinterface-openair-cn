@@ -29,6 +29,15 @@
 #define FILE_DYNAMIC_MEMORY_CHECK_SEEN
 # include "bstrlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void free_wrapper(void **ptr)                      __attribute__ ((hot));
 void bdestroy_wrapper(bstring *b);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* FILE_DYNAMIC_MEMORY_CHECK_SEEN */

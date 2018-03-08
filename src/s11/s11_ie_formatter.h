@@ -29,6 +29,10 @@
 #ifndef FILE_S11_IE_FORMATTER_SEEN
 #define FILE_S11_IE_FORMATTER_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Imsi Information Element
  * 3GPP TS.29.274 #8.3
  * NOTE: Imsi is TBCD coded
@@ -203,5 +207,9 @@ int gtpv2c_indication_flags_ie_set (nw_gtpv2c_msg_handle_t * msg, const indicati
  */
 
 nw_rc_t gtpv2c_fqcsid_ie_get(uint8_t ieType, uint8_t ieLength, uint8_t ieInstance, uint8_t *ieValue, void *arg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S11_IE_FORMATTER_SEEN */

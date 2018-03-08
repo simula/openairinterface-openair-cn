@@ -21,6 +21,11 @@
 
 #ifndef ESM_MESSAGE_CONTAINER_SEEN
 #define ESM_MESSAGE_CONTAINER_SEEN
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct scenario_s;
 struct scenario_player_msg_s;
 
@@ -33,5 +38,8 @@ int encode_esm_message_container(EsmMessageContainer esmmessagecontainer, uint8_
 
 int decode_esm_message_container(EsmMessageContainer *esmmessagecontainer, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* ESM_MESSAGE_CONTAINER_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* ESM_MESSAGE_CONTAINER_SEEN */

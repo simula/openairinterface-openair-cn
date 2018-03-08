@@ -35,6 +35,10 @@
 
 #include "hashtable.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Forward declarations
 struct enb_description_s;
 
@@ -231,5 +235,9 @@ void s1ap_remove_ue(ue_description_t *ue_ref);
  * \param enb_ref eNB structure reference to remove
  **/
 void s1ap_remove_enb(enb_description_t *enb_ref);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S1AP_MME_SEEN */

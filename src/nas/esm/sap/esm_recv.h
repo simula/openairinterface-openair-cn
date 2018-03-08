@@ -59,6 +59,11 @@ Description Defines functions executed at the ESM Service Access
 
 #include "EsmInformationResponse.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -121,5 +126,9 @@ esm_cause_t esm_recv_activate_dedicated_eps_bearer_context_reject(emm_context_t 
 
 esm_cause_t esm_recv_deactivate_eps_bearer_context_accept(emm_context_t * emm_context, proc_tid_t pti,
     ebi_t ebi, const deactivate_eps_bearer_context_accept_msg *msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __ESM_RECV_H__*/

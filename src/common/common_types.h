@@ -36,6 +36,9 @@
 #include "security_types.h"
 #include "common_dim.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 //------------------------------------------------------------------------------
 #define PRIORITY_LEVEL_MAX (15)
 #define PRIORITY_LEVEL_MIN (1)
@@ -350,4 +353,7 @@ typedef struct {
   } choice;
 } s6a_result_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_COMMON_TYPES_SEEN */

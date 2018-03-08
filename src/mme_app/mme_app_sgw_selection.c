@@ -43,6 +43,10 @@
 #include "mme_app_sgw_selection.h"
 #include "mme_app_edns_emulation.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 void mme_app_select_sgw(const tai_t * const tai, struct in_addr * const sgw_in_addr)
 {
@@ -103,3 +107,7 @@ lookup_error:
   bdestroy_wrapper(&application_unique_string);
   return;
 }
+
+#ifdef __cplusplus
+}
+#endif

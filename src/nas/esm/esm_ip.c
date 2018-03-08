@@ -24,6 +24,10 @@
 
 #include "bstrlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char                                    ip_addr_str[100];
 
 char                            *
@@ -66,3 +70,6 @@ esm_data_get_ipv4v6_addr (
 
   return (NULL);
 }
+#ifdef __cplusplus
+}
+#endif

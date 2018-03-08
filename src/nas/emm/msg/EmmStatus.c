@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "EmmStatus.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_emm_status (
   emm_status_msg * emm_status,
@@ -77,3 +81,7 @@ encode_emm_status (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

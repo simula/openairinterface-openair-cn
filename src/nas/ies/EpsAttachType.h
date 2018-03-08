@@ -23,6 +23,10 @@
 #define EPS_ATTACH_TYPE_SEEN
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define EPS_ATTACH_TYPE_MINIMUM_LENGTH 1
 #define EPS_ATTACH_TYPE_MAXIMUM_LENGTH 1
 
@@ -41,5 +45,8 @@ int decode_eps_attach_type(eps_attach_type_t *epsattachtype, uint8_t iei, uint8_
 
 int decode_u8_eps_attach_type(eps_attach_type_t *epsattachtype, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* EPS_ATTACH_TYPE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* EPS_ATTACH_TYPE_SEEN */

@@ -28,6 +28,9 @@
 
 #ifndef FILE_3GPP_36_413_SEEN
 #define FILE_3GPP_36_413_SEEN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 // 9.2.1.60 Allocation and Retention Priority
@@ -106,9 +109,15 @@ typedef struct e_rab_setup_list_s {
   e_rab_setup_item_t            item[MAX_NO_OF_E_RABS];
 } e_rab_setup_list_t;
 
+#ifdef __cplusplus
+}
+#endif
+
 #if MME_BUILD
 #include "S1ap-Cause.h"
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef struct e_rab_item_s {
   e_rab_id_t                       e_rab_id;
   S1ap_Cause_t                     cause;
@@ -118,5 +127,8 @@ typedef struct e_rab_list_s {
   uint16_t              no_of_items;
   e_rab_item_t          item[MAX_NO_OF_E_RABS];
 } e_rab_list_t;
+#ifdef __cplusplus
+}
+#endif
 #endif
 #endif /* FILE_3GPP_36_413_SEEN */

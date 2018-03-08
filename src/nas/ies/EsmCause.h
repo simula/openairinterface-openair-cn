@@ -22,6 +22,10 @@
 #ifndef ESM_CAUSE_SEEN
 #define ESM_CAUSE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ESM_CAUSE_MINIMUM_LENGTH 1
 #define ESM_CAUSE_MAXIMUM_LENGTH 1
 
@@ -31,6 +35,10 @@ typedef int esm_cause_t;
 int encode_esm_cause(esm_cause_t *esmcause, uint8_t iei, uint8_t *buffer, uint32_t len);
 
 int decode_esm_cause(esm_cause_t *esmcause, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ESM CAUSE_SEEN */
 

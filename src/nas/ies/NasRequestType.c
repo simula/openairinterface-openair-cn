@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "NasRequestType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_request_type (
   request_type_t * requesttype,
@@ -97,3 +101,6 @@ uint8_t encode_u8_request_type (
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

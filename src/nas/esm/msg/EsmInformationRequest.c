@@ -34,6 +34,10 @@
 #include "TLVDecoder.h"
 #include "EsmInformationRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_esm_information_request (
   esm_information_request_msg * esm_information_request,
@@ -66,3 +70,7 @@ encode_esm_information_request (
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, ESM_INFORMATION_REQUEST_MINIMUM_LENGTH, len);
   OAILOG_FUNC_RETURN (LOG_NAS_ESM, encoded);
 }
+
+#ifdef __cplusplus
+}
+#endif

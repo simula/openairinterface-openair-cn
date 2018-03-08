@@ -27,6 +27,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define ESM_INFORMATION_RESPONSE_MINIMUM_LENGTH (0)
 
@@ -68,6 +72,10 @@ typedef struct esm_information_response_msg_tag {
 int decode_esm_information_response(esm_information_response_msg *esminformationresponse, uint8_t *buffer, uint32_t len);
 
 int encode_esm_information_response(esm_information_response_msg *esminformationresponse, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(ESM_INFORMATION_RESPONSE_H_) */
 

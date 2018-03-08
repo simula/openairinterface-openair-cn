@@ -31,6 +31,10 @@
 #include "TLVDecoder.h"
 #include "TrackingAreaIdentity.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_tracking_area_identity (
   tai_t * tai,
@@ -95,3 +99,6 @@ void clear_tai(tai_t * const tai)
   memset(tai, 0, sizeof(tai_t));
 }
 
+#ifdef __cplusplus
+}
+#endif

@@ -31,6 +31,10 @@
 #include "common_types.h"
 #include "3gpp_24.007.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   teid_t           context_teid;               ///< Tunnel Endpoint Identifier
   ebi_t            eps_bearer_id;
@@ -85,4 +89,7 @@ typedef struct {
   teid_t    S1u_enb_teid;                 ///< Tunnel Endpoint Identifier
 } Gtpv1uTunnelDataReq;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_GTPV1_U_MESSAGES_TYPES_SEEN */

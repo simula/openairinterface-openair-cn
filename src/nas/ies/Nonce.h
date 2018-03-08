@@ -22,6 +22,10 @@
 #ifndef NONCE_SEEN
 #define NONCE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NONCE_MINIMUM_LENGTH 5
 #define NONCE_MAXIMUM_LENGTH 5
 
@@ -30,6 +34,10 @@ typedef uint32_t nonce_t;
 int encode_nonce(nonce_t *nonce, uint8_t iei, uint8_t *buffer, uint32_t len);
 
 int decode_nonce(nonce_t *nonce, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NONCE_SEEN */
 

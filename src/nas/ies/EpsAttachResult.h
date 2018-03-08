@@ -23,6 +23,10 @@
 #ifndef EPS_ATTACH_RESULT_SEEN
 #define EPS_ATTACH_RESULT_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define EPS_ATTACH_RESULT_MINIMUM_LENGTH 1
 #define EPS_ATTACH_RESULT_MAXIMUM_LENGTH 1
 
@@ -38,5 +42,8 @@ int decode_eps_attach_result(eps_attach_result_t *epsattachresult, uint8_t iei, 
 
 int decode_u8_eps_attach_result(eps_attach_result_t *epsattachresult, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* EPS_ATTACH_RESULT_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* EPS_ATTACH_RESULT_SEEN */

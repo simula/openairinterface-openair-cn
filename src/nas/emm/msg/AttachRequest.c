@@ -35,6 +35,10 @@
 #include "TLVDecoder.h"
 #include "AttachRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_attach_request (
   attach_request_msg * attach_request,
@@ -435,3 +439,7 @@ encode_attach_request (
   
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

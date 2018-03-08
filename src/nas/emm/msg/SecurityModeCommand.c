@@ -34,6 +34,10 @@
 #include "TLVDecoder.h"
 #include "NASSecurityModeCommand.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_security_mode_command (
   security_mode_command_msg * security_mode_command,
@@ -176,3 +180,7 @@ encode_security_mode_command (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

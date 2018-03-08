@@ -28,6 +28,9 @@
 #ifndef FILE_MCC_MNC_SEEN
 #define FILE_MCC_MNC_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct mcc_mnc_list_s {
   uint16_t mcc;
@@ -40,4 +43,9 @@ __attribute__ ((pure)) int find_mnc_length(const char mcc_digit1P,
                     const char mnc_digit1P,
                     const char mnc_digit2P,
                     const char mnc_digit3P);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

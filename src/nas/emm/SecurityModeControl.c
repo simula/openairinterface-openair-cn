@@ -76,6 +76,10 @@
 #include "mme_app_defs.h"
 #include "nas_itti_messaging.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -831,3 +835,7 @@ _security_select_algorithms (
 
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNok);
 }
+
+#ifdef __cplusplus
+}
+#endif

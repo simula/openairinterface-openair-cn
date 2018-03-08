@@ -38,6 +38,9 @@
 #include "mme_config.h"
 #include "queue.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define VENDOR_3GPP (10415)
 #define APP_S6A     (16777251)
@@ -191,5 +194,8 @@ int s6a_parse_experimental_result(struct avp *avp, s6a_experimental_result_t *pt
 char *experimental_retcode_2_string(uint32_t ret_code);
 char *retcode_2_string(uint32_t ret_code);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* S6A_DEFS_H_ */

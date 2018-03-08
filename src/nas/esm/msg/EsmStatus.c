@@ -36,6 +36,10 @@
 #include "EsmCause.h"
 #include "EsmStatus.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_esm_status (
   esm_status_msg * esm_status,
@@ -80,3 +84,7 @@ encode_esm_status (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

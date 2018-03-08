@@ -28,6 +28,10 @@
 #ifndef FILE_3GPP_24_301_SEEN
 #define FILE_3GPP_24_301_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //==============================================================================
 // 9 General message format and information elements coding
 //==============================================================================
@@ -412,6 +416,8 @@ typedef struct ue_security_capability_s {
 #define ESM_CAUSE_MESSAGE_NOT_COMPATIBLE                  101
 #define ESM_CAUSE_PROTOCOL_ERROR                          111
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_3GPP_24_301_SEEN */

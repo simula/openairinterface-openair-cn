@@ -41,6 +41,10 @@
 #include "PdnType.h"
 #include "s6a_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static inline int
 s6a_parse_subscriber_status (
   struct avp_hdr *hdr_sub_status,
@@ -486,3 +490,8 @@ s6a_parse_subscription_data (
 
   return RETURNok;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

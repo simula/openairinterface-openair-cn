@@ -41,6 +41,10 @@
 #include <freeDiameter/freeDiameter-host.h>
 #include <freeDiameter/libfdcore.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 oai_mme_log_specific (
   int log_level)
@@ -61,3 +65,7 @@ oai_mme_log_specific (
 
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

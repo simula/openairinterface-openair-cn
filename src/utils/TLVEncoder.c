@@ -32,6 +32,10 @@
 #include "TLVEncoder.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int                                     errorCodeEncoder = 0;
 
 int encode_bstring (
@@ -52,3 +56,6 @@ int encode_bstring (
   }
 }
 
+#ifdef __cplusplus
+}
+#endif

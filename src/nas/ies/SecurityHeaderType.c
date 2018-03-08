@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "SecurityHeaderType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_security_header_type (
     security_header_type_t * securityheadertype,
@@ -49,3 +53,7 @@ int encode_security_header_type (
 {
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "LcsClientIdentity.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_lcs_client_identity (
   LcsClientIdentity  *lcsclientidentity,
@@ -91,3 +95,6 @@ int encode_lcs_client_identity (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

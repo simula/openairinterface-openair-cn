@@ -23,6 +23,10 @@
 #ifndef LCS_INDICATOR_SEEN
 #define LCS_INDICATOR_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LCS_INDICATOR_MINIMUM_LENGTH 2
 #define LCS_INDICATOR_MAXIMUM_LENGTH 2
 
@@ -32,5 +36,8 @@ int encode_lcs_indicator(lcs_indicator_t *lcsindicator, uint8_t iei, uint8_t *bu
 
 int decode_lcs_indicator(lcs_indicator_t *lcsindicator, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* LCS INDICATOR_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* LCS INDICATOR_SEEN */

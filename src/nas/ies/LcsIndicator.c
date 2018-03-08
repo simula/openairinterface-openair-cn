@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "LcsIndicator.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_lcs_indicator (
   lcs_indicator_t * lcsindicator,
@@ -73,3 +77,6 @@ int encode_lcs_indicator (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

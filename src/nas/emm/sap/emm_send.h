@@ -60,6 +60,10 @@ Description Defines functions executed at the EMMAS Service Access
 #include "CsServiceNotification.h"
 #include "emm_asDef.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -106,5 +110,9 @@ int emm_send_authentication_request(const emm_as_security_t *,
 int emm_send_authentication_reject(authentication_reject_msg *);
 int emm_send_security_mode_command(const emm_as_security_t *,
                                    security_mode_command_msg *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_SEND_SEEN*/

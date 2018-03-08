@@ -31,6 +31,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define DETACH_REQUEST_MINIMUM_LENGTH ( \
     DETACH_TYPE_MINIMUM_LENGTH + \
@@ -64,6 +68,10 @@ typedef struct detach_request_msg_tag {
 int decode_detach_request(detach_request_msg *detachrequest, uint8_t *buffer, uint32_t len);
 
 int encode_detach_request(detach_request_msg *detachrequest, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_DETACH_REQUEST_SEEN) */
 

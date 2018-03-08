@@ -45,6 +45,10 @@ Description Defines EMM procedures executed by the Non-Access Stratum
 #include "common_types.h"
 #include "bstrlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -76,5 +80,9 @@ int lowerlayer_activate_bearer_req(const mme_ue_s1ap_id_t ue_id, const ebi_t ebi
     const bitrate_t        gbr_dl,
     const bitrate_t        gbr_ul,
     bstring data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __LOWERLAYER_H__*/

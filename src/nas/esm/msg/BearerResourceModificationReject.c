@@ -34,6 +34,10 @@
 #include "TLVDecoder.h"
 #include "BearerResourceModificationReject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_bearer_resource_modification_reject (
   bearer_resource_modification_reject_msg * bearer_resource_modification_reject,
@@ -119,3 +123,7 @@ encode_bearer_resource_modification_reject (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

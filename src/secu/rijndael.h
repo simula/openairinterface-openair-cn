@@ -21,10 +21,19 @@
 
 #ifndef FILE_RIJNDAEL_SEEN
 #define FILE_RIJNDAEL_SEEN
-/* Rijndael S-box SR */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Rijndael S-box SR */
 extern uint8_t SR[256];
 
 /* S-box SQ */
 extern uint8_t SQ[256];
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

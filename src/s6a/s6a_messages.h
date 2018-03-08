@@ -28,6 +28,10 @@
 #ifndef S6A_MESSAGES_H_
 #define S6A_MESSAGES_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int s6a_generate_update_location(s6a_update_location_req_t *ulr_p);
 int s6a_generate_authentication_info_req(s6a_auth_info_req_t *uar_p);
 
@@ -40,5 +44,9 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
 
 int s6a_parse_subscription_data(struct avp *avp_subscription_data,
                                 subscription_data_t *subscription_data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* S6A_MESSAGES_H_ */

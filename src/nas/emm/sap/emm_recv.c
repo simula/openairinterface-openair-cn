@@ -65,6 +65,10 @@
 #include "mme_app_defs.h"
 #include "emm_sap.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern mme_app_desc_t                          mme_app_desc;
 
 /****************************************************************************/
@@ -1026,3 +1030,6 @@ _emm_initiate_default_bearer_re_establishment (
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
 
+#ifdef __cplusplus
+}
+#endif

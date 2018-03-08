@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "EsmCause.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_esm_cause (
   esm_cause_t * esmcause,
@@ -73,3 +77,6 @@ int encode_esm_cause (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

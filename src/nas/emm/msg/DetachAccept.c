@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "DetachAccept.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_detach_accept (
   detach_accept_msg * detach_accept,
@@ -63,3 +67,7 @@ encode_detach_accept (
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, DETACH_ACCEPT_MINIMUM_LENGTH, len);
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

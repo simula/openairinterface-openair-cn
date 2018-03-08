@@ -22,6 +22,10 @@
 #ifndef ESM_INFORMATION_TRANSFER_FLAG_SEEN
 #define ESM_INFORMATION_TRANSFER_FLAG_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ESM_INFORMATION_TRANSFER_FLAG_MINIMUM_LENGTH 1
 #define ESM_INFORMATION_TRANSFER_FLAG_MAXIMUM_LENGTH 1
 
@@ -35,5 +39,8 @@ int decode_esm_information_transfer_flag(esm_information_transfer_flag_t *esminf
 
 int decode_u8_esm_information_transfer_flag(esm_information_transfer_flag_t *esminformationtransferflag, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* ESM INFORMATION TRANSFER FLAG_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* ESM INFORMATION TRANSFER FLAG_SEEN */

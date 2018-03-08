@@ -22,6 +22,10 @@
 #ifndef KSI_AND_SEQUENCE_NUMBER_SEEN
 #define KSI_AND_SEQUENCE_NUMBER_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define KSI_AND_SEQUENCE_NUMBER_MINIMUM_LENGTH 2
 #define KSI_AND_SEQUENCE_NUMBER_MAXIMUM_LENGTH 2
 
@@ -35,5 +39,8 @@ int encode_ksi_and_sequence_number(KsiAndSequenceNumber *ksiandsequencenumber, u
 
 int decode_ksi_and_sequence_number(KsiAndSequenceNumber *ksiandsequencenumber, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* KSI AND SEQUENCE NUMBER_H_ */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* KSI AND SEQUENCE NUMBER_H_ */

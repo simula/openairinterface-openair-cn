@@ -34,6 +34,10 @@
 #include "TLVDecoder.h"
 #include "ActivateDedicatedEpsBearerContextAccept.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_activate_dedicated_eps_bearer_context_accept (
   activate_dedicated_eps_bearer_context_accept_msg * activate_dedicated_eps_bearer_context_accept,
@@ -111,3 +115,7 @@ encode_activate_dedicated_eps_bearer_context_accept (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

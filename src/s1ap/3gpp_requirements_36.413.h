@@ -32,6 +32,10 @@
 #include "3gpp_requirements.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define REQUIREMENT_3GPP_36_413(rElEaSe_sEcTiOn__OaImark) REQUIREMENT_3GPP_SPEC(LOG_S1AP, "Hit 3GPP TS 36_413"#rElEaSe_sEcTiOn__OaImark" : "rElEaSe_sEcTiOn__OaImark##_BRIEF"\n")
 #define NO_REQUIREMENT_3GPP_36_413(rElEaSe_sEcTiOn__OaImark) REQUIREMENT_3GPP_SPEC(LOG_S1AP, "#NOT IMPLEMENTED 3GPP TS 36_413"#rElEaSe_sEcTiOn__OaImark" : "rElEaSe_sEcTiOn__OaImark##_BRIEF"\n")
 #define NOT_REQUIREMENT_3GPP_36_413(rElEaSe_sEcTiOn__OaImark) REQUIREMENT_3GPP_SPEC(LOG_S1AP, "#NOT ASSERTED 3GPP TS 36_413"#rElEaSe_sEcTiOn__OaImark" : "rElEaSe_sEcTiOn__OaImark##_BRIEF"\n")
@@ -44,5 +48,8 @@
 
 #define R10_8_3_3_2__2_BRIEF "UE CONTEXT RELEASE COMMAND contains UE S1AP ID pair IE or at least MME UE S1AP ID IE"
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_3GPP_REQUIREMENTS_36_413_SEEN */

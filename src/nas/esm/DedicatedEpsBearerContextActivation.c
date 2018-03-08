@@ -74,6 +74,10 @@
 #include "mme_config.h"
 #include "nas_itti_messaging.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -521,3 +525,8 @@ static int _dedicated_eps_bearer_activate (
 
   OAILOG_FUNC_RETURN (LOG_NAS_ESM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif
+

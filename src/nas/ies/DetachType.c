@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "DetachType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_detach_type (
   detach_type_t * detachtype,
@@ -98,3 +102,7 @@ uint8_t encode_u8_detach_type (
   encoded++;
   return bufferReturn;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -35,6 +35,10 @@
 #include "TLVDecoder.h"
 #include "AttachAccept.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_attach_accept (
   attach_accept_msg * attach_accept,
@@ -339,3 +343,7 @@ int encode_attach_accept (
 
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, encoded);
 }
+
+#ifdef __cplusplus
+}
+#endif

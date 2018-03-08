@@ -27,6 +27,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT_MINIMUM_LENGTH (0)
 
@@ -64,6 +68,10 @@ typedef struct deactivate_eps_bearer_context_accept_msg_tag {
 int decode_deactivate_eps_bearer_context_accept(deactivate_eps_bearer_context_accept_msg *deactivateepsbearercontextaccept, uint8_t *buffer, uint32_t len);
 
 int encode_deactivate_eps_bearer_context_accept(deactivate_eps_bearer_context_accept_msg *deactivateepsbearercontextaccept, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT_H_) */
 

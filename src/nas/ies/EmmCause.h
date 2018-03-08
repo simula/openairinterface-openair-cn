@@ -23,6 +23,10 @@
 #ifndef EMM_CAUSE_SEEN
 #define EMM_CAUSE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define EMM_CAUSE_MINIMUM_LENGTH 1
 #define EMM_CAUSE_MAXIMUM_LENGTH 1
 
@@ -32,5 +36,8 @@ int encode_emm_cause(emm_cause_t *emmcause, uint8_t iei, uint8_t *buffer, uint32
 
 int decode_emm_cause(emm_cause_t *emmcause, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* EMM CAUSE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* EMM CAUSE_SEEN */

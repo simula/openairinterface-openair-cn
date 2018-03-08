@@ -46,6 +46,10 @@
 #include "s6a_messages_types.h"
 #include "mme_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 int
 s6a_ula_cb (
@@ -294,3 +298,8 @@ s6a_generate_update_location (
   OAILOG_DEBUG (LOG_S6A, "Sending s6a ulr for imsi=%s\n", ulr_pP->imsi);
   return RETURNok;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

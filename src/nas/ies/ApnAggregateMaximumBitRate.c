@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "ApnAggregateMaximumBitRate.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_apn_aggregate_maximum_bit_rate (
   ApnAggregateMaximumBitRate * apnaggregatemaximumbitrate,
@@ -113,3 +117,8 @@ int encode_apn_aggregate_maximum_bit_rate (
   *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

@@ -67,6 +67,9 @@
 #include "conversions.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -489,3 +492,7 @@ static int _identification_abort (struct emm_context_s *emm_context, struct nas_
   }
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

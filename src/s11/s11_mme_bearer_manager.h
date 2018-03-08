@@ -29,6 +29,10 @@
 #ifndef FILE_S11_MME_BEARER_MANAGER_SEEN
 #define FILE_S11_MME_BEARER_MANAGER_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /* @brief Create a new Release Access Bearers Request and send it to provided S-GW. */
 int s11_mme_release_access_bearers_request(nw_gtpv2c_stack_handle_t *stack_p, itti_s11_release_access_bearers_request_t *release_access_bearers_p);
@@ -44,5 +48,9 @@ int s11_mme_handle_create_bearer_request (nw_gtpv2c_stack_handle_t * stack_p, nw
 
 /* @brief Create a new Create Bearer Response and send it to provided S-GW. */
 int s11_mme_create_bearer_response (nw_gtpv2c_stack_handle_t * stack_p, itti_s11_create_bearer_response_t * rsp_p);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S11_MME_BEARER_MANAGER_SEEN */

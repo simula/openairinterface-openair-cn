@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "CsfbResponse.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_csfb_response (
   csfb_response_t * csfbresponse,
@@ -97,4 +101,6 @@ uint8_t encode_u8_csfb_response (
   return bufferReturn;
 }
 
-
+#ifdef __cplusplus
+}
+#endif

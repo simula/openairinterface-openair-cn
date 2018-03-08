@@ -32,6 +32,10 @@
 #include "secu_defs.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
    @brief Derive the kNASenc from kasme and perform truncate on the generated key to
    reduce his size to 128 bits. Definition of the derivation function can
@@ -85,3 +89,8 @@ derive_key_nas (
   memcpy (knas, &out[31 - 16 + 1], 16);
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

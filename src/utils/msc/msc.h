@@ -22,6 +22,10 @@
 #ifndef FILE_MSC_SEEN
 #define FILE_MSC_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
   MIN_MSC_ENV = 0,
   MSC_E_UTRAN = MIN_MSC_ENV,
@@ -101,4 +105,9 @@ void msc_flush_message (struct shared_log_queue_item_s *item_p);
 #define MSC_LOG_TX_MESSAGE(mScPaRaMs, fORMAT, aRGS...)
 #define MSC_LOG_TX_MESSAGE_FAILED(mScPaRaMs, fORMAT, aRGS...)
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

@@ -49,6 +49,10 @@
 #include "s11_ie_formatter.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern hash_table_ts_t                        *s11_sgw_teid_2_gtv2c_teid_handle;
 
 //------------------------------------------------------------------------------
@@ -434,4 +438,8 @@ s11_sgw_handle_create_bearer_response (
   DevAssert (NW_OK == rc);
   return itti_send_msg_to_task (TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
+
+#ifdef __cplusplus
+}
+#endif
 

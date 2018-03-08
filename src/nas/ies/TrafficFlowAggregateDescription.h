@@ -22,6 +22,10 @@
 #ifndef TRAFFIC_FLOW_AGGREGATE_DESCRIPTION_SEEN
 #define TRAFFIC_FLOW_AGGREGATE_DESCRIPTION_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define TRAFFIC_FLOW_AGGREGATE_DESCRIPTION_MINIMUM_LENGTH 1
 #define TRAFFIC_FLOW_AGGREGATE_DESCRIPTION_MAXIMUM_LENGTH 1
 
@@ -33,5 +37,8 @@ int encode_traffic_flow_aggregate_description(traffic_flow_aggregate_description
 
 int decode_traffic_flow_aggregate_description(traffic_flow_aggregate_description_t *trafficflowaggregatedescription, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* TRAFFIC FLOW AGGREGATE DESCRIPTION_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* TRAFFIC FLOW AGGREGATE DESCRIPTION_SEEN */

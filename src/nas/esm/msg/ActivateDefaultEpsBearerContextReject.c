@@ -34,6 +34,10 @@
 #include "TLVDecoder.h"
 #include "ActivateDefaultEpsBearerContextReject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_activate_default_eps_bearer_context_reject (
   activate_default_eps_bearer_context_reject_msg * activate_default_eps_bearer_context_reject,
@@ -120,3 +124,7 @@ encode_activate_default_eps_bearer_context_reject (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

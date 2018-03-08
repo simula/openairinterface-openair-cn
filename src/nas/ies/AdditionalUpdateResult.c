@@ -31,6 +31,10 @@
 #include "TLVDecoder.h"
 #include "AdditionalUpdateResult.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_additional_update_result (
   additional_update_result_t * additionalupdateresult,
@@ -98,3 +102,6 @@ uint8_t encode_u8_additional_update_result (additional_update_result_t * additio
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

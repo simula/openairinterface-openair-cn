@@ -29,6 +29,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define UPLINK_NAS_TRANSPORT_MINIMUM_LENGTH ( \
     NAS_MESSAGE_CONTAINER_MINIMUM_LENGTH )
@@ -56,6 +60,10 @@ typedef struct uplink_nas_transport_msg_tag {
 int decode_uplink_nas_transport(uplink_nas_transport_msg *uplinknastransport, uint8_t *buffer, uint32_t len);
 
 int encode_uplink_nas_transport(uplink_nas_transport_msg *uplinknastransport, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_UPLINK_NAS_TRANSPORT_SEEN) */
 

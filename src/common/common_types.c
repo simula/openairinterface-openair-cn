@@ -45,6 +45,9 @@
 #include "common_defs.h"
 #include "3gpp_29.274.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* Clear GUTI without free it */
 void clear_guti(guti_t * const guti) {memset(guti, 0, sizeof(guti_t));guti->m_tmsi = INVALID_TMSI;}
 /* Clear IMSI without free it */
@@ -152,4 +155,7 @@ bstring paa_to_bstring(paa_t *paa)
   return bstr;
 }
 
+#ifdef __cplusplus
+}
+#endif
 

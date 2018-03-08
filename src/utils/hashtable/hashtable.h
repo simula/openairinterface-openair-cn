@@ -28,6 +28,10 @@
 #ifndef FILE_HASH_TABLE_SEEN
 #define FILE_HASH_TABLE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef size_t   hash_size_t;
 typedef uint64_t hash_key_t;
 
@@ -172,6 +176,10 @@ hashtable_rc_t  hashtable_uint64_ts_free (hash_table_uint64_ts_t * const hashtbl
 hashtable_rc_t  hashtable_uint64_ts_remove(hash_table_uint64_ts_t * const hashtbl, const hash_key_t key);
 hashtable_rc_t  hashtable_uint64_ts_get    (const hash_table_uint64_ts_t * const hashtbl, const hash_key_t key, uint64_t * const dataP) __attribute__ ((hot));
 hashtable_rc_t  hashtable_uint64_ts_resize (hash_table_uint64_ts_t * const hashtbl, const hash_size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

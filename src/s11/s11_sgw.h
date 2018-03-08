@@ -29,6 +29,14 @@
 #ifndef FILE_S11_SGW_SEEN
 #define FILE_S11_SGW_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int s11_sgw_init(sgw_config_t *mme_config);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S11_SGW_SEEN */

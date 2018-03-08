@@ -39,6 +39,10 @@ Description Defines functions used to handle state of EPS bearer contexts
 #ifndef ESM_EBR_SEEN
 #define ESM_EBR_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -77,5 +81,9 @@ int esm_ebr_set_status(emm_context_t * emm_context, ebi_t ebi, esm_ebr_state sta
 esm_ebr_state esm_ebr_get_status(emm_context_t * emm_context, ebi_t ebi);
 
 bool esm_ebr_is_not_in_use(emm_context_t * emm_context, ebi_t ebi);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ESM_EBR_SEEN*/

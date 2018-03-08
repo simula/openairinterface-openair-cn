@@ -44,6 +44,10 @@
 #include <netinet/sctp.h>
 #include "mme_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** \brief SCTP data received callback
  \param buffer pointer to buffer received
  \param length pointer to the length of buffer
@@ -55,6 +59,10 @@ typedef void (*sctp_recv_callback)(uint8_t *buffer, uint32_t length);
  @returns -1 on error, 0 otherwise.
  **/
 int sctp_init(const mme_config_t *mme_config_p);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_SCTP_PRIMITIVES_SERVER_SEEN */
 

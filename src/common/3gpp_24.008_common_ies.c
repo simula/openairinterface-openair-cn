@@ -45,6 +45,9 @@
 #include "TLVEncoder.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 //******************************************************************************
 // 10.5.1 Common information elements
 //******************************************************************************
@@ -974,4 +977,7 @@ int encode_ms_network_feature_support_ie(ms_network_feature_support_t *msnetwork
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif
 

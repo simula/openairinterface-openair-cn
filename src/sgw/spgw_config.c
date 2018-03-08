@@ -59,6 +59,10 @@
 #include "dynamic_memory_check.h"
 #include "async_system.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static void spgw_config_display (spgw_config_t * config_p);
 
 //------------------------------------------------------------------------------
@@ -215,3 +219,8 @@ int spgw_config_parse_opt_line (
   spgw_config_display (spgw_config_p);
   return RETURNok;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

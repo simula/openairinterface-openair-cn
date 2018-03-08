@@ -45,6 +45,10 @@
 #include "s6a_messages.h"
 #include "assertions.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define CHECK_FD_FCT(fCT)  DevAssert(fCT == 0);
 
 /*! \file s6a_dict.c
@@ -130,3 +134,8 @@ s6a_fd_init_dict_objs (
   CHECK_FD_FCT (fd_disp_app_support (s6a_fd_cnf.dataobj_s6a_app, s6a_fd_cnf.dataobj_s6a_vendor, 1, 0));
   return RETURNok;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "AuthenticationResponse.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_authentication_response (
   authentication_response_msg * authentication_response,
@@ -77,3 +81,7 @@ encode_authentication_response (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -35,6 +35,10 @@
 #include "assertions.h"
 #include "mcc_mnc_itu.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // From http://www.itu.int/pub/T-SP-E.212B-2014
 const mcc_mnc_list_t                    mcc_mnc_list[] = {
   {001, "01"},
@@ -1816,3 +1820,7 @@ find_mnc_length (
 
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

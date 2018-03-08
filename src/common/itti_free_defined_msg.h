@@ -28,8 +28,14 @@
 
 #ifndef FILE_ITTI_FREE_DEFINED_MSG_SEEN
 #define FILE_ITTI_FREE_DEFINED_MSG_SEEN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 void itti_free_msg_content (MessageDef * const message_p);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_ITTI_FREE_DEFINED_MSG_SEEN */

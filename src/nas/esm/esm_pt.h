@@ -38,6 +38,10 @@ Description Defines functions used to handle ESM procedure transactions.
 #ifndef __ESM_PT_H__
 #define __ESM_PT_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -60,6 +64,8 @@ Description Defines functions used to handle ESM procedure transactions.
 
 int esm_pt_is_reserved(int pti);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __ESM_PT_H__*/

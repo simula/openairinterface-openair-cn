@@ -36,6 +36,10 @@
 
 /* Defined in asn_internal.h */
 // extern int asn_debug_indent;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int asn_debug;
 
 #if defined(EMIT_ASN_DEBUG_EXTERN)
@@ -384,6 +388,10 @@ inline void ASN_DEBUG(const char *fmt, ...);
 #endif
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int asn_debug;
 extern int asn1_xer_print;
 
@@ -394,6 +402,10 @@ extern int asn1_xer_print;
 # include "3gpp_33.401.h"
 # include "security_types.h"
 # include "common_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //Forward declaration
 struct s1ap_message_s;
@@ -474,5 +486,9 @@ S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t   id,
  @returns void
  **/
 void s1ap_handle_criticality(S1ap_Criticality_t criticality);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S1AP_COMMON_SEEN */

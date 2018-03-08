@@ -31,6 +31,10 @@
 #include "EsmMessageContainer.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_esm_message_container (
   EsmMessageContainer * esmmessagecontainer,
@@ -97,3 +101,6 @@ int encode_esm_message_container (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

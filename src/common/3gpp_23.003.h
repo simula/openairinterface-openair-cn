@@ -27,7 +27,9 @@
 */
 #ifndef FILE_3GPP_23_003_SEEN
 #define FILE_3GPP_23_003_SEEN
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 //==============================================================================
 // 12  Identification of PLMN, RNC, Service Area, CN domain and Shared Network Area
 //==============================================================================
@@ -424,4 +426,7 @@ void clear_imei(imei_t * const imei);
 /* Clear IMEISV without free it */
 void clear_imeisv(imeisv_t * const imeisv);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_23_003_SEEN */

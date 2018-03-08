@@ -34,6 +34,10 @@
 #include "TLVDecoder.h"
 #include "EsmInformationResponse.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_esm_information_response (
   esm_information_response_msg * esm_information_response,
@@ -129,3 +133,7 @@ encode_esm_information_response (
 
   OAILOG_FUNC_RETURN (LOG_NAS_ESM, encoded);
 }
+
+#ifdef __cplusplus
+}
+#endif

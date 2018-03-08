@@ -30,6 +30,10 @@
 #include "bstrlib.h"
 #include "common_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define IES_ENCODE_U8(buffer, encoded, value)   \
     ENCODE_U8(buffer + encoded, value, encoded)
 
@@ -75,6 +79,10 @@ void tlv_encode_perror(void);
     errorCodeEncoder = TLV_BUFFER_NULL;                            \
     return TLV_BUFFER_NULL;                                        \
   }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* define (FILE_TLV_ENCODER_SEEN) */
 

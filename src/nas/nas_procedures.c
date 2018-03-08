@@ -67,6 +67,10 @@
 #include "digest.h"
 #include "nas_procedures.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static  nas_emm_common_proc_t *get_nas_common_procedure(const struct emm_context_s * const ctxt, emm_common_proc_type_t proc_type);
 static  nas_cn_proc_t *get_nas_cn_procedure(const struct emm_context_s * const ctxt, cn_proc_type_t proc_type);
 
@@ -863,3 +867,6 @@ nas_emm_proc_t * nas_emm_find_procedure_by_msg_digest(struct emm_context_s * con
   return emm_proc;
 }
 
+#ifdef __cplusplus
+}
+#endif

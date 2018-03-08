@@ -29,6 +29,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define SERVICE_REJECT_MINIMUM_LENGTH ( \
     EMM_CAUSE_MINIMUM_LENGTH )
@@ -60,6 +64,10 @@ typedef struct service_reject_msg_tag {
 int decode_service_reject(service_reject_msg *servicereject, uint8_t *buffer, uint32_t len);
 
 int encode_service_reject(service_reject_msg *servicereject, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_SERVICE_REJECT_SEEN) */
 

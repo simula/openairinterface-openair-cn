@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "ShortMac.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_short_mac (
     short_mac_t * shortmac,
@@ -71,3 +75,6 @@ int encode_short_mac (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

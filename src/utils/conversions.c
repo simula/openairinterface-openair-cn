@@ -33,6 +33,10 @@
 #include "common_defs.h"
 #include "conversions.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static const char                       hex_to_ascii_table[16] = {
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
 };
@@ -134,3 +138,7 @@ imsi64_t imsi_to_imsi64(const imsi_t * const imsi)
   }
   return imsi64;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -29,6 +29,10 @@
 #ifndef FILE_MME_APP_BEARER_CONTEXT_SEEN
 #define FILE_MME_APP_BEARER_CONTEXT_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bstring bearer_state2string(const mme_app_bearer_state_t bearer_state);
 bearer_context_t *  mme_app_create_bearer_context(ue_mm_context_t * const ue_mm_context, const pdn_cid_t pdn_cid, const ebi_t ebi, const bool is_default);
 void mme_app_free_bearer_context (bearer_context_t ** const bearer_context);
@@ -37,5 +41,9 @@ bearer_context_t* mme_app_get_bearer_context_by_state(ue_mm_context_t * const ue
 void mme_app_add_bearer_context(ue_mm_context_t * const ue_context, bearer_context_t  * const bc, const pdn_cid_t pdn_cid, const bool is_default);
 ebi_t mme_app_get_free_bearer_id(ue_mm_context_t * const ue_context);
 void mme_app_bearer_context_s1_release_enb_informations(bearer_context_t * const bc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

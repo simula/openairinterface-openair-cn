@@ -28,6 +28,15 @@
 #ifndef FILE_S11_MME_SEEN
 #define FILE_S11_MME_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int s11_mme_init(const mme_config_t * const mme_config);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* FILE_S11_MME_SEEN */

@@ -22,6 +22,10 @@
 #ifndef GUTI_TYPE_SEEN
 #define GUTI_TYPE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define GUTI_TYPE_MINIMUM_LENGTH 1
 #define GUTI_TYPE_MAXIMUM_LENGTH 1
 
@@ -39,5 +43,8 @@ int decode_guti_type(guti_type_t *gutitype, uint8_t iei, uint8_t *buffer, uint32
 
 int decode_u8_guti_type(guti_type_t *gutitype, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* GUTI_TYPE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* GUTI_TYPE_SEEN */

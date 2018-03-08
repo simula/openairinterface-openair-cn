@@ -37,6 +37,10 @@
 #ifndef FILE_SECURITY_TYPES_SEEN
 #define FILE_SECURITY_TYPES_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define RAND_LENGTH_BITS       (128)
 #define RAND_LENGTH_OCTETS     (RAND_LENGTH_BITS/8)
 #define AUTH_KEY_LENGTH_BITS   (128)
@@ -140,4 +144,7 @@ typedef enum {
   UP_INT_ALG  = 0x06
 } algorithm_type_dist_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_SECURITY_TYPES_SEEN */

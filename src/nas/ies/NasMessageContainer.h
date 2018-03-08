@@ -22,6 +22,10 @@
 #ifndef NAS_MESSAGE_CONTAINER_SEEN
 #define NAS_MESSAGE_CONTAINER_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NAS_MESSAGE_CONTAINER_MINIMUM_LENGTH 4
 #define NAS_MESSAGE_CONTAINER_MAXIMUM_LENGTH 253
 
@@ -31,5 +35,8 @@ int encode_nas_message_container(NasMessageContainer nasmessagecontainer, uint8_
 
 int decode_nas_message_container(NasMessageContainer *nasmessagecontainer, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* NAS MESSAGE CONTAINER_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* NAS MESSAGE CONTAINER_SEEN */

@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "SecurityModeReject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_security_mode_reject (
   security_mode_reject_msg * security_mode_reject,
@@ -77,3 +81,7 @@ encode_security_mode_reject (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

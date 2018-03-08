@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "AdditionalUpdateType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_additional_update_type (
   additional_update_type_t * additionalupdatetype,
@@ -53,3 +57,7 @@ int encode_additional_update_type (
 {
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

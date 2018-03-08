@@ -24,6 +24,10 @@
 #ifndef DETACH_TYPE_SEEN
 #define DETACH_TYPE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define DETACH_TYPE_MINIMUM_LENGTH 1
 #define DETACH_TYPE_MAXIMUM_LENGTH 1
 
@@ -48,5 +52,8 @@ int decode_detach_type(detach_type_t *detachtype, uint8_t iei, uint8_t *buffer, 
 
 int decode_u8_detach_type(detach_type_t *detachtype, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* DETACH_TYPE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* DETACH_TYPE_SEEN */

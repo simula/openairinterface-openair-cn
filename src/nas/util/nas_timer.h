@@ -38,6 +38,10 @@ Description Timer utilities
 #ifndef FILE_NAS_TIMER_SEEN
 #define FILE_NAS_TIMER_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -79,5 +83,9 @@ void nas_timer_cleanup (void);
 long int nas_timer_start (long sec, long usec, nas_timer_callback_t nas_timer_callback, void *nas_timer_callback_args);
 long int nas_timer_stop (long int timer_id, void **nas_timer_callback_arg);
 void nas_timer_handle_signal_expiry (long timer_id, nas_itti_timer_arg_t *nas_itti_timer_arg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_NAS_TIMER_SEEN */

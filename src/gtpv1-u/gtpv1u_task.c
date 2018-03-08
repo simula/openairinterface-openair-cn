@@ -57,6 +57,10 @@
 #include "gtpv1u_sgw_defs.h"
 #include "sgw.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern sgw_app_t sgw_app;
 
 const struct gtp_tunnel_ops *gtp_tunnel_ops;
@@ -163,3 +167,7 @@ void gtpv1u_exit (gtpv1u_data_t * const gtpv1u_data)
   // END-GTP quick integration only for evaluation purpose
   itti_exit_task ();
 }
+
+#ifdef __cplusplus
+}
+#endif

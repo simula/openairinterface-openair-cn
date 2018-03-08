@@ -41,6 +41,10 @@
 #include "gtpv1u_sgw_defs.h"
 #include "pgw_pcef_emulation.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sgw_app_s {
 
   bstring        sgw_if_name_S1u_S12_S4_up;
@@ -76,6 +80,10 @@ typedef struct pgw_app_s {
   hash_table_ts_t                                         *deactivated_predefined_pcc_rules;
   hash_table_ts_t                                         *predefined_pcc_rules;
 } pgw_app_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

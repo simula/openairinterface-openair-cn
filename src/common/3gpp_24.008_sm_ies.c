@@ -42,6 +42,9 @@
 #include "TLVEncoder.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 //******************************************************************************
 // 10.5.6 Session management information elements
 //******************************************************************************
@@ -1156,3 +1159,6 @@ void free_traffic_flow_template(traffic_flow_template_t ** tft)
   free_wrapper((void**)tft);
 }
 
+#ifdef __cplusplus
+}
+#endif

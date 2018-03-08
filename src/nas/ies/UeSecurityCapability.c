@@ -31,6 +31,10 @@
 #include "3gpp_24.301.h"
 #include "UeSecurityCapability.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_ue_security_capability (
     ue_security_capability_t * uesecuritycapability,
@@ -129,3 +133,6 @@ int encode_ue_security_capability (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

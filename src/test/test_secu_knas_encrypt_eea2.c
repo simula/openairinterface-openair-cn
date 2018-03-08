@@ -28,6 +28,10 @@
 
 #include "secu_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static
   void
 eea2_encrypt (
@@ -159,3 +163,7 @@ doit (
                    "cf23ccccd4280767bee8eeb23d8652461db6493103003baf89f5e18261ea43c8" "4a92ebffffe4909dc46c5192f825f770600b9602c557b5f8b431a79d45977dd9" "c41b863da9e142e90020cfd074d6927b7ab3b6725d1a6f3f98b9c9daa8982aff" "06782800")
     );
 }
+
+#ifdef __cplusplus
+}
+#endif

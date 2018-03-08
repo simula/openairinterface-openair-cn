@@ -50,6 +50,10 @@
 #include "common_defs.h"
 #include "sgw_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef LIBCONFIG_LONG
 #  define libconfig_int long
 #else
@@ -296,3 +300,7 @@ void sgw_config_display (sgw_config_t * config_p)
   OAILOG_INFO (LOG_SPGW_APP, "    MSC log level........: %s (MeSsage Chart)\n", OAILOG_LEVEL_INT2STR(config_p->log_config.msc_log_level));
   OAILOG_INFO (LOG_SPGW_APP, "    ITTI log level.......: %s (InTer-Task Interface)\n", OAILOG_LEVEL_INT2STR(config_p->log_config.itti_log_level));
 }
+
+#ifdef __cplusplus
+}
+#endif

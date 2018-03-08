@@ -50,6 +50,10 @@
 #include "s11_mme_bearer_manager.h"
 #include "s11_ie_formatter.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern hash_table_ts_t                        *s11_mme_teid_2_gtv2c_teid_handle;
 
 //------------------------------------------------------------------------------
@@ -404,3 +408,8 @@ s11_mme_handle_create_bearer_request (
   }
   return RETURNerror;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

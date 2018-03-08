@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "Nonce.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_nonce (
   nonce_t * nonce,
@@ -72,3 +76,6 @@ int encode_nonce (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

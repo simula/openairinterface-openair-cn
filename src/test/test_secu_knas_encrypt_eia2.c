@@ -28,6 +28,10 @@
 
 #include "secu_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static
   void
 eia2_encrypt (
@@ -189,3 +193,7 @@ doit (
     );
 #endif
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -32,6 +32,10 @@
 
 #include "common_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** \brief Handle an Initial UE message.
  * \param assocId lower layer assoc id (SCTP)
  * \param stream SCTP stream on which data had been received
@@ -76,5 +80,8 @@ s1ap_handle_mme_ue_id_notification (
 
 int s1ap_generate_s1ap_e_rab_setup_req (itti_s1ap_e_rab_setup_req_t * const e_rab_setup_req);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S1AP_MME_NAS_PROCEDURES_SEEN */

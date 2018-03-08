@@ -5,6 +5,10 @@
 #include "mme_app_ue_context.h"
 #include "3gpp_23.003.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define TEST_CASE_COMMON_CONVERT_MAX 10
 
 START_TEST(imsi_empty_test)
@@ -186,3 +190,7 @@ int main(void)
     srunner_free(sr);
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#ifdef __cplusplus
+}
+#endif

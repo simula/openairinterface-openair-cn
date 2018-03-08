@@ -30,6 +30,10 @@
 
 #include "queue.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //typedef int (*mme_app_pdu_in_resp_t)(void *arg);
 //typedef int (*mme_app_pdu_in_rej_t)(void *arg);
 //typedef int (*mme_app_time_out_t)(void *arg);
@@ -92,5 +96,8 @@ mme_app_s11_proc_create_bearer_t* mme_app_get_s11_procedure_create_bearer(ue_mm_
 void mme_app_delete_s11_procedure_create_bearer(ue_mm_context_t * const ue_context_p);
 void mme_app_s11_procedure_create_bearer_send_response(ue_mm_context_t * const ue_context_p, mme_app_s11_proc_create_bearer_t* s11_proc_create);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

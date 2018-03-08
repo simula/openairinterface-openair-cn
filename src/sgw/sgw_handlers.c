@@ -64,6 +64,10 @@
 #include "pgw_procedures.h"
 #include "async_system.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern sgw_app_t                        sgw_app;
 extern spgw_config_t                    spgw_config;
 extern struct gtp_tunnel_ops           *gtp_tunnel_ops;
@@ -1261,3 +1265,7 @@ sgw_handle_create_bearer_response (
 
   OAILOG_FUNC_RETURN(LOG_SPGW_APP, rv);
 }
+
+#ifdef __cplusplus
+}
+#endif

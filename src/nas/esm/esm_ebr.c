@@ -60,6 +60,10 @@
 #include "esm_ebr_context.h"
 #include "mme_api.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -717,3 +721,7 @@ static int _esm_ebr_get_available_entry (emm_context_t * emm_context)
    */
   return (-1);
 }
+
+#ifdef __cplusplus
+}
+#endif

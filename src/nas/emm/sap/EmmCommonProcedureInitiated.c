@@ -63,6 +63,9 @@
 #include "emm_proc.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -332,6 +335,10 @@ int EmmCommonProcedureInitiated (emm_reg_t * const evt)
 
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /****************************************************************************/
 /*********************  L O C A L    F U N C T I O N S  *********************/

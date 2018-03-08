@@ -33,6 +33,10 @@
 #include "3gpp_23.003.h"
 #include "TrackingAreaIdentity.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define S1AP_ENB_DEREGISTERED_IND(mSGpTR)        (mSGpTR)->ittiMsg.s1ap_eNB_deregistered_ind
 #define S1AP_ENB_INITIATED_RESET_REQ(mSGpTR)     (mSGpTR)->ittiMsg.s1ap_enb_initiated_reset_req
 #define S1AP_ENB_INITIATED_RESET_ACK(mSGpTR)     (mSGpTR)->ittiMsg.s1ap_enb_initiated_reset_ack
@@ -207,4 +211,7 @@ typedef struct itti_s1ap_e_rab_setup_rsp_s {
 
 } itti_s1ap_e_rab_setup_rsp_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_S1AP_MESSAGES_TYPES_SEEN */

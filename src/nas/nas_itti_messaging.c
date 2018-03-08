@@ -54,6 +54,10 @@
 
 #define TASK_ORIGIN  TASK_NAS_MME
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int
 nas_itti_dl_data_req (
@@ -454,3 +458,7 @@ void  s6a_auth_info_rsp_timer_expiry_handler (void *args)
   OAILOG_FUNC_OUT (LOG_NAS_EMM);
 }
 //***************************************************************************
+
+#ifdef __cplusplus
+}
+#endif

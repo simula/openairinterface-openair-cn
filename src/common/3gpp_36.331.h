@@ -28,6 +28,9 @@
 
 #ifndef FILE_3GPP_36_331_SEEN
 #define FILE_3GPP_36_331_SEEN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // could be extracted with asn1 tool
 
@@ -42,5 +45,7 @@ typedef enum EstablishmentCause  {
              SPARE1
 } rrc_establishment_cause_t;
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_36_331_SEEN */

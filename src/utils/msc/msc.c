@@ -66,6 +66,10 @@
 #define MSC_MAX_PROTO_NAME_LENGTH 16
 #define MSC_MAX_MESSAGE_LENGTH    512
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //-------------------------------
 
 FILE                                   *g_msc_fd = NULL;
@@ -463,3 +467,7 @@ void msc_flush_message (struct shared_log_queue_item_s *item_p)
     }
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -29,6 +29,10 @@
 #ifndef FILE_S1AP_MME_TA_SEEN
 #define FILE_S1AP_MME_TA_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum {
   TA_LIST_UNKNOWN_TAC = -2,
   TA_LIST_UNKNOWN_PLMN = -1,
@@ -39,5 +43,9 @@ enum {
 };
 
 int s1ap_mme_compare_ta_lists(S1ap_SupportedTAs_t *ta_list);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S1AP_MME_TA_SEEN */

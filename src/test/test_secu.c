@@ -28,6 +28,10 @@
 
 #include "secu_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   uint8_t                                 kasme[32];
   uint8_t                                 kenb_exp[16];
@@ -57,3 +61,7 @@ const test_secu_t                       kenb_test_vector[] = {
    fail ("kenb derivation");}
    }
    }
+
+#ifdef __cplusplus
+}
+#endif

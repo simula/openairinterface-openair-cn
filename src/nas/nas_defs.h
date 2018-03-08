@@ -22,6 +22,14 @@
 #ifndef FILE_NAS_DEFS_SEEN
 #define FILE_NAS_DEFS_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int nas_init(mme_config_t *mme_config_p);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_NAS_DEFS_SEEN */

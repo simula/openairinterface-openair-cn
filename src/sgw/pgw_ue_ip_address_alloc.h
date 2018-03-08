@@ -29,8 +29,16 @@
 #ifndef PGW_UE_IP_ADDRESS_ALLOC_SEEN
 #define PGW_UE_IP_ADDRESS_ALLOC_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int allocate_ue_ipv4_address (const char *imsi, struct in_addr *addr); 
 int release_ue_ipv4_address (const char *imsi, struct in_addr *addr);
 void pgw_ip_address_pool_init (void); 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*PGW_UE_IP_ADDRESS_ALLOC_SEEN */

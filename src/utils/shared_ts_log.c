@@ -75,6 +75,9 @@
 #define LOG_FLUSH_PERIOD_MICRO_SEC           50000
 //-------------------------------
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef unsigned long                   log_message_number_t;
 
@@ -384,4 +387,6 @@ void shared_log_item(shared_log_queue_item_t * messageP)
   }
 }
 
-
+#ifdef __cplusplus
+}
+#endif

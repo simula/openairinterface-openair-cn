@@ -43,6 +43,10 @@ Description Defines the EMMREG Service Access Point that provides
 
 #include "emm_regDef.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -62,5 +66,9 @@ Description Defines the EMMREG Service Access Point that provides
 void emm_reg_initialize(void);
 
 int emm_reg_send(emm_reg_t * const msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_REG_SEEN*/

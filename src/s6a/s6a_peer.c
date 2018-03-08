@@ -46,6 +46,10 @@
 #include "dynamic_memory_check.h"
 #include "mme_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NB_MAX_TRIES  (8)
 
 extern __pid_t g_pid;
@@ -197,3 +201,8 @@ s6a_fd_new_peer (
   return RETURNerror;
 #endif
 }
+
+#ifdef __cplusplus
+}
+#endif
+

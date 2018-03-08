@@ -37,6 +37,10 @@
 #include "s1ap_mme.h"
 #include "s1ap_ies_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char                                    ip_addr[] = "127.0.0.1";
 
 int                                     assoc[2];
@@ -134,3 +138,7 @@ main (
   pthread_join (sctp_get_receiver_thread (assoc[0]), NULL);
   return (0);
 }
+
+#ifdef __cplusplus
+}
+#endif

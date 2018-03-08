@@ -50,6 +50,10 @@
 #include "s1ap_mme_itti_messaging.h"
 #include "timer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Every time a new UE is associated, increment this variable.
    But care if it wraps to increment also the mme_ue_s1ap_id_has_wrapped
    variable. Limit: UINT32_MAX (in stdint.h).
@@ -702,3 +706,8 @@ s1ap_handle_mme_ue_id_notification (
                           notification_p->sctp_assoc_id, notification_p->enb_ue_s1ap_id, notification_p->mme_ue_s1ap_id);
   OAILOG_FUNC_OUT (LOG_S1AP);
 }
+
+#ifdef __cplusplus
+}
+#endif
+

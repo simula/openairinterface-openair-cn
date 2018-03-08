@@ -33,6 +33,10 @@
 #include <netinet/in.h>
 #include "pgw_lite_paa.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int allocate_ue_ipv4_address(const char *imsi, struct in_addr *addr) {
   // Call PGW IP Address allocator 
   return pgw_get_free_ipv4_paa_address (addr); 
@@ -48,3 +52,6 @@ void pgw_ip_address_pool_init(void) {
   return;
 }
 
+#ifdef __cplusplus
+}
+#endif

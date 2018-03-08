@@ -47,6 +47,9 @@ Description Defines the EMM primitives available at the EMMAS Service
 #include "3gpp_36.401.h"
 #include "3gpp_23.003.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -319,5 +322,8 @@ typedef struct emm_as_s {
  */
 void emm_as_set_security_data(emm_as_security_data_t *data, const void *context,
                               bool is_new, bool is_ciphered);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_ASDEF_SEEN*/

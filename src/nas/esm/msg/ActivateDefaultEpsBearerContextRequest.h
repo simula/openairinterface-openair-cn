@@ -32,6 +32,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_MINIMUM_LENGTH ( \
     EPS_QUALITY_OF_SERVICE_MINIMUM_LENGTH + \
@@ -106,6 +110,10 @@ typedef struct activate_default_eps_bearer_context_request_msg_tag {
 int decode_activate_default_eps_bearer_context_request(activate_default_eps_bearer_context_request_msg *activatedefaultepsbearercontextrequest, uint8_t *buffer, uint32_t len);
 
 int encode_activate_default_eps_bearer_context_request(activate_default_eps_bearer_context_request_msg *activatedefaultepsbearercontextrequest, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_H_) */
 

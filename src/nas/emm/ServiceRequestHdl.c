@@ -70,6 +70,10 @@
 #include "emm_cause.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -155,3 +159,7 @@ _emm_service_reject (mme_ue_s1ap_id_t ue_id, int emm_cause)
   emm_context_unlock(emm_ctx);
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

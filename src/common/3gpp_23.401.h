@@ -28,6 +28,9 @@
 #ifndef FILE_3GPP_23_401_SEEN
 #define FILE_3GPP_23_401_SEEN
 #include "queue.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //==============================================================================
 //5.7 Information storage
@@ -192,4 +195,7 @@ typedef struct pgw_eps_bearer_entry_gtp_based_S5_S8_only_s {
 } pgw_eps_bearer_entry_t;
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_23_401_SEEN */

@@ -54,6 +54,10 @@
 #include "pgw_pcef_emulation.h"
 #include "spgw_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef LIBCONFIG_LONG
 #  define libconfig_int long
 #else
@@ -498,3 +502,7 @@ void pgw_config_display (pgw_config_t * config_p)
   OAILOG_INFO (LOG_SPGW_APP, "- Helpers:\n");
   OAILOG_INFO (LOG_SPGW_APP, "    Push PCO (DNS+MTU) ........: %s\n", config_p->force_push_pco == 0 ? "false" : "true");
 }
+
+#ifdef __cplusplus
+}
+#endif

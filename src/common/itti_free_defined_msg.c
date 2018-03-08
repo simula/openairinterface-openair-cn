@@ -47,6 +47,9 @@
 #include "intertask_interface.h"
 #include "itti_free_defined_msg.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 //------------------------------------------------------------------------------
 void itti_free_msg_content (MessageDef * const message_p)
 {
@@ -247,3 +250,7 @@ void itti_free_msg_content (MessageDef * const message_p)
     ;
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

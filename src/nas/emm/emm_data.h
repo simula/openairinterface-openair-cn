@@ -56,6 +56,10 @@ Description Defines internal private data handled by EPS Mobility
 #include "EpsNetworkFeatureSupport.h"
 #include "esm_data.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -372,5 +376,8 @@ emm_data_t _emm_data;
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_DATA_SEEN*/

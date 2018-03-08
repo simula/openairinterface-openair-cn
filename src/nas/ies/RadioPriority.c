@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "RadioPriority.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_radio_priority (
   radio_priority_t * radiopriority,
@@ -95,3 +99,7 @@ uint8_t encode_u8_radio_priority (radio_priority_t * radiopriority)
   encoded++;
   return bufferReturn;
 }
+
+#ifdef __cplusplus
+}
+#endif

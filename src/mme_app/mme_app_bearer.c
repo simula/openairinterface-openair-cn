@@ -59,6 +59,9 @@
 #include "timer.h"
 #include "nas_proc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //----------------------------------------------------------------------------
 static bool mme_app_construct_guti(const plmn_t * const plmn_p, const s_tmsi_t * const s_tmsi_p,  guti_t * const guti_p);
@@ -1196,3 +1199,6 @@ void mme_app_trigger_mme_initiated_dedicated_bearer_deactivation_procedure (ue_m
   OAILOG_DEBUG (LOG_MME_APP, "TODO \n");
 }
 
+#ifdef __cplusplus
+}
+#endif

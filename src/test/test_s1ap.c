@@ -30,6 +30,10 @@
 #include "s1ap_eNB_encoder.h"
 #include "s1ap_mme_encoder.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_BUF_LENGTH (1024)
 
 typedef enum {
@@ -214,3 +218,7 @@ doit (
     }
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

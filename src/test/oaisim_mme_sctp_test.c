@@ -40,6 +40,10 @@
 #include "s1ap_eNB_encoder.h"
 #include "s1ap_eNB_decoder.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 recv_callback (
   uint32_t assocId,
@@ -80,3 +84,7 @@ main (
   sctp_terminate ();
   return (0);
 }
+
+#ifdef __cplusplus
+}
+#endif

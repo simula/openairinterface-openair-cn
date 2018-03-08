@@ -22,6 +22,10 @@
 #ifndef EPS_BEARER_CONTEXT_STATUS_SEEN
 #define EPS_BEARER_CONTEXT_STATUS_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define EPS_BEARER_CONTEXT_STATUS_MINIMUM_LENGTH 4
 #define EPS_BEARER_CONTEXT_STATUS_MAXIMUM_LENGTH 4
 
@@ -30,6 +34,10 @@ typedef uint16_t eps_bearer_context_status_t;
 int encode_eps_bearer_context_status(eps_bearer_context_status_t *epsbearercontextstatus, uint8_t iei, uint8_t *buffer, uint32_t len);
 
 int decode_eps_bearer_context_status(eps_bearer_context_status_t *epsbearercontextstatus, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* EPS_BEARER_CONTEXT_STATUS_SEEN */
 

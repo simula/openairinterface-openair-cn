@@ -30,6 +30,14 @@
   \email: lionel.gauthier@eurecom.fr
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void mme_app_select_sgw(const tai_t * const tai, struct in_addr * const sgw_in_addr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

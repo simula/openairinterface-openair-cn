@@ -56,6 +56,10 @@
 #define SCTP_RC_NORMAL_READ  0
 #define SCTP_RC_DISCONNECT   1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sctp_association_s {
   struct sctp_association_s              *next_assoc;   ///< Next association in the list
   struct sctp_association_s              *previous_assoc;       ///< Previous association in the list
@@ -802,3 +806,7 @@ static void sctp_exit (void)
   }
   OAI_FPRINTF_INFO("TASK_SCTP terminated\n");
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -28,6 +28,9 @@
 #ifndef FILE_S6A_MESSAGES_TYPES_SEEN
 #define FILE_S6A_MESSAGES_TYPES_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 #define S6A_UPDATE_LOCATION_REQ(mSGpTR)  (mSGpTR)->ittiMsg.s6a_update_location_req
@@ -99,4 +102,7 @@ typedef struct s6a_auth_info_ans_s {
   authentication_info_t auth_info;
 } s6a_auth_info_ans_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_S6A_MESSAGES_TYPES_SEEN */

@@ -22,6 +22,10 @@
 #ifndef SHORT_MAC_SEEN
 #define SHORT_MAC_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SHORT_MAC_MINIMUM_LENGTH 3
 #define SHORT_MAC_MAXIMUM_LENGTH 3
 
@@ -32,6 +36,10 @@ typedef uint16_t short_mac_t;
 int encode_short_mac(short_mac_t *shortmac, uint8_t iei, uint8_t *buffer, uint32_t len);
 
 int decode_short_mac(short_mac_t *shortmac, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SHORT MAC_SEEN */
 

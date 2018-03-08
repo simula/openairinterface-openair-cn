@@ -36,6 +36,9 @@
 #include "snow3g.h"
 #include "dynamic_memory_check.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int
 nas_stream_encrypt_eea1 (
@@ -125,3 +128,8 @@ nas_stream_encrypt_eea1 (
 
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

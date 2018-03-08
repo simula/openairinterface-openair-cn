@@ -41,7 +41,15 @@ Description
 #define FILE_EMM_CN_SEEN
 
 #include "emm_cnDef.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int emm_cn_send(const emm_cn_t *msg);
 int emm_cn_pdn_connectivity_res (emm_cn_pdn_res_t * msg_pP);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_CN_SEEN */

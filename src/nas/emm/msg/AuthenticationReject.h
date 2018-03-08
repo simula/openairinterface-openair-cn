@@ -28,6 +28,9 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define AUTHENTICATION_REJECT_MINIMUM_LENGTH (0)
@@ -52,6 +55,10 @@ typedef struct authentication_reject_msg_tag {
 int decode_authentication_reject(authentication_reject_msg *authenticationreject, uint8_t *buffer, uint32_t len);
 
 int encode_authentication_reject(authentication_reject_msg *authenticationreject, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_AUTHENTICATION_REJECT_SEEN) */
 

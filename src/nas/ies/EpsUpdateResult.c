@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "EpsUpdateResult.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_eps_update_result (
   eps_update_result_t * epsupdateresult,
@@ -97,3 +101,6 @@ uint8_t encode_u8_eps_update_result (
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

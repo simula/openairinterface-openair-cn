@@ -73,6 +73,11 @@
 
 #include "mme_config.h"
 #include "mme_app_defs.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -545,3 +550,7 @@ _eps_bearer_release (
 
   OAILOG_FUNC_RETURN (LOG_NAS_ESM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

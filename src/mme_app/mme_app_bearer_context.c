@@ -50,6 +50,10 @@
 #include "common_defs.h"
 #include "mme_app_bearer_context.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static void mme_app_bearer_context_init(bearer_context_t *const  bearer_context);
 
 //------------------------------------------------------------------------------
@@ -181,3 +185,6 @@ void mme_app_bearer_context_s1_release_enb_informations(bearer_context_t * const
   }
 }
 
+#ifdef __cplusplus
+}
+#endif

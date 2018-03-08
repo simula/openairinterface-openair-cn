@@ -27,6 +27,9 @@
 */
 #ifndef FILE_3GPP_36_401_SEEN
 #define FILE_3GPP_36_401_SEEN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // 6.2 E-UTRAN Identifiers
@@ -44,5 +47,7 @@ typedef uint32_t                 mme_ue_s1ap_id_t;         /*!< \brief  A MME UE
                                                                         Once known to an eNB this IE is included in all UE associated S1-AP signalling.
                                                                         The MME UE S1AP ID shall be unique within the MME logical node.*/
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_36_401_SEEN */

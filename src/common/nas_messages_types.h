@@ -33,6 +33,10 @@
 #include "as_message.h"
 #include "networkDef.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NAS_UL_DATA_IND(mSGpTR)                     (mSGpTR)->ittiMsg.nas_ul_data_ind
 #define NAS_DL_DATA_REQ(mSGpTR)                     (mSGpTR)->ittiMsg.nas_dl_data_req
 #define NAS_DL_DATA_CNF(mSGpTR)                     (mSGpTR)->ittiMsg.nas_dl_data_cnf
@@ -265,4 +269,7 @@ typedef struct itti_nas_implicit_detach_ue_ind_s {
 } itti_nas_implicit_detach_ue_ind_t;
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_NAS_MESSAGES_TYPES_SEEN */

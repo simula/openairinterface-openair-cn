@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "PdnAddress.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_pdn_address (
   PdnAddress * pdnaddress,
@@ -95,4 +99,6 @@ int encode_pdn_address (
   return encoded;
 }
 
-
+#ifdef __cplusplus
+}
+#endif

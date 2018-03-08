@@ -31,6 +31,10 @@
 #include "TLVDecoder.h"
 #include "NasKeySetIdentifier.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_nas_key_set_identifier (
   NasKeySetIdentifier * naskeysetidentifier,
@@ -99,3 +103,6 @@ uint8_t encode_u8_nas_key_set_identifier (NasKeySetIdentifier * naskeysetidentif
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

@@ -34,6 +34,10 @@
 #include "msc.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
   MIN_SH_TS_LOG_CLIENT = 0,
   SH_TS_LOG_TXT = MIN_SH_TS_LOG_CLIENT,
@@ -73,4 +77,9 @@ void shared_log_start_use (void);
 void shared_log_flush_messages (void);
 void shared_log_exit (void);
 void shared_log_item(shared_log_queue_item_t * messageP);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* FILE_SHARED_TS_LOG_SEEN */

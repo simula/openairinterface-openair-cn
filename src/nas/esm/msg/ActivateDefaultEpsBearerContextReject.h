@@ -29,6 +29,10 @@
 #include "3gpp_24.008.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT_MINIMUM_LENGTH ( \
     ESM_CAUSE_MINIMUM_LENGTH )
@@ -69,6 +73,10 @@ typedef struct activate_default_eps_bearer_context_reject_msg_tag {
 int decode_activate_default_eps_bearer_context_reject(activate_default_eps_bearer_context_reject_msg *activatedefaultepsbearercontextreject, uint8_t *buffer, uint32_t len);
 
 int encode_activate_default_eps_bearer_context_reject(activate_default_eps_bearer_context_reject_msg *activatedefaultepsbearercontextreject, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT_H_) */
 

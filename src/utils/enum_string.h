@@ -27,6 +27,10 @@
 #ifndef FILE_ENUM_STRING_SEEN
 #define FILE_ENUM_STRING_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   int   enum_value;
   char *enum_value_name;
@@ -43,5 +47,9 @@ char *enum_to_string(int enum_val, enum_to_string_t *string_table, int nb_elemen
 #define PDN_TYPE_TO_STRING(vAL)                             \
     enum_to_string((int)vAL, pdn_type_to_string,            \
     sizeof(pdn_type_to_string) / sizeof(enum_to_string_t))
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_ENUM_STRING_SEEN */

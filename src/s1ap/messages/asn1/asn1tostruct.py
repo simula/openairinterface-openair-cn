@@ -4,26 +4,7 @@
 # this work for additional information regarding copyright ownership.
 # The OpenAirInterface Software Alliance licenses this file to You under 
 # the Apache License, Version 2.0  (the "License"); you may not use this file
-# except in com/*
- * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under 
- * the Apache License, Version 2.0  (the "License"); you may not use this file
- * except in compliance with the License.  
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *-------------------------------------------------------------------------------
- * For more information about the OpenAirInterface (OAI) Software Alliance:
- *      contact@openairinterface.org
- */pliance with the License.  
+# except in compliance with the License.  
 # You may obtain a copy of the License at
 #
 #      http://www.apache.org/licenses/LICENSE-2.0
@@ -204,6 +185,10 @@ f.write("#include \"%s_common.h\"\n\n" % (fileprefix))
 f.write("#ifndef %s_IES_DEFS_H_\n#define %s_IES_DEFS_H_\n\n" % (fileprefix.upper(), fileprefix.upper()))
 f.write("/* Define the version of script used to generate this file */\n")
 f.write("#define %s_SCRIPT_VERSION (%s)\n\n" % (fileprefix.upper(), re.sub('\.', '', version)))
+f.write("#ifdef __cplusplus\n")
+f.write("extern \"C\" {\n")
+f.write("#endif\n")
+
 
 for key in iesDefs:
 
@@ -360,12 +345,18 @@ for key in iesDefs:
     structName = re.sub('ies', '', key, flags=re.IGNORECASE)
     f.write("int free_%s(\n" % (re.sub('-', '_', structName.lower())))
     f.write("    %s_t *%s);\n\n" % (prefix + re.sub('-', '_', key), lowerFirstCamelWord(re.sub('-', '_', key))))
+f.write("#ifdef __cplusplus\n")
+f.write("}\n")
+f.write("#endif\n")
 f.write("#endif /* %s_IES_DEFS_H_ */\n\n" % (fileprefix.upper()))
 
 #Generate Decode functions
 f = open(outdir + fileprefix + '_decoder.c', 'w')
 outputHeaderToFile(f, filename)
 f.write("#include \"%s_common.h\"\n#include \"%s_ies_defs.h\"\n#include \"log.h\"\n\n" % (fileprefix, fileprefix))
+f.write("#ifdef __cplusplus\n")
+f.write("extern \"C\" {\n")
+f.write("#endif\n\n")
 for key in iesDefs:
     if key in ieofielist.values():
         continue
@@ -556,6 +547,9 @@ for key in iesDefs:
     f.write("    }\n")
     f.write("    return decoded;\n")
     f.write("}\n\n")
+f.write("#ifdef __cplusplus\n")
+f.write("}\n")
+f.write("#endif\n\n")
 
 
 #Generate IES Encode functions
@@ -563,6 +557,9 @@ f = open(outdir + fileprefix + '_encoder.c', 'w')
 outputHeaderToFile(f,filename)
 f.write("#include \"%s_common.h\"\n" % (fileprefix))
 f.write("#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
+f.write("#ifdef __cplusplus\n")
+f.write("extern \"C\" {\n")
+f.write("#endif\n\n")
 for key in iesDefs:
     if key in ieofielist.values():
         continue
@@ -673,6 +670,9 @@ for (key, value) in iesDefs.items():
     f.write("    }\n")
     f.write("    return 0;\n")
     f.write("}\n\n")
+f.write("#ifdef __cplusplus\n")
+f.write("}\n")
+f.write("#endif\n\n")
 
 #Generate xer print functions
 f = open(outdir + fileprefix + '_xer_print.c', 'w')
@@ -681,6 +681,9 @@ f.write("#include <stdlib.h>\n")
 f.write("#include <stdio.h>\n\n")
 f.write("#include <asn_application.h>\n#include <asn_internal.h>\n\n")
 f.write("#include \"%s_common.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix, fileprefix))
+f.write("#ifdef __cplusplus\n")
+f.write("extern \"C\" {\n")
+f.write("#endif\n\n")
 
 f.write("size_t %s_string_total_size = 0;\n\n" % (fileprefix.lower()))
 f.write("""int
@@ -806,3 +809,7 @@ for (key, value) in iesDefs.items():
         #f.write("cb_failed:\n")
         #f.write("    return er;\n")
     f.write("}\n\n")
+f.write("#ifdef __cplusplus\n")
+f.write("}\n")
+f.write("#endif\n\n")
+    

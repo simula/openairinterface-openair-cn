@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "NasSecurityAlgorithms.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_nas_security_algorithms (
   NasSecurityAlgorithms * nassecurityalgorithms,
@@ -74,3 +78,6 @@ int encode_nas_security_algorithms (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

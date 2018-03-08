@@ -53,6 +53,10 @@
 #include "sgw.h"
 #include "async_system.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern pgw_app_t                        pgw_app;
 
 static void free_pcc_rule (void ** rule);
@@ -399,3 +403,7 @@ static void free_pcc_rule (void ** rule)
     }
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

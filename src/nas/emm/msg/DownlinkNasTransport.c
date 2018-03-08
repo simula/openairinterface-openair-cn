@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "DownlinkNasTransport.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_downlink_nas_transport (
   downlink_nas_transport_msg * downlink_nas_transport,
@@ -77,3 +81,7 @@ encode_downlink_nas_transport (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -53,6 +53,10 @@
 #include "emm_cause.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 mme_ue_s1ap_id_t emm_ctx_get_new_ue_id(const emm_context_t * const ctxt)
 {
@@ -931,3 +935,6 @@ void emm_context_dump (
 }
 
 
+#ifdef __cplusplus
+}
+#endif

@@ -44,6 +44,10 @@
 #include "s6a_defs.h"
 #include "s6a_messages.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static
   int
 s6a_parse_rand (
@@ -429,3 +433,7 @@ s6a_generate_authentication_info_req (
   CHECK_FCT (fd_msg_send (&msg, NULL, NULL));
   return RETURNok;
 }
+
+#ifdef __cplusplus
+}
+#endif

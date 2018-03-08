@@ -35,6 +35,10 @@
 #include "TLVDecoder.h"
 #include "AttachReject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_attach_reject (
   attach_reject_msg * attach_reject,
@@ -118,3 +122,7 @@ encode_attach_reject (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

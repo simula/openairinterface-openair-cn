@@ -57,6 +57,10 @@
 #include "mme_app_itti_messaging.h"
 #include "mme_app_sgw_selection.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 void mme_app_itti_ue_context_release(struct ue_mm_context_s *ue_context_p, enum s1cause cause)
 {
@@ -255,3 +259,7 @@ int mme_app_send_s11_create_session_req (struct ue_mm_context_s *const ue_mm_con
   rc = itti_send_msg_to_task (TASK_S11, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_RETURN (LOG_MME_APP, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

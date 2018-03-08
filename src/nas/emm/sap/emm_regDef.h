@@ -47,6 +47,10 @@ Description Defines the EMMREG Service Access Point that provides
 #include "emm_fsm.h"
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -193,5 +197,9 @@ typedef struct emm_reg_s {
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_REGDEF_SEEN*/

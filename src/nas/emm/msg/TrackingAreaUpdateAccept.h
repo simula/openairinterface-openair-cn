@@ -35,6 +35,9 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define TRACKING_AREA_UPDATE_ACCEPT_MINIMUM_LENGTH ( \
@@ -122,6 +125,10 @@ typedef struct tracking_area_update_accept_msg_tag {
 int decode_tracking_area_update_accept(tracking_area_update_accept_msg *trackingareaupdateaccept, uint8_t *buffer, uint32_t len);
 
 int encode_tracking_area_update_accept(tracking_area_update_accept_msg *trackingareaupdateaccept, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_TRACKING_AREA_UPDATE_ACCEPT_SEEN) */
 

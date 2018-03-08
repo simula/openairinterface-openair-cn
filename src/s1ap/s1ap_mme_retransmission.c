@@ -40,6 +40,10 @@
 #include "dynamic_memory_check.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 inline int                              s1ap_mme_timer_map_compare_id (
   const struct s1ap_timer_map_s * const p1,
@@ -163,3 +167,7 @@ s1ap_timer_remove_ue (
   }
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

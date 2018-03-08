@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "ServiceReject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_service_reject (
   service_reject_msg * service_reject,
@@ -84,3 +88,7 @@ encode_service_reject (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

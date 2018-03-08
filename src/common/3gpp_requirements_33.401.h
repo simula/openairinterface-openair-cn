@@ -27,6 +27,9 @@
 */
 #ifndef FILE_3GPP_REQUIREMENTS_33_401_SEEN
 #define FILE_3GPP_REQUIREMENTS_33_401_SEEN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "3gpp_requirements.h"
 #include "log.h"
@@ -37,5 +40,7 @@
 
 //-----------------------------------------------------------------------------------------------------------------------
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_REQUIREMENTS_33_401_SEEN */

@@ -23,6 +23,10 @@
 #define SS_CODE_SEEN
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SS_CODE_MINIMUM_LENGTH 2
 #define SS_CODE_MAXIMUM_LENGTH 2
 
@@ -32,5 +36,8 @@ int encode_ss_code(ss_code_t *sscode, uint8_t iei, uint8_t *buffer, uint32_t len
 
 int decode_ss_code(ss_code_t *sscode, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* SS CODE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* SS CODE_SEEN */

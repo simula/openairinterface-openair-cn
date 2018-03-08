@@ -62,6 +62,9 @@ Description Defines functions executed at the EMMAS Service Access
 #include "UplinkNasTransport.h"
 #include "nas_message.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -153,5 +156,9 @@ int emm_recv_security_mode_reject(
     security_mode_reject_msg                  *msg,
     int                                * const emm_cause,
     const nas_message_decode_status_t  * const decode_status);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_RECV_SEEN*/

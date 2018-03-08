@@ -38,6 +38,10 @@
 #include "intertask_interface.h"
 #include "mme_app_ue_context.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct mme_app_desc_s {
   /* UE contexts + some statistics variables */
   mme_ue_context_t mme_ue_contexts;
@@ -137,5 +141,9 @@ void mme_app_handle_enb_reset_req( const itti_s1ap_enb_initiated_reset_req_t con
 #define mme_stats_read_lock(mMEsTATS)  pthread_rwlock_rdlock(&(mMEsTATS)->rw_lock)
 #define mme_stats_write_lock(mMEsTATS) pthread_rwlock_wrlock(&(mMEsTATS)->rw_lock)
 #define mme_stats_unlock(mMEsTATS)     pthread_rwlock_unlock(&(mMEsTATS)->rw_lock)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MME_APP_DEFS_H_ */

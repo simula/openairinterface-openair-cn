@@ -57,6 +57,10 @@
 #include "PdnType.h"
 #include "s11_ie_formatter.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 nw_rc_t
 gtpv2c_imsi_ie_get (
@@ -2023,3 +2027,8 @@ gtpv2c_fqcsid_ie_get (
   OAILOG_DEBUG (LOG_S11, "\t- CSID 0x%04x\n", fq_csid->csid);
   return NW_OK;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

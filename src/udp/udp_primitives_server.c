@@ -51,6 +51,9 @@
 #include "udp_primitives_server.h"
 #include "itti_free_defined_msg.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct udp_socket_desc_s {
   uint8_t                                 buffer[4096];
@@ -387,3 +390,7 @@ void udp_exit (void)
     free_wrapper ((void**)&udp_sock_p);
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

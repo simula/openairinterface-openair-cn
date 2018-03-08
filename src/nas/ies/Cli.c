@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "Cli.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_cli (
   Cli *cli,
@@ -91,3 +95,6 @@ int encode_cli (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

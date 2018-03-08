@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "EpsNetworkFeatureSupport.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_eps_network_feature_support (
   eps_network_feature_support_t * epsnetworkfeaturesupport,
@@ -81,3 +85,6 @@ int encode_eps_network_feature_support (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

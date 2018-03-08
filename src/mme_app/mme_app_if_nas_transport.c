@@ -27,6 +27,10 @@
 #include "log.h"
 #include "mme_app_if.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // TODO: amar This file doesn't actually compile follow up with OAI
 
 #if ITTI_LITE
@@ -99,5 +103,10 @@ int itf_mme_app_nas_initial_ue_message(
 */
   OAILOG_FUNC_OUT (LOG_MME_APP);
 }
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 

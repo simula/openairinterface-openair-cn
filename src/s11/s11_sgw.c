@@ -55,6 +55,9 @@
 #include "s11_sgw_bearer_manager.h"
 #include "s11_sgw_session_manager.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static nw_gtpv2c_stack_handle_t             s11_sgw_stack_handle = 0;
 
@@ -360,3 +363,6 @@ static void s11_sgw_exit (void)
   hashtable_ts_destroy(s11_sgw_teid_2_gtv2c_teid_handle);
 }
 
+#ifdef __cplusplus
+}
+#endif

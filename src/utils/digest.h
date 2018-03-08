@@ -30,6 +30,14 @@
 #define FILE_DIGEST_SEEN
 #include <openssl/evp.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int digest_buffer(const EVP_MD *(*evp_x)(void), const unsigned char *buffer, size_t buffer_len, unsigned char **digest, unsigned int *digest_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_DIGEST_SEEN */

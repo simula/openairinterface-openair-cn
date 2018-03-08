@@ -22,6 +22,10 @@
 #ifndef PDN_ADDRESS_SEEN
 #define PDN_ADDRESS_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PDN_ADDRESS_MINIMUM_LENGTH 7
 #define PDN_ADDRESS_MAXIMUM_LENGTH 15
 
@@ -37,5 +41,8 @@ int encode_pdn_address(PdnAddress *pdnaddress, uint8_t iei, uint8_t *buffer, uin
 
 int decode_pdn_address(PdnAddress *pdnaddress, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* PDN ADDRESS_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* PDN ADDRESS_SEEN */

@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "PagingIdentity.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_paging_identity (
   paging_identity_t * pagingidentity,
@@ -73,3 +77,6 @@ int encode_paging_identity (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

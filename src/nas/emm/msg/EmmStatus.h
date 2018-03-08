@@ -30,6 +30,10 @@
 #include "3gpp_24.008.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define EMM_STATUS_MINIMUM_LENGTH ( \
     EMM_CAUSE_MINIMUM_LENGTH )
@@ -57,6 +61,10 @@ typedef struct emm_status_msg_tag {
 int decode_emm_status(emm_status_msg *emmstatus, uint8_t *buffer, uint32_t len);
 
 int encode_emm_status(emm_status_msg *emmstatus, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_EMM_STATUS_SEEN) */
 

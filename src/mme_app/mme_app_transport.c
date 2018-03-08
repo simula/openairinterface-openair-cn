@@ -49,6 +49,10 @@
 #include "common_defs.h"
 #include "mme_app_itti_messaging.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int mme_app_handle_nas_dl_req (
     itti_nas_dl_data_req_t *const nas_dl_req_pP)
@@ -102,3 +106,6 @@ int mme_app_handle_nas_dl_req (
   OAILOG_FUNC_RETURN (LOG_MME_APP, rc);
 }
 
+#ifdef __cplusplus
+}
+#endif

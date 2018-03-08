@@ -40,6 +40,10 @@
 #include "s1ap_eNB_encoder.h"
 #include "s1ap_eNB_decoder.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NB_OF_ENB 10
 #define NB_OF_UES 100
 
@@ -269,3 +273,7 @@ main (
   sctp_terminate ();
   return (0);
 }
+
+#ifdef __cplusplus
+}
+#endif

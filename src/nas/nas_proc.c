@@ -56,6 +56,10 @@
 #include "mme_app_ue_context.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -658,3 +662,6 @@ s6a_error_2_nas_cause (
   return NAS_CAUSE_NETWORK_FAILURE;
 }
 
+#ifdef __cplusplus
+}
+#endif

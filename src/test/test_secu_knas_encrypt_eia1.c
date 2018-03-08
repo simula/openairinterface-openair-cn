@@ -29,6 +29,10 @@
 #include "conversions.h"
 #include "secu_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static
   void
 eia1_encrypt (
@@ -119,3 +123,7 @@ doit (
                 16448, HL ("abf3e651")
     );
 }
+
+#ifdef __cplusplus
+}
+#endif

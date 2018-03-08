@@ -32,6 +32,10 @@
 #include "conversions.h"
 #include "snow3g.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 uint64_t                                MUL64x (
   uint64_t V,
   uint64_t c);
@@ -264,3 +268,8 @@ nas_stream_encrypt_eia1 (
   memcpy ((void *)out, &MAC_I, 4);
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

@@ -64,6 +64,10 @@
 #include "esm_cause.h"
 #include "esm_proc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -895,3 +899,8 @@ _esm_sap_send (
 
   OAILOG_FUNC_RETURN (LOG_NAS_ESM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif
+

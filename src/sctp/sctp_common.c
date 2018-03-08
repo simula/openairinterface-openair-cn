@@ -44,6 +44,10 @@
 #include "sctp_common.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Pre-bind socket options configuration.
    See http://linux.die.net/man/7/sctp for more informations on these options.
 */
@@ -252,3 +256,7 @@ int sctp_get_localaddresses (
 
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

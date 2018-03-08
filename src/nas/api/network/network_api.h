@@ -40,6 +40,10 @@ Description Implements the API used by the NAS layer to send/receive
 #ifndef FILE_NETWORK_API_SEEN
 #define FILE_NETWORK_API_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -67,5 +71,9 @@ void network_api_close(int fd);
 
 int network_api_decode_data(size_t length);
 int network_api_encode_data(void* data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_NETWORK_API_SEEN*/

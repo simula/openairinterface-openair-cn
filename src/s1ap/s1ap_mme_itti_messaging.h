@@ -37,6 +37,10 @@ int s1ap_mme_itti_send_sctp_request(STOLEN_REF bstring *payload,
                                     const sctp_stream_id_t stream,
                                     const mme_ue_s1ap_id_t ue_id);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int s1ap_mme_itti_nas_uplink_ind(const mme_ue_s1ap_id_t ue_id,
                                  STOLEN_REF bstring *payload,
                                  const tai_t      const* tai,
@@ -61,5 +65,9 @@ void s1ap_mme_itti_s1ap_initial_ue_message(
   const void       const* opt_relay_node_indicator); // unused
 
 void s1ap_mme_itti_nas_non_delivery_ind(const mme_ue_s1ap_id_t ue_id, uint8_t * const nas_msg, const size_t nas_msg_length, const S1ap_Cause_t * const cause);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_S1AP_MME_ITTI_MESSAGING_SEEN */

@@ -47,6 +47,10 @@
 #include "s1ap_mme_handlers.h"
 #include "s1ap_handover_signaling_handler.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 //************************ Handover signaling *******************************//
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,3 +87,8 @@ s1ap_mme_handle_path_switch_request (
   // ignore message 
   OAILOG_FUNC_RETURN (LOG_S1AP, RETURNok);
 }
+
+#ifdef __cplusplus
+}
+#endif
+

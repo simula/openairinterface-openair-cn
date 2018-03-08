@@ -30,6 +30,10 @@
 
 #include "3gpp_23.401.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /********************************
 *     Paired contexts           *
 *********************************/
@@ -75,5 +79,9 @@ sgw_eps_bearer_ctxt_t *                sgw_cm_create_eps_bearer_ctxt_in_collecti
 sgw_eps_bearer_ctxt_t *                sgw_cm_insert_eps_bearer_ctxt_in_collection (sgw_pdn_connection_t * const sgw_pdn_connection, sgw_eps_bearer_ctxt_t * const sgw_eps_bearer_ctxt);
 sgw_eps_bearer_ctxt_t*                 sgw_cm_get_eps_bearer_entry (sgw_pdn_connection_t * const sgw_pdn_connection, ebi_t ebi);
 int                                    sgw_cm_remove_eps_bearer_entry(  sgw_pdn_connection_t * const sgw_pdn_connection, ebi_t eps_bearer_idP);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_SGW_CONTEXT_MANAGER_SEEN */

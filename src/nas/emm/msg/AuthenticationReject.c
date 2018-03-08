@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "AuthenticationReject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_authentication_reject (
   authentication_reject_msg * authentication_reject,
@@ -63,3 +67,7 @@ encode_authentication_reject (
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, AUTHENTICATION_REJECT_MINIMUM_LENGTH, len);
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

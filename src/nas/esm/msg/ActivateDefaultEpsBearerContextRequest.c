@@ -35,6 +35,10 @@
 #include "TLVDecoder.h"
 #include "ActivateDefaultEpsBearerContextRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_activate_default_eps_bearer_context_request (
   activate_default_eps_bearer_context_request_msg * activate_default_eps_bearer_context_request,
@@ -296,3 +300,7 @@ encode_activate_default_eps_bearer_context_request (
   OAILOG_INFO (LOG_NAS_ESM, "ESM  ENCODED activate_default_eps_bearer_context_request\n");
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

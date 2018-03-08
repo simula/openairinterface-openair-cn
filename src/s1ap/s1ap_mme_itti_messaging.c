@@ -39,6 +39,10 @@
 #include "s1ap_common.h"
 #include "s1ap_mme_itti_messaging.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int
 s1ap_mme_itti_send_sctp_request (
@@ -244,3 +248,8 @@ void s1ap_mme_itti_nas_non_delivery_ind(
   itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_OUT (LOG_S1AP);
 }
+
+#ifdef __cplusplus
+}
+#endif
+

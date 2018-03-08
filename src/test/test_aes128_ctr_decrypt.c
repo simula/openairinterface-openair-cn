@@ -32,6 +32,10 @@
 #include <nettle/aes.h>
 #include <nettle/ctr.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static
   void
 test_uncipher_ctr (
@@ -82,3 +86,7 @@ doit (
                          "f69f2445df4f9b17ad2b417be66c3710"),
                      H ("874d6191b620e3261bef6864990db6ce" "9806f66b7970fdff8617187bb9fffdff" "5ae4df3edbd5d35e5b4f09020db03eab" "1e031dda2fbe03d1792170a0f3009cee"), H ("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff"));
 }
+
+#ifdef __cplusplus
+}
+#endif

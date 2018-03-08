@@ -43,6 +43,10 @@ Description Defines the EPS Mobility Management procedure call manager,
 #include "commonDef.h"
 #include "networkDef.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -63,6 +67,8 @@ Description Defines the EPS Mobility Management procedure call manager,
 void emm_main_initialize(mme_config_t *mme_config_p);
 void emm_main_cleanup(void);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __EMM_MAIN_H__*/

@@ -22,6 +22,10 @@
 #ifndef LINKED_EPS_BEARER_IDENTITY_SEEN
 #define LINKED_EPS_BEARER_IDENTITY_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LINKED_EPS_BEARER_IDENTITY_MINIMUM_LENGTH 1
 #define LINKED_EPS_BEARER_IDENTITY_MAXIMUM_LENGTH 1
 
@@ -35,5 +39,8 @@ int decode_linked_eps_bearer_identity(linked_eps_bearer_identity_t *linkedepsbea
 
 int decode_u8_linked_eps_bearer_identity(linked_eps_bearer_identity_t *linkedepsbeareridentity, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* LINKED EPS BEARER IDENTITY_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* LINKED EPS BEARER IDENTITY_SEEN */

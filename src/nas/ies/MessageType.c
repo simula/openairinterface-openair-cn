@@ -29,6 +29,10 @@
 #include "TLVDecoder.h"
 #include "MessageType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_message_type (
     message_type_t * messagetype,
@@ -48,3 +52,7 @@ int encode_message_type (
 {
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -22,6 +22,10 @@
 #ifndef TRACKING_AREA_IDENTITY_SEEN
 #define TRACKING_AREA_IDENTITY_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define TRACKING_AREA_IDENTITY_MINIMUM_LENGTH 6
 #define TRACKING_AREA_IDENTITY_MAXIMUM_LENGTH 6
 
@@ -108,6 +112,9 @@ int encode_tracking_area_identity(tai_t *tai, uint8_t iei, uint8_t *buffer, uint
 int decode_tracking_area_identity(tai_t *tai, uint8_t iei, uint8_t *buffer, uint32_t len);
 void clear_tai(tai_t * const tai);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TRACKING AREA IDENTITY_SEEN */
 

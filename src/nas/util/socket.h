@@ -40,6 +40,10 @@ Description Implements TCP socket handlers
 
 #include <sys/types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -70,5 +74,9 @@ ssize_t socket_recv(void* id, char* buffer, size_t length);
 ssize_t socket_send(const void* id, const char* buffer, size_t length);
 
 void socket_close(void* id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_SOCKET_SEEN*/

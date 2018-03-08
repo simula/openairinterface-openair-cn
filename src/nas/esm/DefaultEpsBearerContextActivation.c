@@ -69,6 +69,10 @@
 #include "emm_sap.h"
 #include "mme_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -557,3 +561,7 @@ _default_eps_bearer_activate (
 
   OAILOG_FUNC_RETURN (LOG_NAS_ESM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

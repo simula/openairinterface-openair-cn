@@ -35,6 +35,10 @@
 #include "TLVDecoder.h"
 #include "AttachComplete.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_attach_complete (
   attach_complete_msg * attach_complete,
@@ -79,3 +83,7 @@ encode_attach_complete (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

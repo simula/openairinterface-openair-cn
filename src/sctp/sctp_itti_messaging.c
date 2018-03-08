@@ -32,6 +32,10 @@
 #include "intertask_interface.h"
 #include "sctp_itti_messaging.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int
 sctp_itti_send_lower_layer_conf (
@@ -106,3 +110,7 @@ sctp_itti_send_com_down_ind (const sctp_assoc_id_t assoc_id, bool reset)
   sctp_close_association_p->reset = reset;
   return itti_send_msg_to_task (TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
+
+#ifdef __cplusplus
+}
+#endif

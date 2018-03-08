@@ -76,6 +76,10 @@
 #define LOG_MAX_PORT_NUM_LENGTH                  6
 //-------------------------------
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef unsigned long                   log_message_number_t;
 
 typedef enum {
@@ -907,3 +911,6 @@ error_event:
   shared_log_reuse_item(new_item_p);
 }
 
+#ifdef __cplusplus
+}
+#endif

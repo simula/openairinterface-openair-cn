@@ -51,6 +51,10 @@
 #include "s11_mme_session_manager.h"
 #include "s11_mme_bearer_manager.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static nw_gtpv2c_stack_handle_t             s11_mme_stack_handle = 0;
 // Store the GTPv2-C teid handle
 hash_table_ts_t                        *s11_mme_teid_2_gtv2c_teid_handle = NULL;
@@ -349,3 +353,8 @@ static void s11_mme_exit (void)
     OAI_FPRINTF_ERR("An error occured while destroying s11 teid hash table");
   }
 }
+
+#ifdef __cplusplus
+}
+#endif
+

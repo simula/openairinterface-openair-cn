@@ -31,6 +31,10 @@
 #include "TLVDecoder.h"
 #include "EpsMobileIdentity.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int decode_guti_eps_mobile_identity (guti_eps_mobile_identity_t * guti, uint8_t * buffer);
 static int decode_imsi_eps_mobile_identity (imsi_eps_mobile_identity_t * imsi, uint8_t * buffer, uint8_t ie_len);
 static int decode_imei_eps_mobile_identity (imei_eps_mobile_identity_t * imei, uint8_t * buffer);
@@ -393,3 +397,8 @@ static int encode_imei_eps_mobile_identity (imei_eps_mobile_identity_t * imei, u
   encoded++;
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

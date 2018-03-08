@@ -35,6 +35,10 @@
 #include "LinkedEpsBearerIdentity.h"
 #include "PdnDisconnectRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_pdn_disconnect_request (
   pdn_disconnect_request_msg * pdn_disconnect_request,
@@ -115,3 +119,7 @@ encode_pdn_disconnect_request (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

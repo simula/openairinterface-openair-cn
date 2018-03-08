@@ -46,6 +46,10 @@ Description Defines the EPS Mobility Management procedures executed at
 
 #include "nas_message.h" //nas_message_decode_status_t
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -286,6 +290,8 @@ _clear_emm_ctxt(emm_context_t *emm_ctx);
  *             Network indication handlers
  *---------------------------------------------------------------------------
  */
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_PROC_SEEN*/

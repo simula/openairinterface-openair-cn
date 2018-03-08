@@ -42,6 +42,10 @@ Description Defines the EPS Session Management procedures executed at
 #include "networkDef.h"
 #include "common_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -190,6 +194,8 @@ int esm_proc_eps_bearer_context_deactivate(emm_context_t * const ue_context,cons
 int esm_proc_eps_bearer_context_deactivate_request(const bool is_standalone, emm_context_t * const emm_context, const ebi_t ebi, STOLEN_REF bstring *msg, const bool ue_triggered);
 pdn_cid_t esm_proc_eps_bearer_context_deactivate_accept(emm_context_t * emm_context, ebi_t ebi, esm_cause_t *esm_cause);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __ESM_PROC_H__*/

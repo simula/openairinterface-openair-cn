@@ -31,6 +31,10 @@
 #include "TLVDecoder.h"
 #include "GutiType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_guti_type (
     guti_type_t * gutitype,
@@ -97,3 +101,6 @@ uint8_t encode_u8_guti_type (guti_type_t * gutitype)
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

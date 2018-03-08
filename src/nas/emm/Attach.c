@@ -91,6 +91,9 @@
 #include "nas_itti_messaging.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -1812,4 +1815,6 @@ static int _emm_attach_update (emm_context_t * const emm_context, emm_attach_req
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNok);
 }
 
-
+#ifdef __cplusplus
+}
+#endif

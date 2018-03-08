@@ -33,6 +33,10 @@
 
 #include "common_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int sctp_set_init_opt(const int sd, const sctp_stream_id_t instreams, const sctp_stream_id_t outstreams,
     const uint16_t max_attempts, const uint16_t init_timeout);
 
@@ -44,5 +48,9 @@ int sctp_get_peeraddresses(int sock, struct sockaddr **remote_addr,
 
 int sctp_get_localaddresses(int sock, struct sockaddr **local_addr,
                             int *nb_local_addresses);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_SCTP_COMMON_SEEN */

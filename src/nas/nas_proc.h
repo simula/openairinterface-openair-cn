@@ -61,6 +61,9 @@ Description NAS procedure call manager
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void nas_proc_initialize(mme_config_t *mme_config_p);
 
@@ -111,4 +114,9 @@ int nas_proc_pdn_connectivity_fail(emm_cn_pdn_fail_t *nas_pdn_connectivity_fail)
 int nas_proc_create_dedicated_bearer(emm_cn_activate_dedicated_bearer_req_t * emm_cn_activate);
 int nas_proc_signalling_connection_rel_ind (mme_ue_s1ap_id_t ue_id);
 int nas_proc_implicit_detach_ue_ind (mme_ue_s1ap_id_t ue_id);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* FILE_NAS_PROC_SEEN*/

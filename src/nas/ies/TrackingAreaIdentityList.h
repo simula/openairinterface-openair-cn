@@ -24,6 +24,10 @@
 
 #include "TrackingAreaIdentity.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define TRACKING_AREA_IDENTITY_LIST_MINIMUM_LENGTH 8
 #define TRACKING_AREA_IDENTITY_LIST_MAXIMUM_LENGTH 98
 
@@ -63,5 +67,8 @@ int encode_tracking_area_identity_list(tai_list_t *trackingareaidentitylist, uin
 
 int decode_tracking_area_identity_list(tai_list_t *trackingareaidentitylist, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* TRACKING AREA IDENTITY LIST_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* TRACKING AREA IDENTITY LIST_SEEN */

@@ -31,6 +31,9 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define GUTI_REALLOCATION_COMMAND_MINIMUM_LENGTH ( \
@@ -71,6 +74,10 @@ typedef struct guti_reallocation_command_msg_tag {
 int decode_guti_reallocation_command(guti_reallocation_command_msg *gutireallocationcommand, uint8_t *buffer, uint32_t len);
 
 int encode_guti_reallocation_command(guti_reallocation_command_msg *gutireallocationcommand, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_GUTI_REALLOCATION_COMMAND_SEEN) */
 

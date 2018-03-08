@@ -31,6 +31,10 @@
 #include "3gpp_requirements.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define REQUIREMENT_3GPP_24_301(rElEaSe_sEcTiOn__OaImark) REQUIREMENT_3GPP_SPEC(LOG_NAS, "Hit 3GPP TS 24_301"#rElEaSe_sEcTiOn__OaImark" : "rElEaSe_sEcTiOn__OaImark##_BRIEF"\n")
 #define NO_REQUIREMENT_3GPP_24_301(rElEaSe_sEcTiOn__OaImark) REQUIREMENT_3GPP_SPEC(LOG_NAS, "#NOT IMPLEMENTED 3GPP TS 24_301"#rElEaSe_sEcTiOn__OaImark" : "rElEaSe_sEcTiOn__OaImark##_BRIEF"\n")
 #define NOT_REQUIREMENT_3GPP_24_301(rElEaSe_sEcTiOn__OaImark) REQUIREMENT_3GPP_SPEC(LOG_NAS, "#NOT ASSERTED 3GPP TS 24_301"#rElEaSe_sEcTiOn__OaImark" : "rElEaSe_sEcTiOn__OaImark##_BRIEF"\n")
@@ -1180,5 +1184,9 @@ If the GUTI/IMSI mapping in the network was incorrect, the network should respon
     All other values are unused and shall be interpreted as 'EPS attach', if received by the  \
     network."
 #define R10_9_9_3_11__1_BRIEF "Forced 'EPS attach' to EPS attach type value"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_3GPP_REQUIREMENTS_24_301_SEEN */

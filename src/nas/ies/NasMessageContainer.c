@@ -31,6 +31,10 @@
 #include "TLVDecoder.h"
 #include "NasMessageContainer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_nas_message_container (
   NasMessageContainer *nasmessagecontainer,
@@ -92,4 +96,6 @@ int encode_nas_message_container (
   return encoded;
 }
 
-
+#ifdef __cplusplus
+}
+#endif

@@ -34,6 +34,10 @@
 
 #include "PdnType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define PDN_CONNECTIVITY_REQUEST_MINIMUM_LENGTH ( \
     PDN_TYPE_MINIMUM_LENGTH )
@@ -85,6 +89,10 @@ typedef struct pdn_connectivity_request_msg_tag {
 int decode_pdn_connectivity_request(pdn_connectivity_request_msg *pdnconnectivityrequest, uint8_t *buffer, uint32_t len);
 
 int encode_pdn_connectivity_request(pdn_connectivity_request_msg *pdnconnectivityrequest, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(PDN_CONNECTIVITY_REQUEST_H_) */
 

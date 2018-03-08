@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "ExtendedServiceRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_extended_service_request (
   extended_service_request_msg * extended_service_request,
@@ -92,3 +96,7 @@ encode_extended_service_request (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

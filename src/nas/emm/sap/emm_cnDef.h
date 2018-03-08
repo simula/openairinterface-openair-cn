@@ -42,6 +42,10 @@ Description
 #define FILE_EMM_CNDEF_SEEN
 #include "intertask_interface.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum emmcn_primitive_s {
   _EMMCN_START = 400,
   _EMMCN_AUTHENTICATION_PARAM_RES,
@@ -111,5 +115,9 @@ typedef struct emm_mme_ul_s {
     emm_cn_smc_fail_t        *smc_fail;
   } u;
 } emm_cn_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_CNDEF_SEEN */

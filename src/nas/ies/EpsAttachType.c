@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "EpsAttachType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_eps_attach_type (
   eps_attach_type_t * epsattachtype,
@@ -97,3 +101,6 @@ uint8_t encode_u8_eps_attach_type (
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

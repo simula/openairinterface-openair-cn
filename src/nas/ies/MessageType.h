@@ -22,6 +22,10 @@
 #ifndef MESSAGE_TYPE_SEEN
 #define MESSAGE_TYPE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MESSAGE_TYPE_MINIMUM_LENGTH 1
 #define MESSAGE_TYPE_MAXIMUM_LENGTH 1
 
@@ -31,5 +35,8 @@ int encode_message_type(message_type_t *messagetype, uint8_t iei, uint8_t *buffe
 
 int decode_message_type(message_type_t *messagetype, uint8_t iei, uint8_t *buffer, uint32_t len);
 
-#endif /* MESSAGE TYPE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* MESSAGE TYPE_SEEN */

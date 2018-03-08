@@ -16,6 +16,10 @@
 #include "gtpv1u.h"
 #include "gtpv1u_sgw_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern struct gtp_tunnel_ops gtp_tunnel_ops;
 
 static struct {
@@ -187,3 +191,8 @@ static const struct gtp_tunnel_ops libgtpnl_ops = {
 const struct gtp_tunnel_ops *gtp_tunnel_ops_init(void) {
   return &libgtpnl_ops;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

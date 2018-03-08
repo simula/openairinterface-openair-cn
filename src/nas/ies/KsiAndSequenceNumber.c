@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "KsiAndSequenceNumber.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_ksi_and_sequence_number (
   KsiAndSequenceNumber * ksiandsequencenumber,
@@ -74,4 +78,7 @@ int encode_ksi_and_sequence_number (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif
 

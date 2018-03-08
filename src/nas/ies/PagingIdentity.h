@@ -22,6 +22,10 @@
 #ifndef PAGING_IDENTITY_SEEN
 #define PAGING_IDENTITY_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PAGING_IDENTITY_MINIMUM_LENGTH 2
 #define PAGING_IDENTITY_MAXIMUM_LENGTH 2
 
@@ -30,6 +34,10 @@ typedef uint8_t paging_identity_t;
 int encode_paging_identity(paging_identity_t *pagingidentity, uint8_t iei, uint8_t *buffer, uint32_t len);
 
 int decode_paging_identity(paging_identity_t *pagingidentity, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PAGING IDENTITY_SEEN */
 

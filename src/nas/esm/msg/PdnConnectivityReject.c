@@ -35,6 +35,10 @@
 #include "EsmCause.h"
 #include "PdnConnectivityReject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_pdn_connectivity_reject (
   pdn_connectivity_reject_msg * pdn_connectivity_reject,
@@ -118,3 +122,7 @@ encode_pdn_connectivity_reject (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

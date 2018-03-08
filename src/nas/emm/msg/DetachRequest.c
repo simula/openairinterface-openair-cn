@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "DetachRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_detach_request (
   detach_request_msg * detach_request,
@@ -87,3 +91,7 @@ encode_detach_request (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

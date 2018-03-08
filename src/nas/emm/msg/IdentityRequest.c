@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "IdentityRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_identity_request (
   identity_request_msg * identity_request,
@@ -70,3 +74,7 @@ encode_identity_request (
   encoded += encode_identity_type_2_ie (&identity_request->identitytype, false, buffer, IDENTITY_TYPE_2_IE_MIN_LENGTH);
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

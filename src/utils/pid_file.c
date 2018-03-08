@@ -39,6 +39,10 @@
 #include "pid_file.h"
 #include "dynamic_memory_check.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int     g_fd_pid_file = -1;
 __pid_t g_pid         = -1;
 //------------------------------------------------------------------------------
@@ -115,3 +119,7 @@ void pid_file_unlock(void)
   close(g_fd_pid_file);
   g_fd_pid_file = -1;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -61,6 +61,9 @@
 #include "secu_defs.h"
 #include "dynamic_memory_check.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -1427,3 +1430,7 @@ static uint32_t _nas_message_get_mac (
 
   OAILOG_FUNC_RETURN (LOG_NAS, 0);
 }
+
+#ifdef __cplusplus
+}
+#endif

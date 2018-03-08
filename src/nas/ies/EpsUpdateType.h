@@ -22,6 +22,10 @@
 #ifndef EPS_UPDATE_TYPE_SEEN
 #define EPS_UPDATE_TYPE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define EPS_UPDATE_TYPE_MINIMUM_LENGTH 1
 #define EPS_UPDATE_TYPE_MAXIMUM_LENGTH 1
 
@@ -44,5 +48,8 @@ int decode_eps_update_type(EpsUpdateType *epsupdatetype, uint8_t iei, uint8_t *b
 
 int decode_u8_eps_update_type(EpsUpdateType *epsupdatetype, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* EPS UPDATE TYPE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* EPS UPDATE TYPE_SEEN */

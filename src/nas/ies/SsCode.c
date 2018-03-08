@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "SsCode.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_ss_code (
   ss_code_t * sscode,
@@ -73,3 +77,6 @@ int encode_ss_code (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

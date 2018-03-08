@@ -51,6 +51,10 @@
 #include "timer.h"
 #include "dynamic_memory_check.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define S6A_PEER_CONNECT_TIMEOUT_MICRO_SEC  (0)
 #define S6A_PEER_CONNECT_TIMEOUT_SEC        (1)
 
@@ -287,3 +291,7 @@ static void s6a_exit(void)
     OAI_FPRINTF_ERR ("An error occurred during fd_core_wait_shutdown_complete().\n");
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

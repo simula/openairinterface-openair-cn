@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "UplinkNasTransport.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_uplink_nas_transport (
   uplink_nas_transport_msg * uplink_nas_transport,
@@ -77,3 +81,7 @@ encode_uplink_nas_transport (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "ServiceRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_service_request (
   service_request_msg * service_request,
@@ -89,3 +93,8 @@ encode_service_request (
 
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, encoded);
 }
+
+#ifdef __cplusplus
+}
+#endif
+

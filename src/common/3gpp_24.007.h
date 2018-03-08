@@ -27,6 +27,9 @@
 */
 #ifndef FILE_3GPP_24_007_SEEN
 #define FILE_3GPP_24_007_SEEN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //..............................................................................
 // 11.2.3.1.1  Protocol discriminator
@@ -70,5 +73,7 @@ typedef uint8_t                       pti_t;
 #define PROCEDURE_TRANSACTION_IDENTITY_LAST         (pti_t)254
 #define PROCEDURE_TRANSACTION_IDENTITY_RESERVED     (pti_t)255
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_24_007_SEEN */

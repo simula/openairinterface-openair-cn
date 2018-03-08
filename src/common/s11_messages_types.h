@@ -29,6 +29,10 @@
 
 #include "../sgw/sgw_ie_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define S11_CREATE_SESSION_REQUEST(mSGpTR)         (mSGpTR)->ittiMsg.s11_create_session_request
 #define S11_CREATE_SESSION_RESPONSE(mSGpTR)        (mSGpTR)->ittiMsg.s11_create_session_response
 #define S11_CREATE_BEARER_REQUEST(mSGpTR)          (mSGpTR)->ittiMsg.s11_create_bearer_request
@@ -1088,5 +1092,8 @@ typedef struct itti_s11_delete_bearer_command_s {
   struct in_addr  peer_ip;
 } itti_s11_delete_bearer_command_s;
 
+#ifdef __cplusplus
+}
+#endif
 #endif
 /* FILE_S11_MESSAGES_TYPES_SEEN */

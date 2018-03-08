@@ -46,6 +46,9 @@
 #include "mme_app_itti_messaging.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 void mme_app_send_delete_session_request (struct ue_mm_context_s * const ue_context_p, const ebi_t ebi, const pdn_cid_t cid)
@@ -137,3 +140,7 @@ mme_app_handle_detach_req (
   unlock_ue_contexts(ue_context);
   OAILOG_FUNC_OUT (LOG_MME_APP);
 }
+
+#ifdef __cplusplus
+}
+#endif

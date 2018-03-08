@@ -28,6 +28,10 @@
 
 #include "secu_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static
   void
 derive_knas_keys (
@@ -81,3 +85,7 @@ doit (
   derive_knas_keys (EIA2_128_ALG_ID,
                     HL ("546A79BC6D1613A72A4D631EE0351D66036B2A0C44A3831BE6D365E24F023013"), H ("7BD2A0864452D3D9EDE3B2E38A9958777F231AC4F4B9AF3FC8CE0E1EAAB425A7"), H ("89E8049EBE9374F238B0F3278EEA47D9BF8877111D99D6378FFF66FEBB06F3F8"));
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -34,6 +34,9 @@
 #include "bstrlib.h"
 #include "common_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SGW_CONFIG_STRING_SGW_CONFIG                            "S-GW"
 #define SGW_CONFIG_STRING_NETWORK_INTERFACES_CONFIG             "NETWORK_INTERFACES"
@@ -87,5 +90,9 @@ void sgw_config_display (sgw_config_t * config_p);
 #define sgw_config_read_lock(sGWcONFIG)  do { pthread_rwlock_rdlock(&(sGWcONFIG)->rw_lock);} while(0)
 #define sgw_config_write_lock(sGWcONFIG) do { pthread_rwlock_wrlock(&(sGWcONFIG)->rw_lock);} while(0)
 #define sgw_config_unlock(sGWcONFIG)     do { pthread_rwlock_unlock(&(sGWcONFIG)->rw_lock);} while(0)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_SGW_CONFIG_SEEN */

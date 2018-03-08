@@ -30,6 +30,10 @@
 #include "dynamic_memory_check.h"
 #include "assertions.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 void free_wrapper(void **ptr)
 {
@@ -49,3 +53,7 @@ void bdestroy_wrapper(bstring *b)
     *b = NULL;
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

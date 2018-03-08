@@ -25,6 +25,10 @@
 #define ADDITIONAL_UPDATE_RESULT_MINIMUM_LENGTH 1
 #define ADDITIONAL_UPDATE_RESULT_MAXIMUM_LENGTH 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef uint8_t additional_update_result_t;
 
 int encode_additional_update_result(additional_update_result_t *additionalupdateresult, uint8_t iei, uint8_t *buffer, uint32_t len);
@@ -34,6 +38,10 @@ uint8_t encode_u8_additional_update_result(additional_update_result_t *additiona
 int decode_additional_update_result(additional_update_result_t *additionalupdateresult, uint8_t iei, uint8_t *buffer, uint32_t len);
 
 int decode_u8_additional_update_result(additional_update_result_t *additionalupdateresult, uint8_t iei, uint8_t value, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ADDITIONAL_UPDATE_RESULT_SEEN */
 

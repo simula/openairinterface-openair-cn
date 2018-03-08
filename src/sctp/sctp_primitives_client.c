@@ -40,6 +40,10 @@
 #include "mme_default_values.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Send buffer to SCTP association */
 int
 sctp_send_msg (
@@ -298,3 +302,7 @@ err:
 
   return -1;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -52,6 +52,10 @@
 #include "mme_app_edns_emulation.h"
 #include "nas_proc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 mme_app_desc_t                          mme_app_desc = {.rw_lock = PTHREAD_RWLOCK_INITIALIZER, 0} ;
 
 void     *mme_app_thread (void *args);
@@ -346,3 +350,7 @@ void mme_app_exit (void)
   obj_hashtable_uint64_ts_destroy (mme_app_desc.mme_ue_contexts.guti_ue_context_htbl);
   mme_config_exit();
 }
+
+#ifdef __cplusplus
+}
+#endif

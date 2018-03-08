@@ -51,6 +51,10 @@
 #include "mme_app_pdn_context.h"
 #include "mme_app_apn_selection.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static void mme_app_pdn_context_init(ue_mm_context_t * const ue_context, pdn_context_t *const  pdn_context);
 
 //------------------------------------------------------------------------------
@@ -125,3 +129,6 @@ pdn_context_t *  mme_app_create_pdn_context(ue_mm_context_t * const ue_mm_contex
   OAILOG_FUNC_RETURN (LOG_MME_APP, NULL);
 }
 
+#ifdef __cplusplus
+}
+#endif

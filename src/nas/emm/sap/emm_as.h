@@ -42,6 +42,9 @@ Description Defines the EMMAS Service Access Point that provides
 
 #include "emm_asDef.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -61,5 +64,9 @@ Description Defines the EMMAS Service Access Point that provides
 void emm_as_initialize(void);
 
 int emm_as_send(emm_as_t *msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_EMM_AS_SEEN*/

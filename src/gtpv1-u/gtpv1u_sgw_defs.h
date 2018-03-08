@@ -25,6 +25,10 @@
 #include "hashtable.h"
 #include "spgw_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define GTPV1U_UDP_PORT (2152)
 
 #define MAX_BEARERS_PER_UE (11)
@@ -79,4 +83,7 @@ typedef struct {
 int gtpv1u_init (spgw_config_t *spgw_config);
 void gtpv1u_exit (gtpv1u_data_t * const gtpv1u_data);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_GTPV1U_SGW_DEFS_SEEN */

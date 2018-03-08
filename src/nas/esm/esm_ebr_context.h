@@ -38,6 +38,10 @@ Description Defines functions used to handle EPS bearer contexts.
 #ifndef ESM_EBR_CONTEXT_SEEN
 #define ESM_EBR_CONTEXT_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -66,5 +70,9 @@ void esm_ebr_context_init (esm_ebr_context_t *esm_ebr_context);
 ebi_t esm_ebr_context_release(emm_context_t * emm_context, ebi_t ebi, pdn_cid_t *pid, int *bid);
 
 void free_esm_ebr_context(esm_ebr_context_t * ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ESM_EBR_CONTEXT_SEEN */

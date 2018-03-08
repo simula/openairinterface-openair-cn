@@ -41,6 +41,9 @@
 #include "TLVDecoder.h"
 #include "TLVEncoder.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 //******************************************************************************
 // 10.5.5 GPRS mobility management information elements
 //******************************************************************************
@@ -431,3 +434,6 @@ int encode_voice_domain_preference_and_ue_usage_setting(
   *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
   return encoded;
 }
+#ifdef __cplusplus
+}
+#endif

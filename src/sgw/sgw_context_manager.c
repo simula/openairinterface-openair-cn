@@ -53,6 +53,10 @@
 #include "sgw_context_manager.h"
 #include "sgw.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern sgw_app_t                        sgw_app;
 
 
@@ -428,4 +432,8 @@ sgw_cm_remove_eps_bearer_entry (
   return RETURNerror;
 
 }
+
+#ifdef __cplusplus
+}
+#endif
 

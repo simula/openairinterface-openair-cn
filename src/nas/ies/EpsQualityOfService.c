@@ -32,6 +32,10 @@
 #include "common_types.h"
 #include "EpsQualityOfService.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 static int decode_eps_qos_bit_rates (
   EpsQoSBitRates * epsqosbitrates,
@@ -278,3 +282,7 @@ int qos_params_to_eps_qos(const qci_t qci, const bitrate_t mbr_dl, const bitrate
   }
   return RETURNerror;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -70,6 +70,9 @@
 #include "emm_proc.h"
 #include "TrackingAreaUpdateMobility.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -1853,5 +1856,8 @@ static int _emm_as_establish_rej (const emm_as_establish_t * msg, nas_establish_
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, 0);
 }
 
+#ifdef __cplusplus
+}
+#endif
 
 

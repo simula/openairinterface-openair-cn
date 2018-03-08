@@ -51,6 +51,10 @@
 #include "s11_mme_session_manager.h"
 #include "s11_ie_formatter.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern hash_table_ts_t                        *s11_mme_teid_2_gtv2c_teid_handle;
 
 //------------------------------------------------------------------------------
@@ -369,3 +373,8 @@ s11_mme_handle_delete_session_response (
 
   return itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }
+
+#ifdef __cplusplus
+}
+#endif
+

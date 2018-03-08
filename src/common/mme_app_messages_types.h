@@ -28,6 +28,9 @@
 #ifndef FILE_MME_APP_MESSAGES_TYPES_SEEN
 #define FILE_MME_APP_MESSAGES_TYPES_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #define MME_APP_CONNECTION_ESTABLISHMENT_CNF(mSGpTR)     (mSGpTR)->ittiMsg.mme_app_connection_establishment_cnf
 #define MME_APP_INITIAL_CONTEXT_SETUP_RSP(mSGpTR)        (mSGpTR)->ittiMsg.mme_app_initial_context_setup_rsp
 #define MME_APP_INITIAL_CONTEXT_SETUP_FAILURE(mSGpTR)    (mSGpTR)->ittiMsg.mme_app_initial_context_setup_failure
@@ -131,4 +134,7 @@ typedef struct itti_mme_app_s1ap_mme_ue_id_notification_s {
   sctp_assoc_id_t       sctp_assoc_id;
 } itti_mme_app_s1ap_mme_ue_id_notification_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_MME_APP_MESSAGES_TYPES_SEEN */

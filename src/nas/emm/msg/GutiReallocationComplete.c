@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "GutiReallocationComplete.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_guti_reallocation_complete (
   guti_reallocation_complete_msg * guti_reallocation_complete,
@@ -63,3 +67,7 @@ encode_guti_reallocation_complete (
   CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, GUTI_REALLOCATION_COMPLETE_MINIMUM_LENGTH, len);
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

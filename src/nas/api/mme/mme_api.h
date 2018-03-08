@@ -50,6 +50,9 @@ Description Implements the API used by the NAS layer running in the MME
 /* Maximum number of UEs the MME may simultaneously support */
 #define MME_API_NB_UE_MAX       256
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Features supported by the MME */
 typedef enum mme_api_feature_s {
@@ -156,5 +159,9 @@ int mme_api_subscribe(bstring *apn, mme_api_ip_version_t mme_pdn_index, bstring 
 int mme_api_unsubscribe(bstring apn);
 
 void mme_ue_context_update_ue_emm_state (mme_ue_s1ap_id_t mme_ue_s1ap_id, mm_state_t new_emm_state);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_MME_API_SEEN*/

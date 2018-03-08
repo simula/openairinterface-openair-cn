@@ -22,6 +22,10 @@
 #ifndef UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_SEEN
 #define UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_MINIMUM_LENGTH 1
 #define UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_MAXIMUM_LENGTH 1
 
@@ -35,5 +39,8 @@ int decode_ue_radio_capability_information_update_needed(ue_radio_capability_inf
 
 int decode_u8_ue_radio_capability_information_update_needed(ue_radio_capability_information_update_needed_t *ueradiocapabilityinformationupdateneeded, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* UE RADIO CAPABILITY INFORMATION UPDATE NEEDED_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* UE RADIO CAPABILITY INFORMATION UPDATE NEEDED_SEEN */

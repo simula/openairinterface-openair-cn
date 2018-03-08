@@ -31,7 +31,15 @@
 #ifndef FILE_ASYNC_SYSTEM_SEEN
 #define FILE_ASYNC_SYSTEM_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int async_system_init (void);
 int async_system_command (int sender_itti_task, bool is_abort_on_error, char *format, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_SHARED_TS_LOG_SEEN */

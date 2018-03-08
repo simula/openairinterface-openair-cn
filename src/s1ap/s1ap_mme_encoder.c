@@ -42,6 +42,10 @@
 #include "assertions.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static inline int                       s1ap_mme_encode_initial_context_setup_request (
   s1ap_message * message_p,
   uint8_t ** buffer,
@@ -327,3 +331,7 @@ s1ap_mme_encode_e_rab_setup (
 
   return s1ap_generate_initiating_message (buffer, length, S1ap_ProcedureCode_id_E_RABSetup, message_p->criticality, &asn_DEF_S1ap_E_RABSetupRequest, e_rab_setup_p);
 }
+
+#ifdef __cplusplus
+}
+#endif

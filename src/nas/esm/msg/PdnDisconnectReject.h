@@ -26,6 +26,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define PDN_DISCONNECT_REJECT_MINIMUM_LENGTH ( \
     ESM_CAUSE_MINIMUM_LENGTH )
@@ -66,6 +70,10 @@ typedef struct pdn_disconnect_reject_msg_tag {
 int decode_pdn_disconnect_reject(pdn_disconnect_reject_msg *pdndisconnectreject, uint8_t *buffer, uint32_t len);
 
 int encode_pdn_disconnect_reject(pdn_disconnect_reject_msg *pdndisconnectreject, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(PDN_DISCONNECT_REJECT_H_) */
 

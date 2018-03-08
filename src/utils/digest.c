@@ -37,6 +37,9 @@
 #include "common_defs.h"
 #include "digest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // evp_x can be EVP_sha256, ...
@@ -72,3 +75,7 @@ int digest_buffer(const EVP_MD *(*evp_x)(void), const unsigned char *buffer, siz
   *digest_len = 0;
   return RETURNerror;
 }
+
+#ifdef __cplusplus
+}
+#endif

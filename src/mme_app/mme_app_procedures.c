@@ -49,6 +49,10 @@
 #include "common_defs.h"
 #include "mme_app_procedures.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static void mme_app_free_s11_procedure_create_bearer(mme_app_s11_proc_t **s11_proc);
 
 //------------------------------------------------------------------------------
@@ -179,4 +183,7 @@ void mme_app_s11_procedure_create_bearer_send_response(ue_mm_context_t * const u
   itti_send_msg_to_task (TASK_S11, INSTANCE_DEFAULT, message_p);
 }
 
+#ifdef __cplusplus
+}
+#endif
 

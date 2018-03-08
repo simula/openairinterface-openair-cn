@@ -47,6 +47,10 @@ Description Defines internal private data handled by EPS Session
 #include "3gpp_24.007.h"
 #include "mme_api.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -254,5 +258,9 @@ extern char *esm_data_get_ipv4_addr(const_bstring ip_addr);
 extern char *esm_data_get_ipv6_addr(const_bstring ip_addr);
 
 extern char *esm_data_get_ipv4v6_addr(const_bstring ip_addr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __ESMDATA_H__*/

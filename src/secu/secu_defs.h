@@ -28,6 +28,10 @@
 #define SECU_DIRECTION_UPLINK   0
 #define SECU_DIRECTION_DOWNLINK 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void kdf(const uint8_t *key,
          const unsigned key_len,
          uint8_t *s,
@@ -81,5 +85,9 @@ int nas_stream_encrypt_eea2(nas_stream_cipher_t * const stream_cipher, uint8_t *
 int nas_stream_encrypt_eia2(nas_stream_cipher_t * const stream_cipher, uint8_t const out[4]);
 
 #undef SECU_DEBUG
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_SECU_DEFS_SEEN */

@@ -22,6 +22,10 @@
 #ifndef NAS_REQUEST_TYPE_SEEN
 #define NAS_REQUEST_TYPE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define REQUEST_TYPE_MINIMUM_LENGTH 1
 #define REQUEST_TYPE_MAXIMUM_LENGTH 1
 
@@ -40,5 +44,8 @@ int decode_request_type(request_type_t *requesttype, uint8_t iei, uint8_t *buffe
 
 int decode_u8_request_type(request_type_t *requesttype, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* NAS_REQUEST_TYPE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* NAS_REQUEST_TYPE_SEEN */

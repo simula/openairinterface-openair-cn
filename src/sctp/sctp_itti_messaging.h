@@ -30,6 +30,10 @@
 #define FILE_SCTP_ITTI_MESSAGING_SEEN
 #include "common_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int sctp_itti_send_lower_layer_conf (
     const task_id_t        origin_task_id,
     const sctp_assoc_id_t  assoc_id,
@@ -49,5 +53,9 @@ int sctp_itti_send_new_message_ind(
     const sctp_stream_id_t outstreams);
 
 int sctp_itti_send_com_down_ind(const sctp_assoc_id_t assoc_id, bool reset);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_SCTP_ITTI_MESSAGING_SEEN */

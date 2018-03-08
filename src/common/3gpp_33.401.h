@@ -27,6 +27,9 @@
 */
 #ifndef FILE_3GPP_33_401_SEEN
 #define FILE_3GPP_33_401_SEEN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // 5.1.3.2 Algorithm Identifier Values
@@ -56,4 +59,7 @@
  */
 #define MAX_EPS_AUTH_VECTORS          1
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_33_401_SEEN */

@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "CsServiceNotification.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_cs_service_notification (
   cs_service_notification_msg * cs_service_notification,
@@ -177,3 +181,7 @@ encode_cs_service_notification (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

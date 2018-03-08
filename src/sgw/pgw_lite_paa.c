@@ -52,6 +52,9 @@
 #include "sgw.h"
 #include "pgw_lite_paa.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //#define PGW_LITE_FREE_ADDR_POOL_CONFIG 1
 
@@ -139,5 +142,6 @@ pgw_release_free_ipv4_paa_address (
   return RETURNerror;
 }
 
-
-
+#ifdef __cplusplus
+}
+#endif

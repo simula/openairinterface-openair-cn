@@ -47,6 +47,11 @@
 #include <sys/socket.h>         // socket, setsockopt, connect, bind, recv, send
 #include <netdb.h>              // getaddrinfo
 #include "dynamic_memory_check.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -472,3 +477,7 @@ _socket_set_option (
 
   return RETURNok;
 }
+
+#ifdef __cplusplus
+}
+#endif

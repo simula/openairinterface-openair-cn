@@ -41,6 +41,9 @@
 #include "TLVDecoder.h"
 #include "TLVEncoder.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 //******************************************************************************
 // 10.5.4 Call control information elements.
 //******************************************************************************
@@ -110,3 +113,6 @@ int encode_supported_codec_list (
   *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
   return encoded;
 }
+#ifdef __cplusplus
+}
+#endif

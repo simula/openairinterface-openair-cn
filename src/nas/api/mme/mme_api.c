@@ -70,7 +70,9 @@
 #include "mme_config.h"
 #include "emm_data.h"
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -582,3 +584,7 @@ mme_api_unsubscribe ( bstring apn)
   _mme_api_pdn_id -= 1;
   OAILOG_FUNC_RETURN (LOG_NAS, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

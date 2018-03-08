@@ -30,6 +30,9 @@
 #define FILE_COMMON_DEFS_SEEN
 
 #include <arpa/inet.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 //------------------------------------------------------------------------------
 #define STOLEN_REF
 #define CLONE_REF
@@ -161,4 +164,7 @@ typedef enum {
 #define UNUSED(x) (void)(x)
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_COMMON_DEFS_SEEN */

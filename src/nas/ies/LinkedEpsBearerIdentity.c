@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "LinkedEpsBearerIdentity.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_linked_eps_bearer_identity (
   linked_eps_bearer_identity_t * linkedepsbeareridentity,
@@ -97,3 +101,6 @@ uint8_t encode_u8_linked_eps_bearer_identity (
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

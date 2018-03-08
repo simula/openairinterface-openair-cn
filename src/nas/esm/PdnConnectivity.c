@@ -75,6 +75,10 @@
 #include "mme_app_pdn_context.h"
 #include "mme_app_bearer_context.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -526,3 +530,7 @@ proc_tid_t _pdn_connectivity_delete (emm_context_t * emm_context, pdn_cid_t pdn_
    */
   return (pti);
 }
+
+#ifdef __cplusplus
+}
+#endif

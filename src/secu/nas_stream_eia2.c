@@ -43,6 +43,10 @@
 #include "log.h"
 #include "gcc_diag.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
    @brief Create integrity cmac t for a given message.
    @param[in] stream_cipher Structure containing various variables to setup encoding
@@ -93,3 +97,8 @@ nas_stream_encrypt_eia2 (
   free_wrapper ((void**)&m);
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

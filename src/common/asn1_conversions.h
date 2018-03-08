@@ -30,6 +30,9 @@
 
 #include "BIT_STRING.h"
 #include "assertions.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //-----------------------begin func -------------------
 
@@ -115,5 +118,7 @@ static inline uint64_t BIT_STRING_to_uint64(BIT_STRING_t *asn) {
 
   return result;
 }
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_ASN1_CONVERSIONS_SEEN */

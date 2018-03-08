@@ -47,6 +47,10 @@
 #include "emm_main.h"
 #include "nas_timer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static void nas_exit(void);
 
 //------------------------------------------------------------------------------
@@ -168,3 +172,8 @@ static void nas_exit(void)
   nas_network_cleanup();
   OAILOG_DEBUG (LOG_NAS, "Cleaning NAS task interface: DONE\n");
 }
+
+#ifdef __cplusplus
+}
+#endif
+

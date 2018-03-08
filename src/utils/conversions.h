@@ -34,6 +34,10 @@
 #include "3gpp_29.274.h"
 #include "EpsQualityOfService.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Endianness conversions for 16 and 32 bits integers from host to network order */
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 # define hton_int32(x)   \
@@ -383,5 +387,9 @@ int ascii_to_hex(uint8_t *dst, const char *h);
     ((bYtE) & 0x04 ? '1':'0'),\
     ((bYtE) & 0x02 ? '1':'0'),\
     ((bYtE) & 0x01 ? '1':'0')
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_CONVERSIONS_SEEN */

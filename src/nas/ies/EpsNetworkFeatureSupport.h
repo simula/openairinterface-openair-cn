@@ -22,6 +22,10 @@
 #ifndef EPS_NETWORK_FEATURE_SUPPORT_SEEN
 #define EPS_NETWORK_FEATURE_SUPPORT_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define EPS_NETWORK_FEATURE_SUPPORT_MINIMUM_LENGTH 3
 #define EPS_NETWORK_FEATURE_SUPPORT_MAXIMUM_LENGTH 3
 
@@ -52,6 +56,10 @@ typedef uint8_t eps_network_feature_support_t;
 int encode_eps_network_feature_support(eps_network_feature_support_t *epsnetworkfeaturesupport, uint8_t iei, uint8_t *buffer, uint32_t len);
 
 int decode_eps_network_feature_support(eps_network_feature_support_t *epsnetworkfeaturesupport, uint8_t iei, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* EPS_NETWORK_FEATURE_SUPPORT_SEEN */
 

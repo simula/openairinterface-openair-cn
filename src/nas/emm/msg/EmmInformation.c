@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "EmmInformation.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_emm_information (
   emm_information_msg * emm_information,
@@ -186,3 +190,7 @@ encode_emm_information (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -34,6 +34,10 @@
 #include "queue.h"
 #include "bstrlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PGW_CONFIG_STRING_PGW_CONFIG                            "P-GW"
 #define PGW_CONFIG_STRING_NETWORK_INTERFACES_CONFIG             "NETWORK_INTERFACES"
 #define PGW_CONFIG_STRING_PGW_INTERFACE_NAME_FOR_S5_S8          "PGW_INTERFACE_NAME_FOR_S5_S8"
@@ -140,5 +144,9 @@ void pgw_config_display (pgw_config_t * config_p);
 #define pgw_config_read_lock(pGWcONFIG)  pthread_rwlock_rdlock(&(pGWcONFIG)->rw_lock)
 #define pgw_config_write_lock(pGWcONFIG) pthread_rwlock_wrlock(&(pGWcONFIG)->rw_lock)
 #define pgw_config_unlock(pGWcONFIG)     pthread_rwlock_unlock(&(pGWcONFIG)->rw_lock)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_PGW_CONFIG_SEEN */

@@ -33,6 +33,10 @@
 #ifndef FILE_SNOW3G_SEEN
 #define FILE_SNOW3G_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct snow_3g_context_s {
   uint32_t LFSR_S0;
   uint32_t LFSR_S1;
@@ -73,5 +77,9 @@ void snow3g_initialize(uint32_t k[4], uint32_t IV[4], snow_3g_context_t *snow_3g
 */
 
 void snow3g_generate_key_stream(uint32_t n, uint32_t *z, snow_3g_context_t *snow_3g_context_pP);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -50,6 +50,10 @@
 #include "mme_app_ue_context.h"
 #include "mme_app_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int mme_app_send_s6a_update_location_req (
   struct ue_mm_context_s *const ue_mm_context)
@@ -182,3 +186,7 @@ int mme_app_handle_s6a_update_location_ans (
   unlock_ue_contexts(ue_mm_context);
   OAILOG_FUNC_RETURN (LOG_MME_APP, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

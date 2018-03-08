@@ -33,8 +33,16 @@
  *  openair-cn-mobility.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int 
 emm_recv_tracking_area_update_req_type_normal (
   mme_ue_s1ap_id_t ue_id,
   const tracking_area_update_request_msg * msg,
   int *emm_cause );
+
+#ifdef __cplusplus
+}
+#endif

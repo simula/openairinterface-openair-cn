@@ -34,6 +34,10 @@
 #include "TLVDecoder.h"
 #include "PdnConnectivityRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_pdn_connectivity_request (
   pdn_connectivity_request_msg * pdn_connectivity_request,
@@ -164,3 +168,7 @@ encode_pdn_connectivity_request (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

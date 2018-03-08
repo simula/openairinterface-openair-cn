@@ -40,7 +40,9 @@
 #include "log.h"
 
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 //******************************************************************************
 // 10.5.7 GPRS Common information elements
 //******************************************************************************
@@ -104,3 +106,7 @@ long gprs_timer_value (gprs_timer_t * gprstimer)
 {
   return (gprstimer->timervalue * _gprs_timer_unit[gprstimer->unit]);
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -27,6 +27,10 @@
 #ifndef FILE_UDP_MESSAGES_TYPES_SEEN
 #define FILE_UDP_MESSAGES_TYPES_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define UDP_INIT(mSGpTR)    (mSGpTR)->ittiMsg.udp_init
 
 typedef struct {
@@ -49,4 +53,7 @@ typedef struct {
   uint16_t  peer_port;
 } udp_data_ind_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_UDP_MESSAGES_TYPES_SEEN */

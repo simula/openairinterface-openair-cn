@@ -30,6 +30,10 @@
 
 #include "hashtable.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct obj_hash_node_s {
     int                 key_size;
     void               *key;
@@ -117,6 +121,10 @@ hashtable_rc_t      obj_hashtable_uint64_ts_remove(obj_hash_table_uint64_t *hash
 hashtable_rc_t      obj_hashtable_uint64_ts_get     (const obj_hash_table_uint64_t * const hashtblP, const void* const keyP, const int key_sizeP, uint64_t * const dataP) __attribute__ ((hot));
 hashtable_rc_t      obj_hashtable_uint64_ts_get_keys(const obj_hash_table_uint64_t * const hashtblP, void ** keysP, unsigned int * sizeP);
 hashtable_rc_t      obj_hashtable_uint64_ts_resize  (obj_hash_table_uint64_t * const hashtblP, const hash_size_t sizeP);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

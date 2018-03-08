@@ -57,6 +57,10 @@
 #include "timer.h"
 #include "itti_free_defined_msg.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if S1AP_DEBUG_LIST
 #  define eNB_LIST_OUT(x, args...) OAILOG_DEBUG (LOG_S1AP, "[eNB]%*s"x"\n", 4*indent, "", ##args)
 #  define UE_LIST_OUT(x, args...)  OAILOG_DEBUG (LOG_S1AP, "[UE] %*s"x"\n", 4*indent, "", ##args)
@@ -660,4 +664,8 @@ s1ap_remove_enb (
   hashtable_ts_free (&g_s1ap_enb_coll, enb_ref->sctp_assoc_id);
   nb_enb_associated--;
 }
+
+#ifdef __cplusplus
+}
+#endif
 

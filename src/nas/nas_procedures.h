@@ -29,6 +29,10 @@
 #ifndef FILE_NAS_PROCEDURES_SEEN
 #define FILE_NAS_PROCEDURES_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct emm_context_s;
 struct nas_base_proc_s;
 struct nas_emm_proc_s;
@@ -413,5 +417,9 @@ nas_auth_info_proc_t *nas_new_cn_auth_info_procedure(struct emm_context_s * cons
 void nas_digest_msg(const unsigned char * const msg, const size_t msg_len, char * const digest, /*INOUT*/ size_t * const digest_length);
 void nas_emm_procedure_register_emm_message(mme_ue_s1ap_id_t ue_id, const uint64_t puid, bstring nas_msg);
 nas_emm_proc_t * nas_emm_find_procedure_by_msg_digest(struct emm_context_s * const emm_context, const char * const digest, const size_t digest_bytes, const size_t msg_size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

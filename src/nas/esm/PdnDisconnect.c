@@ -67,6 +67,10 @@
 #include "esm_pt.h"
 #include "emm_sap.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -322,3 +326,7 @@ _pdn_disconnect_get_pid (
 
   return RETURNerror;
 }
+
+#ifdef __cplusplus
+}
+#endif

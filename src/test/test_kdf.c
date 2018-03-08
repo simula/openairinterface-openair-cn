@@ -31,6 +31,10 @@
 #include "test_util.h"
 #include "secu_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static
   void
 do_kdf (
@@ -111,3 +115,7 @@ doit (
               "6174612e20546865206b6579206e6565"
               "647320746f2062652068617368656420" "6265666f7265206265696e6720757365" "642062792074686520484d414320616c" "676f726974686d2e"), HL ("9b09ffa71b942fcb27635fbcd5b0e944" "bfdc63644f0713938a7f51535c3a35e2"));
 }
+
+#ifdef __cplusplus
+}
+#endif

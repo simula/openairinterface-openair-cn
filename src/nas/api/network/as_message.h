@@ -52,6 +52,10 @@ Description Defines the messages supported by the Access Stratum sublayer
 #include "TrackingAreaIdentity.h"
 #include "common_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -571,5 +575,9 @@ int as_message_encode(char* buffer, as_message_t* msg, size_t length);
 
 /* Implemented in the network_api.c body file */
 int as_message_send(as_message_t* as_msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_AS_MESSAGE_H_SEEN*/

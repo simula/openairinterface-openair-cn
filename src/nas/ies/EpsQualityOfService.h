@@ -22,6 +22,10 @@
 #ifndef EPS_QUALITY_OF_SERVICE_SEEN
 #define EPS_QUALITY_OF_SERVICE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define EPS_QUALITY_OF_SERVICE_MINIMUM_LENGTH 2
 #define EPS_QUALITY_OF_SERVICE_MAXIMUM_LENGTH 10
 
@@ -51,5 +55,8 @@ int eps_qos_bit_rate_ext_value(uint8_t br);
 int qos_params_to_eps_qos(const qci_t qci, const bitrate_t mbr_dl, const bitrate_t mbr_ul, const bitrate_t gbr_dl, const bitrate_t gbr_ul,
     EpsQualityOfService * const eps_qos, bool is_default_bearer);
 
-#endif /* EPS_QUALITY_OF_SERVICE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* EPS_QUALITY_OF_SERVICE_SEEN */

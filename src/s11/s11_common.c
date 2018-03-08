@@ -35,6 +35,10 @@
 #include "s11_common.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 nw_rc_t
 s11_ie_indication_generic (
   uint8_t ieType,
@@ -46,3 +50,8 @@ s11_ie_indication_generic (
   OAILOG_DEBUG (LOG_S11, "Received IE Parse Indication for of type %u, length %u, " "instance %u!\n", ieType, ieLength, ieInstance);
   return NW_OK;
 }
+
+#ifdef __cplusplus
+}
+#endif
+

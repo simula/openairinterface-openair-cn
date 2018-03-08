@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "GutiReallocationCommand.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_guti_reallocation_command (
   guti_reallocation_command_msg * guti_reallocation_command,
@@ -116,3 +120,7 @@ encode_guti_reallocation_command (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

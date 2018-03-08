@@ -32,6 +32,10 @@
 #include "mme_app_defs.h"
 #include "mme_app_statistics.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int mme_app_statistics_display (
   void)
 {
@@ -169,3 +173,6 @@ void update_mme_app_stats_attached_ue_sub(void)
   return;
 }
 /*****************************************************/
+#ifdef __cplusplus
+}
+#endif

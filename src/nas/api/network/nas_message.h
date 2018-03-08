@@ -45,6 +45,9 @@ Description Defines the layer 3 messages supported by the NAS sublayer
 #include "emm_data.h"
 #include "esm_msg.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -139,5 +142,9 @@ int nas_message_encode(
     const nas_message_t * const msg,
     size_t                      length,
     void                       *security);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_NAS_MESSAGE_SEEN*/

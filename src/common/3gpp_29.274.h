@@ -29,6 +29,9 @@
 #ifndef FILE_3GPP_29_274_SEEN
 #define FILE_3GPP_29_274_SEEN
 #include <arpa/inet.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //-------------------------------------
 // 8.4 Cause
@@ -274,4 +277,7 @@ typedef struct bearer_context_within_create_bearer_response_s {
                                     ///< both exist.
 } bearer_context_within_create_bearer_response_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_3GPP_29_274_SEEN */

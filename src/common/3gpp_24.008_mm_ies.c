@@ -44,6 +44,9 @@
 #include "TLVEncoder.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 //******************************************************************************
 // 10.5.3 Mobility management information elements.
 //******************************************************************************
@@ -621,3 +624,7 @@ int encode_emergency_number_list_ie (
   *lenPtr = encoded - 1 - ((iei_present) ? 1 : 0);
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

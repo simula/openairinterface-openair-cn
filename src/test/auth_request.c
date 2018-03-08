@@ -35,6 +35,9 @@
 #include "s6a_messages_types.h"
 #include "assertions.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define VENDOR_3GPP (10415)
 #define APP_S6A     (16777251)
@@ -979,3 +982,7 @@ int main (int argc, char** argv)
   auth_request_exit();
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

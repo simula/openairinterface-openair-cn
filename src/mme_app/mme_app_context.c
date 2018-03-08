@@ -60,6 +60,9 @@
 #include "timer.h"
 #include "mme_app_statistics.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static void _mme_app_handle_s1ap_ue_context_release (const mme_ue_s1ap_id_t mme_ue_s1ap_id,
                                                      const enb_ue_s1ap_id_t enb_ue_s1ap_id,
@@ -1342,3 +1345,7 @@ _mme_app_handle_s1ap_ue_context_release (const mme_ue_s1ap_id_t mme_ue_s1ap_id,
   unlock_ue_contexts(ue_mm_context);
   OAILOG_FUNC_OUT (LOG_MME_APP);
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -28,6 +28,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define SECURITY_MODE_REJECT_MINIMUM_LENGTH ( \
     EMM_CAUSE_MINIMUM_LENGTH )
@@ -55,6 +59,10 @@ typedef struct security_mode_reject_msg_tag {
 int decode_security_mode_reject(security_mode_reject_msg *securitymodereject, uint8_t *buffer, uint32_t len);
 
 int encode_security_mode_reject(security_mode_reject_msg *securitymodereject, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_SECURITY_MODE_REJECT_SEEN) */
 

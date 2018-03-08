@@ -39,6 +39,9 @@ Description Contains global common definitions
 #ifndef FILE_COMMONDEF_SEEN
 #define FILE_COMMONDEF_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*
  * A list of PLMNs
  */
@@ -49,5 +52,8 @@ Description Contains global common definitions
  */
 #define TAC_LIST_T(SIZE) struct {uint8_t n_tacs; TAC_t tac[SIZE];}
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_COMMONDEF_SEEN*/

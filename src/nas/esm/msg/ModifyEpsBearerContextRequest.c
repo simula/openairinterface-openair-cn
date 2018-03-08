@@ -38,6 +38,10 @@
 #include "ApnAggregateMaximumBitRate.h"
 #include "ModifyEpsBearerContextRequest.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_modify_eps_bearer_context_request (
   modify_eps_bearer_context_request_msg * modify_eps_bearer_context_request,
@@ -252,3 +256,7 @@ encode_modify_eps_bearer_context_request (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

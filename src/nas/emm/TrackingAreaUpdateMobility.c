@@ -60,6 +60,11 @@
  */
 
 //------------------------------------------------------------------------------
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 emm_recv_tracking_area_update_req_type_normal (
   mme_ue_s1ap_id_t ue_id,
@@ -73,4 +78,7 @@ emm_recv_tracking_area_update_req_type_normal (
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
 
+#ifdef __cplusplus
+}
+#endif
 

@@ -27,6 +27,10 @@
 #ifndef FILE_SCTP_PRIMITIVES_CLIENT_SEEN
 #define FILE_SCTP_PRIMITIVES_CLIENT_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @defgroup _sctp_impl_ SCTP Layer Reference Implementation
  * @ingroup _ref_implementation_
  * @{
@@ -99,4 +103,9 @@ void sctp_disconnect(const sctp_assoc_id_t assoc_id);
 void sctp_terminate(void);
 
 /* @} */
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* FILE_SCTP_PRIMITIVES_CLIENT_SEEN */

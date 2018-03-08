@@ -32,6 +32,10 @@
 #include "TLVDecoder.h"
 #include "TrackingAreaIdentityList.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_tracking_area_identity_list (
     tai_list_t * trackingareaidentitylist,
@@ -184,3 +188,6 @@ int encode_tracking_area_identity_list (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

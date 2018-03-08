@@ -31,6 +31,10 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define GTPU_HEADER_OVERHEAD_MAX 64
 
 /*
@@ -78,4 +82,7 @@ uint32_t gtpv1u_new_teid(void);
 
 const struct gtp_tunnel_ops *gtp_tunnel_ops_init(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_GTPV1_U_SEEN */

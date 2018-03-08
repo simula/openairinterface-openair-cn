@@ -40,7 +40,9 @@
 #include "dynamic_memory_check.h"
 #include "mme_app_edns_emulation.h"
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static obj_hash_table_t * g_e_dns_entries = NULL;
 
@@ -91,3 +93,7 @@ void  mme_app_edns_exit (void)
 {
   obj_hashtable_destroy (g_e_dns_entries);
 }
+
+#ifdef __cplusplus
+}
+#endif

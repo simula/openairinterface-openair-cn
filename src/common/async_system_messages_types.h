@@ -28,6 +28,9 @@
 
 #ifndef FILE_ASYNC_SYSTEM_MESSAGES_TYPES_SEEN
 #define FILE_ASYNC_SYSTEM_MESSAGES_TYPES_SEEN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define ASYNC_SYSTEM_COMMAND(mSGpTR)                     (mSGpTR)->ittiMsg.async_system_command
 
@@ -36,4 +39,7 @@ typedef struct itti_async_system_command_s {
   bool                     is_abort_on_error;
 } itti_async_system_command_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* FILE_ASYNC_SYSTEM_MESSAGES_TYPES_SEEN */

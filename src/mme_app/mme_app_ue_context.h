@@ -53,7 +53,9 @@
 #include "emm_data.h"
 #include "esm_data.h"
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum {
   ECM_IDLE = 0,
@@ -592,6 +594,10 @@ ebi_t mme_app_get_free_bearer_id(ue_mm_context_t * const ue_context);
 void mme_app_free_bearer_context(bearer_context_t ** bc);
 
 void mme_app_send_delete_session_request (struct ue_mm_context_s * const ue_context_p, const ebi_t ebi, const pdn_cid_t cid);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_MME_APP_UE_CONTEXT_SEEN */
 

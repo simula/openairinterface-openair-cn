@@ -33,6 +33,10 @@
 #include "TLVDecoder.h"
 #include "TrackingAreaUpdateAccept.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_tracking_area_update_accept (
   tracking_area_update_accept_msg * tracking_area_update_accept,
@@ -353,3 +357,7 @@ encode_tracking_area_update_accept (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

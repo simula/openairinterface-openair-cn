@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "ServiceType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_service_type (
   service_type_t * servicetype,
@@ -95,3 +99,7 @@ uint8_t encode_u8_service_type (service_type_t * servicetype)
   encoded++;
   return bufferReturn;
 }
+
+#ifdef __cplusplus
+}
+#endif

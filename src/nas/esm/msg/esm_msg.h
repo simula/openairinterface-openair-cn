@@ -69,6 +69,10 @@ Description Defines EPS Session Management messages and functions used
 #include "EsmInformationResponse.h"
 #include "EsmStatus.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -121,5 +125,9 @@ int esm_msg_decode_header (esm_msg_header_t * header, const uint8_t * buffer, ui
 int esm_msg_decode(ESM_msg *msg, uint8_t *buffer, uint32_t len);
 
 int esm_msg_encode(ESM_msg *msg, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __ESM_MSG_H__ */

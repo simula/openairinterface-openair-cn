@@ -42,6 +42,11 @@
 #include "rfc_1877.h"
 #include "rfc_1332.h"
 #include "spgw_config.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int pgw_pco_push_protocol_or_container_id(protocol_configuration_options_t * const pco, pco_protocol_or_container_id_t * const poc_id /* STOLEN_REF poc_id->contents*/)
 {
@@ -305,3 +310,7 @@ int pgw_process_pco_request(
   }
   return RETURNok;
 }
+
+#ifdef __cplusplus
+}
+#endif

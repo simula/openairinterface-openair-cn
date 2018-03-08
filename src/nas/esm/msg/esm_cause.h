@@ -40,6 +40,10 @@ Description Defines error cause code returned upon receiving unknown,
 #ifndef FILE_ESM_CAUSE_SEEN
 #define FILE_ESM_CAUSE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -49,5 +53,9 @@ Description Defines error cause code returned upon receiving unknown,
  * has been successfully processed
  */
 #define ESM_CAUSE_SUCCESS     (esm_cause_t)(-1)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_ESM_CAUSE_SEEN*/

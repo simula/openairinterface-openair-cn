@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "EpsBearerContextStatus.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_eps_bearer_context_status (
   eps_bearer_context_status_t * epsbearercontextstatus,
@@ -79,4 +83,8 @@ int encode_eps_bearer_context_status (
   *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif
 

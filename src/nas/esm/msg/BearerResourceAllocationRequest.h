@@ -30,6 +30,10 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define BEARER_RESOURCE_ALLOCATION_REQUEST_MINIMUM_LENGTH ( \
     TRAFFIC_FLOW_AGGREGATE_DESCRIPTION_MINIMUM_LENGTH + \
@@ -74,6 +78,10 @@ typedef struct bearer_resource_allocation_request_msg_tag {
 int decode_bearer_resource_allocation_request(bearer_resource_allocation_request_msg *bearerresourceallocationrequest, uint8_t *buffer, uint32_t len);
 
 int encode_bearer_resource_allocation_request(bearer_resource_allocation_request_msg *bearerresourceallocationrequest, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(BEARER_RESOURCE_ALLOCATION_REQUEST_H_) */
 

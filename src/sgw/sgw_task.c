@@ -58,6 +58,10 @@
 #include "pgw_ue_ip_address_alloc.h"
 #include "pgw_pcef_emulation.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 spgw_config_t                           spgw_config;
 sgw_app_t                               sgw_app;
 pgw_app_t                               pgw_app;
@@ -251,3 +255,7 @@ static void sgw_exit(void)
   }
   OAI_FPRINTF_INFO("TASK_SPGW_APP terminated");
 }
+
+#ifdef __cplusplus
+}
+#endif

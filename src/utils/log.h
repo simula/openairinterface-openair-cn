@@ -33,6 +33,10 @@
 
 #include "bstrlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* asn1c debug */
 extern int asn_debug;
 extern int asn1_xer_print;
@@ -369,4 +373,9 @@ int log_get_start_time_sec (void);
 #      define ASN_DEBUG(...)                                         do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
 #    endif
 #  endif
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* FILE_LOG_SEEN */

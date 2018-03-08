@@ -32,6 +32,10 @@
 #include "UeNetworkCapability.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_ue_network_capability (
   ue_network_capability_t * uenetworkcapability,
@@ -144,3 +148,6 @@ int encode_ue_network_capability (
   return encoded;
 }
 
+#ifdef __cplusplus
+}
+#endif

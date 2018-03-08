@@ -61,6 +61,9 @@
 #include "mme_app_ue_context.h"
 #include "mme_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // free allocated structs
 //------------------------------------------------------------------------------
@@ -151,3 +154,7 @@ void esm_init_context(struct esm_context_s *esm_context)
   esm_context->T3489.id        = NAS_TIMER_INACTIVE_ID;
   esm_context->T3489.sec       = mme_config.nas_config.t3489_sec;
 }
+
+#ifdef __cplusplus
+}
+#endif

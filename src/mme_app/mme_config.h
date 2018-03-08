@@ -37,6 +37,10 @@
 #include "bstrlib.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_GUMMEI                2
 
 #define MME_CONFIG_STRING_MME_CONFIG                     "MME"
@@ -232,5 +236,9 @@ void mme_config_exit (void);
 #define mme_config_read_lock(mMEcONFIG)  pthread_rwlock_rdlock(&(mMEcONFIG)->rw_lock)
 #define mme_config_write_lock(mMEcONFIG) pthread_rwlock_wrlock(&(mMEcONFIG)->rw_lock)
 #define mme_config_unlock(mMEcONFIG)     pthread_rwlock_unlock(&(mMEcONFIG)->rw_lock)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_MME_CONFIG_SEEN */

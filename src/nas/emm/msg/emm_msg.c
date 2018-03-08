@@ -67,6 +67,10 @@
 #include "esm_proc.h"
 #include "nas_itti_messaging.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -531,3 +535,7 @@ emm_msg_encode_header (
   ENCODE_U8 (buffer + size, header->message_type, size);
   return (size);
 }
+
+#ifdef __cplusplus
+}
+#endif

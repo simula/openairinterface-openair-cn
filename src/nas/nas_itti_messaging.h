@@ -33,6 +33,10 @@
 #include "as_message.h"
 #include "esm_proc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int nas_itti_dl_data_req(
   const mme_ue_s1ap_id_t ue_idP,
   bstring                nas_msgP,
@@ -96,5 +100,8 @@ void nas_itti_dedicated_eps_bearer_reject(
 
 void  s6a_auth_info_rsp_timer_expiry_handler (void *args);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILE_NAS_ITTI_MESSAGING_SEEN */

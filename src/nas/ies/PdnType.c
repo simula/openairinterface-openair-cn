@@ -35,6 +35,10 @@
 #include "common_types.h"
 #include "PdnType.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_pdn_type (
     pdn_type_t * pdntype,
@@ -101,3 +105,6 @@ uint8_t encode_u8_pdn_type (pdn_type_t * pdntype)
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

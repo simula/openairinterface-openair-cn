@@ -28,6 +28,9 @@
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define AUTHENTICATION_RESPONSE_MINIMUM_LENGTH ( \
@@ -56,6 +59,10 @@ typedef struct authentication_response_msg_tag {
 int decode_authentication_response(authentication_response_msg *authenticationresponse, uint8_t *buffer, uint32_t len);
 
 int encode_authentication_response(authentication_response_msg *authenticationresponse, uint8_t *buffer, uint32_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! defined(FILE_AUTHENTICATION_RESPONSE_SEEN) */
 

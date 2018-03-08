@@ -33,6 +33,9 @@
 #include "3gpp_24.008.h"
 #include "3gpp_29.274.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef uint8_t  DelayValue_t;
 typedef uint32_t SequenceNumber_t;
@@ -467,6 +470,10 @@ typedef struct bearer_contexts_within_create_bearer_response_s {
   uint8_t num_bearer_context;
   bearer_context_within_create_bearer_response_t bearer_contexts[MSG_CREATE_BEARER_RESPONSE_MAX_BEARER_CONTEXTS];
 } bearer_contexts_within_create_bearer_response_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* FILE_SGW_IE_DEFS_SEEN */
 

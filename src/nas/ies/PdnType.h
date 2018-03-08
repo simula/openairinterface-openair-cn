@@ -22,6 +22,10 @@
 #ifndef PDN_TYPE_SEEN
 #define PDN_TYPE_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PDN_TYPE_MINIMUM_LENGTH 1
 #define PDN_TYPE_MAXIMUM_LENGTH 1
 
@@ -41,5 +45,8 @@ int decode_pdn_type(pdn_type_t *pdntype, uint8_t iei, uint8_t *buffer, uint32_t 
 
 int decode_u8_pdn_type(pdn_type_t *pdntype, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* PDN TYPE_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* PDN TYPE_SEEN */

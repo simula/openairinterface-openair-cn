@@ -30,6 +30,10 @@
 #include "TLVDecoder.h"
 #include "EsmInformationTransferFlag.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 int decode_esm_information_transfer_flag (
   esm_information_transfer_flag_t * esminformationtransferflag,
@@ -96,3 +100,6 @@ uint8_t encode_u8_esm_information_transfer_flag (esm_information_transfer_flag_t
   return bufferReturn;
 }
 
+#ifdef __cplusplus
+}
+#endif

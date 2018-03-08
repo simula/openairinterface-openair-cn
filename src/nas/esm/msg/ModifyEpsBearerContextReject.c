@@ -35,6 +35,10 @@
 #include "EsmCause.h"
 #include "ModifyEpsBearerContextReject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 decode_modify_eps_bearer_context_reject (
   modify_eps_bearer_context_reject_msg * modify_eps_bearer_context_reject,
@@ -118,3 +122,7 @@ encode_modify_eps_bearer_context_reject (
 
   return encoded;
 }
+
+#ifdef __cplusplus
+}
+#endif

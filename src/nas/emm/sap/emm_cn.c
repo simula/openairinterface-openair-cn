@@ -75,6 +75,9 @@
 #include "mme_app_apn_selection.h"
 #include "nas_itti_messaging.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int emm_cn_wrapper_attach_accept (emm_context_t * emm_context);
 
 static int _emm_cn_authentication_res (emm_cn_auth_res_t * const msg);
@@ -623,3 +626,7 @@ int emm_cn_send (const emm_cn_t * msg)
 
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
+
+#ifdef __cplusplus
+}
+#endif

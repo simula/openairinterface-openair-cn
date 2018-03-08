@@ -43,6 +43,10 @@
 #include "common_defs.h"
 #include "dynamic_memory_check.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 mme_app_handle_s1ap_ue_capabilities_ind (
   const itti_s1ap_ue_cap_ind_t const *s1ap_ue_cap_ind_pP)
@@ -78,3 +82,7 @@ mme_app_handle_s1ap_ue_capabilities_ind (
   unlock_ue_contexts(ue_context_p);
   OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNok);
 }
+
+#ifdef __cplusplus
+}
+#endif

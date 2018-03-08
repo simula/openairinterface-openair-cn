@@ -48,6 +48,10 @@
 #include "common_defs.h"
 #include "mme_app_apn_selection.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 struct apn_configuration_s   * mme_app_select_apn(ue_mm_context_t * const ue_context, const_bstring const ue_selected_apn)
 {
@@ -99,3 +103,6 @@ struct apn_configuration_s *mme_app_get_apn_config(ue_mm_context_t * const ue_co
   return NULL;
 }
 
+#ifdef __cplusplus
+}
+#endif

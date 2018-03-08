@@ -22,6 +22,10 @@
 #ifndef EPS_UPDATE_RESULT_SEEN
 #define EPS_UPDATE_RESULT_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define EPS_UPDATE_RESULT_MINIMUM_LENGTH 1
 #define EPS_UPDATE_RESULT_MAXIMUM_LENGTH 1
 
@@ -41,5 +45,8 @@ int decode_eps_update_result(eps_update_result_t *epsupdateresult, uint8_t iei, 
 
 int decode_u8_eps_update_result(eps_update_result_t *epsupdateresult, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* EPS UPDATE RESULT_SEEN */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* EPS UPDATE RESULT_SEEN */

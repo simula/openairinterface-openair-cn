@@ -30,6 +30,10 @@
 #ifndef FILE_S11_SGW_BEARER_MANAGER_SEEN
 #define FILE_S11_SGW_BEARER_MANAGER_SEEN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int s11_sgw_handle_modify_bearer_request(
   nw_gtpv2c_stack_handle_t *stack_p,
   nw_gtpv2c_ulp_api_t      *pUlpApi);
@@ -53,5 +57,10 @@ int s11_sgw_handle_create_bearer_request (
 int s11_sgw_handle_create_bearer_response (
   nw_gtpv2c_stack_handle_t * stack_p,
   nw_gtpv2c_ulp_api_t * pUlpApi);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* FILE_S11_SGW_BEARER_MANAGER_SEEN */

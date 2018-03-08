@@ -39,6 +39,10 @@
 #include "dynamic_memory_check.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if TRACE_HASHTABLE
 #  define PRINT_HASHTABLE(hTbLe, ...)  do {if (hTbLe->log_enabled) OAILOG_TRACE(LOG_UTIL, ##__VA_ARGS__);} while (0)
 #else
@@ -1139,3 +1143,7 @@ obj_hashtable_uint64_ts_resize (
   PRINT_HASHTABLE (hashtblP, "return OK\n");
   return HASH_TABLE_OK;
 }
+
+#ifdef __cplusplus
+}
+#endif

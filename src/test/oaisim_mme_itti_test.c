@@ -42,6 +42,10 @@
 #include "sgw_lite_defs.h"
 #include "ipv4_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 main (
   int argc,
@@ -92,3 +96,7 @@ main (
   fprintf (stderr, "Successfully sent %lu messages", get_current_message_number ());
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
