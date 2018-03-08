@@ -48,7 +48,7 @@ function help()
   echo_error "  -S, --split-mob-lfs-repo  directory       mobility repository accessible through a local directory path"
   echo_error "  -u, --unit-tests                          Trigger unit tests."
   echo_error "  -v, --verbose                             Make build process verbose."
-  echo_error "  -V, --Verbose                             CMake only build process verbose."
+  echo_error "  -V, --Verbose                             CMake only build process verbose, display compilation warnings and errors."
   echo_error " "
 }
 
