@@ -36,6 +36,7 @@
 
 #include "dynamic_memory_check.h"
 #include "log.h"
+#include "obj_hashtable.h"
 #include "assertions.h"
 #include "conversions.h"
 #include "3gpp_23.003.h"

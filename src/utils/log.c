@@ -54,6 +54,7 @@
 #include "intertask_interface.h"
 #include "timer.h"
 #include "log.h"
+#include "hashtable.h"
 #include "shared_ts_log.h"
 #include "assertions.h"
 #include "dynamic_memory_check.h"

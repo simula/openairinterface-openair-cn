@@ -36,6 +36,8 @@
 
 #include "dynamic_memory_check.h"
 #include "log.h"
+#include "hashtable.h"
+#include "obj_hashtable.h"
 #include "msc.h"
 #include "assertions.h"
 #include "conversions.h"

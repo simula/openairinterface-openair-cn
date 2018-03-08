@@ -114,6 +114,7 @@ typedef struct e_rab_setup_list_s {
   e_rab_setup_item_t            item[MAX_NO_OF_E_RABS];
 } e_rab_setup_list_t;
 
+#if MME_BUILD
 #include "S1ap-Cause.h"
 
 typedef struct e_rab_item_s {
@@ -125,5 +126,5 @@ typedef struct e_rab_list_s {
   uint16_t              no_of_items;
   e_rab_item_t          item[MAX_NO_OF_E_RABS];
 } e_rab_list_t;
-
+#endif
 #endif /* FILE_3GPP_36_413_SEEN */

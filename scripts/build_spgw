@@ -45,6 +45,7 @@ function help()
   echo_error "  -h, --help                                Print this help."
   echo_error "  -i, --check-installed-software            Check installed software packages necessary to build and run S/P-GW (support $SUPPORTED_DISTRO)."
   echo_error "  -v, --verbose                             Build process verbose."
+  echo_error "  -V, --Verbose                             CMake only build process verbose, display compilation warnings and errors."
   echo_error " "
 }
 
@@ -93,6 +94,11 @@ function main()
         echo "Make build process verbose"
         cmake_args="$cmake_args -DCMAKE_VERBOSE_MAKEFILE=ON"
         make_args="VERBOSE=1 $make_args"
+        verbose=1
+        shift;
+        ;;
+      -V | --Verbose)
+        echo "CMake build process verbose"
         verbose=1
         shift;
         ;;
@@ -155,10 +161,8 @@ function main()
     mkdir -m 777 -p -v build
   fi
   
-  cp -rf $OPENAIRCN_DIR/build/CMakeLists.txt $OPENAIRCN_DIR/src/ 
-  export NETWORK_FUNCTION='spgw'
   cd ./build
-  $CMAKE $cmake_args $OPENAIRCN_DIR/src/ > /dev/null
+  $CMAKE $cmake_args .. > /dev/null
   [[ $? -ne 0 ]] && return $?
 
   compilations spgw spgw $OPENAIRCN_DIR/build/spgw/build/oai_sgw $verbose
