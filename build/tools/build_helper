@@ -229,6 +229,23 @@ function version_gt() {
 ###################################
 # Compilers
 ###################################
+
+# From https://stackoverflow.com/a/20473191
+# test if a list include item
+# arg1 is list, ex "item1 item2 ..."
+# arg2 is item
+function list_include_item {
+  local list="$1"
+  local item="$2"
+  if [[ $list =~ (^|[[:space:]])"$item"($|[[:space:]]) ]] ; then
+    # yes, list include item
+    result=0
+  else
+    result=1
+  fi
+  return $result
+}
+
 # arg 1 Build directory OPENAIR_DIR/build/?/build
 # arg 2 Executable target name
 # arg 3 Executable name (no path)
