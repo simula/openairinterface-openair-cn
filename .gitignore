@@ -1,7 +1,5 @@
 build/mme/build/
-build/mme/CMakeLists.txt
 build/spgw/build/
-build/spgw/CMakeLists.txt
 build/hss/build/
 build/log/
 scripts/abort
@@ -13,4 +11,3 @@ openair-cn.files
 openair-cn.includes
 src/.idea/
 src/cmake-build-debug
-src/CMakeLists.txt
