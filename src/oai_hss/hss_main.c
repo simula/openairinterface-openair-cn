@@ -45,9 +45,21 @@ main (
   int argc,
   char *argv[])
 {
+  char   *pid_dir       = NULL;
   char   *pid_file_name = NULL;
 
-  pid_file_name = get_exe_basename();
+  memset (&hss_config, 0, sizeof (hss_config_t));
+
+  if (hss_config_init (argc, argv, &hss_config) != 0) {
+    return -1;
+  }
+
+  pid_dir = hss_config.pid_directory;
+  if (pid_dir == NULL) {
+      pid_file_name = get_exe_absolute_path("/var/run");
+  } else {
+      pid_file_name = get_exe_absolute_path(pid_dir);
+  }
 
 #if DAEMONIZE
   pid_t pid, sid; // Our process ID and Session ID
@@ -95,12 +107,6 @@ main (
   }
 #endif
 
-
-  memset (&hss_config, 0, sizeof (hss_config_t));
-
-  if (hss_config_init (argc, argv, &hss_config) != 0) {
-    return -1;
-  }
 
   if (hss_mysql_connect (&hss_config) != 0) {
     return -1;

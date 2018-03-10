@@ -218,8 +218,8 @@ s6a_generate_update_location (
   {
     bstring                                 host = bstrcpy(mme_config.s6a_config.hss_host_name);
 
-    bconchar(host, '.');
-    bconcat (host, mme_config.realm);
+    //bconchar(host, '.');
+    //bconcat (host, mme_config.realm);
 
     CHECK_FCT (fd_msg_avp_new (s6a_fd_cnf.dataobj_s6a_destination_host, 0, &avp_p));
     value.os.data = (unsigned char *)bdata(host);

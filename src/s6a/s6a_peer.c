@@ -119,15 +119,16 @@ s6a_fd_new_peer (
 
   DevAssert (gethostname (host_name, 100) == 0);
   host_name_len = strlen (host_name);
-  host_name[host_name_len] = '.';
-  host_name[host_name_len + 1] = '\0';
-  strcat (host_name, (const char *)mme_config.realm->data);
+  //host_name[host_name_len] = '.';
+  //host_name[host_name_len + 1] = '\0';
+  host_name[host_name_len] = '\0';
+  //strcat (host_name, (const char *)mme_config.realm->data);
   fd_g_config->cnf_diamid = strdup (host_name);
   fd_g_config->cnf_diamid_len = strlen (fd_g_config->cnf_diamid);
   OAILOG_DEBUG (LOG_S6A, "Diameter identity of MME: %s with length: %zd\n", fd_g_config->cnf_diamid, fd_g_config->cnf_diamid_len);
   bstring                                 hss_name = bstrcpy(mme_config.s6a_config.hss_host_name);
-  bconchar(hss_name, '.');
-  bconcat (hss_name, mme_config.realm);
+  //bconchar(hss_name, '.');
+  //bconcat (hss_name, mme_config.realm);
 
   if (mme_config_unlock (&mme_config) ) {
     OAILOG_ERROR (LOG_S6A, "Failed to unlock configuration\n");
@@ -157,8 +158,8 @@ s6a_fd_new_peer (
   int               nb_tries  = 0;
   int               timeout   = fd_g_config->cnf_timer_tc;
   for (nb_tries = 0; nb_tries < NB_MAX_TRIES; nb_tries++) {
-    OAILOG_DEBUG (LOG_S6A, "S6a peer connection attempt %d / %d\n",
-                  1 + nb_tries, NB_MAX_TRIES);
+    OAILOG_DEBUG (LOG_S6A, "S6a peer %s connection attempt %d / %d\n",
+        bdata(hss_name),1 + nb_tries, NB_MAX_TRIES);
     ret = fd_peer_getbyid( diamid, diamidlen, 0, &peer );
     if (peer && peer->info.config.pic_tctimer != 0) {
         timeout = peer->info.config.pic_tctimer;
@@ -187,7 +188,7 @@ s6a_fd_new_peer (
           bdestroy_wrapper (&hss_name);
           return RETURNok;
         } else {
-          OAILOG_DEBUG (LOG_S6A, "S6a peer state is %d\n", ret);
+          OAILOG_DEBUG (LOG_S6A, "S6a peer state is %s\n", STATE_STR(ret));
         }
       }
     } else {

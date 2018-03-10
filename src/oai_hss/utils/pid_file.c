@@ -34,12 +34,13 @@
 int    g_fd_pid_file = -1;
 
 //------------------------------------------------------------------------------
-char* get_exe_basename(void)
+char* get_exe_absolute_path(char const *basepath)
 {
 
   char   pid_file_name[256] = {0};
   char   *exe_basename      = NULL;
   int    rv                 = 0;
+  int    num_chars          = 0;
 
   // get executable name
   rv = readlink("/proc/self/exe",pid_file_name, 256);
@@ -48,7 +49,10 @@ char* get_exe_basename(void)
   }
   pid_file_name[rv] = 0;
   exe_basename = basename(pid_file_name);
-  snprintf(pid_file_name, 128, "/var/run/%s.pid", exe_basename);
+
+  // Add 6 for the other 5 characters in the path + null terminator.
+  num_chars = strlen(basepath) + strlen(exe_basename) + 6;
+  snprintf(pid_file_name, num_chars, "%s/%s.pid", basepath, exe_basename);
   return strdup(pid_file_name);
 }
 

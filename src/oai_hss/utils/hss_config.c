@@ -62,6 +62,7 @@
 #define HSS_CONFIG_STRING_OPERATOR_KEY             "OPERATOR_key"
 #define HSS_CONFIG_STRING_RANDOM                   "RANDOM"
 #define HSS_CONFIG_STRING_FREEDIAMETER_CONF_FILE   "FD_conf"
+#define HSS_CONFIG_STRING_PID_DIRECTORY            "PID_DIRECTORY"
 
 
 // LG TODO fd_g_debug_lvl
@@ -313,6 +314,13 @@ hss_config_parse_file (
      hss_config_p->freediameter_config = strdup(astring);
     } else {
       FPRINTF_ERROR( "Failed to parse HSS configuration file token %s!\n", HSS_CONFIG_STRING_FREEDIAMETER_CONF_FILE);
+      return ret;
+    }
+
+    if (  (config_setting_lookup_string( setting, HSS_CONFIG_STRING_PID_DIRECTORY, (const char **)&astring) )) {
+     hss_config_p->pid_directory = strdup(astring);
+    } else {
+      FPRINTF_ERROR( "Failed to parse HSS configuration file token %s!\n", HSS_CONFIG_STRING_PID_DIRECTORY);
       return ret;
     }
   } else {
