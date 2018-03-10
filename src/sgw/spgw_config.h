@@ -30,11 +30,13 @@
 #define FILE_SPGW_CONFIG_SEEN
 #include "sgw_config.h"
 #include "pgw_config.h"
+#include "service303.h"
 
 
 typedef struct spgw_config_s {
   sgw_config_t sgw_config;
   pgw_config_t pgw_config;
+  service303_data_t service303_config;
   bstring      config_file;
 } spgw_config_t;
 

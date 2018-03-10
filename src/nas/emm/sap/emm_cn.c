@@ -74,6 +74,7 @@
 #include "mme_app_defs.h"
 #include "mme_app_apn_selection.h"
 #include "nas_itti_messaging.h"
+#include "service303.h"
 
 extern int emm_cn_wrapper_attach_accept (emm_context_t * emm_context);
 
@@ -298,6 +299,7 @@ static int _emm_cn_implicit_detach_ue (const uint32_t ue_id)
 
   OAILOG_FUNC_IN (LOG_NAS_EMM);
   OAILOG_DEBUG (LOG_NAS_EMM, "EMM-PROC Implicit Detach UE" MME_UE_S1AP_ID_FMT "\n", ue_id);
+  increment_counter ("ue_detach", 1, 1, "cause", "implicit_detach");
   emm_detach_request_ies_t  params = {0};
   //params.decode_status
   //params.guti = NULL;

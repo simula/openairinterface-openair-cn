@@ -90,7 +90,7 @@
 #include "mme_config.h"
 #include "nas_itti_messaging.h"
 #include "mme_app_defs.h"
-
+#include "service303.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -718,6 +718,8 @@ static void _emm_attach_t3450_handler (void *args)
        */
       _emm_attach_accept_retx (emm_context);
     } else {
+      increment_counter ("nas_attach_accept_timer_expired", 1, NO_LABELS);
+      increment_counter ("ue_attach", 1, 2, "result", "failure", "cause", "no_response_for_attach_accept");
       REQUIREMENT_3GPP_24_301(R10_5_5_1_2_7_c__2);
       /*
        * Abort the attach procedure
@@ -1408,6 +1410,7 @@ static int _emm_send_attach_accept (emm_context_t * emm_context)
       nas_stop_T3450(attach_proc->ue_id, &attach_proc->T3450, NULL);
       nas_start_T3450(attach_proc->ue_id, &attach_proc->T3450, attach_proc->emm_spec_proc.emm_proc.base_proc.time_out, (void*)emm_context);
     }
+  increment_counter ("ue_attach", 1, 1, "action", "attach_accept_sent");
   } else {
     OAILOG_WARNING (LOG_NAS_EMM, "ue_mm_context NULL\n");
   }

@@ -8,6 +8,7 @@ include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 include_directories(${PROJECT_SOURCE_DIR}/utils)
 include_directories(${PROJECT_SOURCE_DIR}/utils/bstr)
 include_directories(${PROJECT_SOURCE_DIR}/utils/msc)
+include_directories(${PROJECT_SOURCE_DIR}/service303)
 
 # Header leaks of spgw_config.h, sgw_config.h, pgw_config.h, sgw.h
 include_directories(${PROJECT_SOURCE_DIR}/sgw)

@@ -66,6 +66,13 @@ static void spgw_config_init (spgw_config_t * config_pP)
 {
   sgw_config_init (&config_pP->sgw_config);
   pgw_config_init (&config_pP->pgw_config);
+
+  /*
+  * Set service 303
+  */
+  config_pP->service303_config.name = bfromcstr (SERVICE303_SPGW_PACKAGE_NAME);
+  config_pP->service303_config.version = bfromcstr (SERVICE303_SPGW_PACKAGE_VERSION);
+
 }
 
 //------------------------------------------------------------------------------

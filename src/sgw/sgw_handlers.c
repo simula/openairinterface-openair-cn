@@ -63,6 +63,7 @@
 #include "sgw_context_manager.h"
 #include "pgw_procedures.h"
 #include "async_system.h"
+#include "service303.h"
 
 extern sgw_app_t                        sgw_app;
 extern spgw_config_t                    spgw_config;
@@ -87,6 +88,7 @@ sgw_handle_create_session_request (
   s_plus_p_gw_eps_bearer_context_information_t *s_plus_p_gw_eps_bearer_ctxt_info_p = NULL;
   sgw_eps_bearer_ctxt_t                 *eps_bearer_ctxt_p = NULL;
 
+  increment_counter ("spgw_create_session", 1, NO_LABELS);
   /*
    * Upon reception of create session request from MME,
    * S-GW should create UE, eNB and MME contexts and forward message to P-GW.
@@ -109,6 +111,7 @@ sgw_handle_create_session_request (
      * MME sent request with teid = 0. This is not valid...
      */
     OAILOG_WARNING (LOG_SPGW_APP, "F-TEID parameter mismatch\n");
+    increment_counter ("spgw_create_session", 1, 2, "result", "failure", "cause","sender_fteid_incorrect_parameters");
     OAILOG_FUNC_RETURN(LOG_SPGW_APP, RETURNerror);
   }
 
@@ -116,6 +119,7 @@ sgw_handle_create_session_request (
 
   if (new_endpoint_p == NULL) {
     OAILOG_WARNING (LOG_SPGW_APP, "Could not create new tunnel endpoint between S-GW and MME " "for S11 abstraction\n");
+    increment_counter ("spgw_create_session", 1, 2, "result", "failure", "cause", "s11_tunnel_creation_failure");
     OAILOG_FUNC_RETURN(LOG_SPGW_APP, RETURNerror);
   }
 
@@ -158,6 +162,7 @@ sgw_handle_create_session_request (
 
     if (s_plus_p_gw_eps_bearer_ctxt_info_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers_array == NULL) {
       OAILOG_ERROR (LOG_SPGW_APP, "Failed to create eps bearers collection object\n");
+      increment_counter ("spgw_create_session", 1, 2, "result", "failure", "cause", "internal_software_error");
       DevMessage ("Failed to create eps bearers collection object\n");
       OAILOG_FUNC_RETURN(LOG_SPGW_APP, RETURNerror);
     }
@@ -182,6 +187,7 @@ sgw_handle_create_session_request (
 
     if (eps_bearer_ctxt_p == NULL) {
       OAILOG_ERROR (LOG_SPGW_APP, "Failed to create new EPS bearer entry\n");
+      increment_counter ("spgw_create_session", 1, 2, "result", "failure", "cause", "internal_software_error");
       // TO DO free_wrapper new_bearer_ctxt_info_p and by cascade...
       OAILOG_FUNC_RETURN(LOG_SPGW_APP, RETURNerror);
     }
@@ -228,6 +234,7 @@ sgw_handle_create_session_request (
     OAILOG_WARNING (LOG_SPGW_APP, "Could not create new transaction for SESSION_CREATE message\n");
     free_wrapper ((void**) &new_endpoint_p);
     new_endpoint_p = NULL;
+    increment_counter ("spgw_create_session", 1, 2, "result", "failure", "cause", "internal_software_error");
     OAILOG_FUNC_RETURN(LOG_SPGW_APP, RETURNerror);
   }
   OAILOG_FUNC_RETURN(LOG_SPGW_APP, RETURNok);
@@ -451,22 +458,25 @@ sgw_handle_gtpv1uCreateTunnelResp (
   case SGI_STATUS_OK:
     // Send Create Session Response with ack
     sgw_handle_sgi_endpoint_created (&sgi_create_endpoint_resp);
+    increment_counter ("spgw_create_session", 1, 1, "result", "success");
     OAILOG_FUNC_RETURN(LOG_SPGW_APP, RETURNok);
 
     break;
 
   case SGI_STATUS_ERROR_CONTEXT_NOT_FOUND:
+    increment_counter ("spgw_create_session", 1, 1, "result", "failure", "cause", "context_not_found");
     cause = CONTEXT_NOT_FOUND;
 
     break;
 
   case SGI_STATUS_ERROR_ALL_DYNAMIC_ADDRESSES_OCCUPIED:
     cause = ALL_DYNAMIC_ADDRESSES_ARE_OCCUPIED;
-
+    increment_counter ("spgw_create_session", 1, 1, "result", "failure", "cause", "resource_not_available");
     break;
 
   case SGI_STATUS_ERROR_SERVICE_NOT_SUPPORTED:
     cause = SERVICE_NOT_SUPPORTED;
+    increment_counter ("spgw_create_session", 1, 1, "result", "failure", "cause", "pdn_type_ipv6_not_supported");
 
     break;
 

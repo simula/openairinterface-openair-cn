@@ -58,6 +58,7 @@
 #include "mme_app_statistics.h"
 #include "timer.h"
 #include "nas_proc.h"
+#include "service303.h"
 
 
 //----------------------------------------------------------------------------
@@ -93,6 +94,10 @@ mme_app_handle_nas_pdn_connectivity_req (
   ue_context_p->imsi_auth = IMSI_AUTHENTICATED;
 
   rc =  mme_app_send_s11_create_session_req (ue_context_p, nas_pdn_connectivity_req_pP->pdn_cid);
+  if (rc == RETURNok) {
+    increment_counter ("mme_spgw_create_session_req", 1, NO_LABELS);
+  }
+
 
   unlock_ue_contexts(ue_context_p);
   OAILOG_FUNC_RETURN (LOG_MME_APP, rc);
@@ -499,6 +504,7 @@ mme_app_handle_create_sess_resp (
 
   if (create_sess_resp_pP->cause.cause_value != REQUEST_ACCEPTED) {
     // Send PDN CONNECTIVITY FAIL message  to NAS layer
+    increment_counter ("mme_spgw_create_session_rsp", 1, 1, "result", "failure");
     message_p = itti_alloc_new_message (TASK_MME_APP, NAS_PDN_CONNECTIVITY_FAIL);
     itti_nas_pdn_connectivity_fail_t *nas_pdn_connectivity_fail = &message_p->ittiMsg.nas_pdn_connectivity_fail;
     memset ((void *)nas_pdn_connectivity_fail, 0, sizeof (itti_nas_pdn_connectivity_fail_t));
@@ -514,7 +520,7 @@ mme_app_handle_create_sess_resp (
     unlock_ue_contexts(ue_context_p);
     OAILOG_FUNC_RETURN (LOG_MME_APP, rc);
   }
-
+  increment_counter ("mme_spgw_create_session_rsp", 1, 1, "result", "success");
   //---------------------------------------------------------
   // Process itti_sgw_create_session_response_t.bearer_context_created
   //---------------------------------------------------------

@@ -73,6 +73,8 @@
 #include "oai_sgw.h"
 #include "pid_file.h"
 #include "timer.h"
+#include "service303.h"
+#include "service303_message_utils.h"
 
 
 int
@@ -143,6 +145,10 @@ main (
    */
 
   MSC_INIT (MSC_SP_GW, THREAD_MAX + TASK_MAX);
+  CHECK_INIT_RETURN (service303_init(&(spgw_config.service303_config)));
+  // Tell service303 that spgw is unhealthy
+  send_app_health_to_service303 (TASK_SPGW_APP, false);
+
   CHECK_INIT_RETURN (udp_init ());
   CHECK_INIT_RETURN (s11_sgw_init (&spgw_config.sgw_config));
   //CHECK_INIT_RETURN (gtpv1u_init (&spgw_config));
