@@ -47,7 +47,6 @@ function help()
   echo_error "Mandatory arguments to long options are mandatory for short options too."
   echo_error "  -c, --config-file  filename     Config file to be used by HSS if you don't want to use the default one: $g_hss_default_config_file"
   echo_error "  -e, --export-db    filename     Export current database to a SQL file, file prefix is $OPENAIRCN_DIR/src/OAI_hss/db. (useful for replaying test scenarios)"
-  echo_error "  -D, --daemon                    Run the daemon."
   echo_error "  -g, --gdb                       Run with GDB."
   echo_error "  -G, --gdb-cmd     cmd cmd_arg   Append this GDB cmd to GDB command file (ex1: break s6a_fd.c:243, ex2: watch 0xffee0002)."
   echo_error "                                  All repetitions of this argument are valid."
@@ -57,16 +56,12 @@ function help()
   echo_error "  -k, --kill                      Kill the running local HSS."
 }
 
-NAME=oai_hssd
-DAEMON=/usr/sbin/$NAME
-DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
 
 
 function main() 
 {
   local -i run_gdb=0
-  local -i run_daemon=0
   local -i export_db=0
   local -i import_db=0
   local -i var_check_install_hss_files=0
@@ -88,11 +83,6 @@ function main()
         echo "setting export DB flag to: $export_db"
         dump_file=$2
         shift 2;
-        ;;
-      -D | --daemon)
-        run_daemon=1
-        echo "Run HSS as a daemon"
-        shift;
         ;;
       -G | --gdb-arg)
         run_gdb=1
@@ -123,7 +113,6 @@ function main()
         ;;
       -k | --kill)
         $SUDO killall -q oai_hss
-        do_stop_daemon
         shift 1;
         exit 0
         ;;
@@ -187,7 +176,6 @@ function main()
   fi
   
   exe_arguments=$exe_arguments" -c $hss_config_file"
-  DAEMON_ARGS=$exe_arguments
   if [ $export_db -eq 1 -a $import_db -eq 1 ]; then 
     echo_error "Options -e and -i cannot be set together"
   fi
@@ -224,27 +212,6 @@ function main()
     fi
   fi
   
-  
-  #####################################
-  # Running daemon?
-  #####################################
-  if [ "$run_daemon" -eq 1 ]; then
-    # TODO options
-    $SUDO killall -q oai_hss
-    do_stop_daemon
-    case "$?" in
-      0) echo_success "HSS daemon was running -> stopped";;
-      1) ;;
-      2) echo_fatal "FAILURE: HSS daemon was running -> could not stop it";;
-    esac
-    do_start_daemon
-    case "$?" in
-      0) echo_success "HSS daemon started";;
-      1) echo_fatal "FAILURE: HSS daemon was already running";;
-      2) echo_fatal "FAILURE: Cannot start HSS daemon";;
-    esac
-    exit 0
-  fi
   
   #####################################
   # Running executable

@@ -28,7 +28,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <syslog.h>
 #include <string.h>
 
 #include "hss_config.h"
@@ -61,52 +60,10 @@ main (
       pid_file_name = get_exe_absolute_path(pid_dir);
   }
 
-#if DAEMONIZE
-  pid_t pid, sid; // Our process ID and Session ID
-
-  // Fork off the parent process
-  pid = fork();
-  if (pid < 0) {
-    exit(EXIT_FAILURE);
-  }
-  // If we got a good PID, then we can exit the parent process.
-  if (pid > 0) {
-    exit(EXIT_SUCCESS);
-  }
-  // Change the file mode mask
-  umask(0);
-
-  // Create a new SID for the child process
-  sid = setsid();
-  if (sid < 0) {
-    exit(EXIT_FAILURE); // Log the failure
-  }
-
-  // Change the current working directory
-  if ((chdir("/")) < 0) {
-    // Log the failure
-    exit(EXIT_FAILURE);
-  }
-
-  /* Close out the standard file descriptors */
-  close(STDIN_FILENO);
-  close(STDOUT_FILENO);
-  close(STDERR_FILENO);
-
-  openlog(NULL, 0, LOG_DAEMON);
-
-  if (! is_pid_file_lock_success(pid_file_name)) {
-    closelog();
-    free(pid_file_name);
-    exit (-EDEADLK);
-  }
-#else
   if (! is_pid_file_lock_success(pid_file_name)) {
     free(pid_file_name);
     exit (-EDEADLK);
   }
-#endif
-
 
   if (hss_mysql_connect (&hss_config) != 0) {
     return -1;

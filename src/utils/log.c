@@ -41,7 +41,6 @@
 #include <fcntl.h>
 #include <stdarg.h>
 #include <pthread.h>
-#include <syslog.h>
 
 #include "intertask_interface.h"
 #include "timer.h"
@@ -100,7 +99,6 @@ typedef struct oai_log_s {
   // may be good to use stream instead of file descriptor when
   // logging somewhere else of the console.
   FILE                                   *log_fd;                                               /*!< \brief output stream */
-  bool                                    is_output_is_fd;                                      /* We may want to not use syslog even if exe is a daemon */
   bool                                    is_output_fd_buffered;                                /* We way want no buffering */
   bool                                    is_ansi_codes;                                        /* ANSI codes for color in console output */
   bstring                                 bserver_address;                                      /*!< \brief TCP remote (or local) server hostname */
@@ -266,21 +264,14 @@ void log_set_config(const log_config_t * const config)
 
     if (config->output) {
       g_oai_log.log_fd = NULL;
-      g_oai_log.is_output_is_fd = false;
       if (1 == biseqcstrcaseless(config->output, LOG_CONFIG_STRING_OUTPUT_CONSOLE)) {
         setvbuf(stdout, NULL, _IONBF, 0);
         g_oai_log.log_fd = stdout;
-        g_oai_log.is_output_is_fd = true;
-      } else if (1 == biseqcstrcaseless(config->output, LOG_CONFIG_STRING_OUTPUT_SYSLOG)){
-        openlog(NULL, 0, LOG_USER);
-        g_oai_log.log_fd = NULL;
-        g_oai_log.is_output_is_fd = false;
       } else {
         // if seems to be a file path
         if (('.' == bchar(config->output,0)) || ('/' == bchar(config->output,0))) {
           g_oai_log.log_fd = fopen (bdata(config->output), "w");
           AssertFatal (NULL != g_oai_log.log_fd, "Could not open log file %s : %s", bdata(config->output), strerror (errno));
-          g_oai_log.is_output_is_fd = true;
         } else {
           // may be a TCP server address host:portnum
           g_oai_log.bserver_address = bstrcpy(config->output);
@@ -295,7 +286,6 @@ void log_set_config(const log_config_t * const config)
           AssertFatal(1024 <= server_port, "Invalid Server TCP port %d/%s", server_port, bdata(g_oai_log.bserver_port));
           AssertFatal(65535 >= server_port, "Invalid Server TCP port %d/%s", server_port, bdata(g_oai_log.bserver_port));
           g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
-          g_oai_log.is_output_is_fd = true;
           log_connect_to_server();
         }
       }
@@ -464,28 +454,24 @@ void log_flush_message (struct shared_log_queue_item_s *item_p)
   int                                     rv_put = 0;
 
   if (blength(item_p->bstr) > 0) {
-    if (g_oai_log.is_output_is_fd) {
-      if (g_oai_log.log_fd) {
-        rv_put = fputs ((const char *)item_p->bstr->data, g_oai_log.log_fd);
+    if (g_oai_log.log_fd) {
+      rv_put = fputs ((const char *)item_p->bstr->data, g_oai_log.log_fd);
 
-        if (rv_put < 0) {
-          // error occured
-          OAI_FPRINTF_ERR("Error while writing log %d\n", rv_put);
-          rv = fclose (g_oai_log.log_fd);
-          if (rv != 0) {
-            OAI_FPRINTF_ERR("Error while closing Log file stream: %s\n", strerror (errno));
-          }
-          // do not exit
-          if (LOG_TCP_STATE_DISABLED != g_oai_log.tcp_state) {
-            // Let ITTI LOG Timer do the reconnection
-            g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
-            return;
-          }
+      if (rv_put < 0) {
+        // error occured
+        OAI_FPRINTF_ERR("Error while writing log %d\n", rv_put);
+        rv = fclose (g_oai_log.log_fd);
+        if (rv != 0) {
+          OAI_FPRINTF_ERR("Error while closing Log file stream: %s\n", strerror (errno));
         }
-        fflush (g_oai_log.log_fd);
+        // do not exit
+        if (LOG_TCP_STATE_DISABLED != g_oai_log.tcp_state) {
+          // Let ITTI LOG Timer do the reconnection
+          g_oai_log.tcp_state = LOG_TCP_STATE_NOT_CONNECTED;
+          return;
+        }
       }
-    } else {
-      syslog (item_p->u_app_log.log.log_level ,"%s", bdata(item_p->bstr));
+      fflush (g_oai_log.log_fd);
     }
   }
 }
@@ -509,9 +495,7 @@ void log_exit (void)
       OAI_FPRINTF_ERR("Error while closing Log file: %s", strerror (errno));
     }
   }
-  if (!g_oai_log.is_output_is_fd) {
-    closelog();
-  }
+
   hashtable_ts_destroy (g_oai_log.thread_context_htbl);
   bdestroy_wrapper(&g_oai_log.bserver_address);
   bdestroy_wrapper(&g_oai_log.bserver_port);
@@ -656,11 +640,7 @@ void log_message_finish (struct shared_log_queue_item_s * messageP)
     if (g_oai_log.is_output_fd_buffered) {
       shared_log_item(messageP);
     } else {
-      if (g_oai_log.is_output_is_fd) {
-        fprintf(g_oai_log.log_fd, "%s", bdata(messageP->bstr));
-      } else {
-        syslog (messageP->u_app_log.log.log_level ,"%s", bdata(messageP->bstr));
-      }
+      fprintf(g_oai_log.log_fd, "%s", bdata(messageP->bstr));
       shared_log_reuse_item(messageP);
     }
   }
@@ -896,11 +876,7 @@ log_message (
     if (g_oai_log.is_output_fd_buffered) {
       shared_log_item(new_item_p);
     } else {
-      if (g_oai_log.is_output_is_fd) {
-        fprintf(g_oai_log.log_fd, "%s", bdata(new_item_p->bstr));
-      } else {
-        syslog (new_item_p->u_app_log.log.log_level ,"%s", bdata(new_item_p->bstr));
-      }
+      fprintf(g_oai_log.log_fd, "%s", bdata(new_item_p->bstr));
       shared_log_reuse_item(new_item_p);
     }
   }

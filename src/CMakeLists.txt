@@ -213,7 +213,6 @@ add_boolean_option( MOBILITY_REPO                   False    "Split repository f
 ###############################################################################
 # Debug and build related options
 ###############################################################################
-add_boolean_option( DAEMONIZE                       False    "Fork executable if true")
 add_boolean_option( DEBUG_MUTEX                     False    "Trace mutex lock/unlock")
 add_boolean_option( ASSERT_MUTEX                    False    "Raise segfault if can't lock mutex")
 

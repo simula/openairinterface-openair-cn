@@ -37,7 +37,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <syslog.h>
 
 #if HAVE_CONFIG_H
 #  include "config.h"
@@ -102,51 +101,10 @@ main (
       bcstrfree(pid_dir);
   }
 
-#if DAEMONIZE
-  pid_t pid, sid; // Our process ID and Session ID
-
-  // Fork off the parent process
-  pid = fork();
-  if (pid < 0) {
-    exit(EXIT_FAILURE);
-  }
-  // If we got a good PID, then we can exit the parent process.
-  if (pid > 0) {
-    exit(EXIT_SUCCESS);
-  }
-  // Change the file mode mask
-  umask(0);
-
-  // Create a new SID for the child process
-  sid = setsid();
-  if (sid < 0) {
-    exit(EXIT_FAILURE); // Log the failure
-  }
-
-  // Change the current working directory
-  if ((chdir("/")) < 0) {
-    // Log the failure
-    exit(EXIT_FAILURE);
-  }
-
-  /* Close out the standard file descriptors */
-  close(STDIN_FILENO);
-  close(STDOUT_FILENO);
-  close(STDERR_FILENO);
-
-
-  if (! is_pid_file_lock_success(pid_file_name)) {
-    closelog();
-    free_wrapper((void**)&pid_file_name);
-    exit (-EDEADLK);
-  }
-#else
   if (! is_pid_file_lock_success(pid_file_name)) {
     free_wrapper((void**)&pid_file_name);
     exit (-EDEADLK);
   }
-#endif
-
 
   CHECK_INIT_RETURN (itti_init (TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, NULL, NULL));
   MSC_INIT (MSC_MME, THREAD_MAX + TASK_MAX);

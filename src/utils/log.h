@@ -28,7 +28,6 @@
 #ifndef FILE_LOG_SEEN
 #define FILE_LOG_SEEN
 
-#include <syslog.h>
 #include <pthread.h>
 
 #include "bstrlib.h"
@@ -102,7 +101,6 @@ extern int fd_g_debug_lvl;
 #define LOG_CONFIG_STRING_SCTP_LOG_LEVEL                 "SCTP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_SPGW_APP_LOG_LEVEL             "SPGW_APP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_SPGW_APP_LOG_LEVEL             "SPGW_APP_LOG_LEVEL"
-#define LOG_CONFIG_STRING_OUTPUT_SYSLOG                  "SYSLOG"
 #define LOG_CONFIG_STRING_OUTPUT_THREAD_SAFE             "THREAD_SAFE"
 #define LOG_CONFIG_STRING_UDP_LOG_LEVEL                  "UDP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_UTIL_LOG_LEVEL                 "UTIL_LOG_LEVEL"
@@ -356,22 +354,13 @@ int log_get_start_time_sec (void);
 #    define OAILOG_STREAM_HEX_ARRAY(...)
 #  endif
 
-#  if DAEMONIZE
-#    define OAI_FPRINTF_ERR(...)                                     do {syslog (LOG_ERR,   ##__VA_ARGS__);} while(0)
-#    define OAI_FPRINTF_INFO(...)                                    do {syslog (LOG_INFO , ##__VA_ARGS__);} while(0)
-#    define OAI_VFPRINTF_ERR(...)                                    do {vsyslog (LOG_ERR , ##__VA_ARGS__);} while(0)
-#    define OAI_VFPRINTF_INFO(...)                                   do {vsyslog (LOG_INFO , ##__VA_ARGS__);} while(0)
-#    if EMIT_ASN_DEBUG_EXTERN
-#      define ASN_DEBUG(...)                                         do {vsyslog (LOG_ERR , ##__VA_ARGS__);} while(0)
-#    endif
-#  else
-#    define OAI_FPRINTF_ERR(...)                                     do {fprintf (stderr,   ##__VA_ARGS__);fflush(stderr);} while(0)
-#    define OAI_FPRINTF_INFO(...)                                    do {fprintf (stdout,   ##__VA_ARGS__);fflush(stdout);} while(0)
-#    define OAI_VFPRINTF_ERR(...)                                    do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
-#    define OAI_VFPRINTF_INFO(...)                                   do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
-#    if EMIT_ASN_DEBUG_EXTERN
-#      define ASN_DEBUG(...)                                         do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
-#    endif
+
+#  define OAI_FPRINTF_ERR(...)                                     do {fprintf (stderr,   ##__VA_ARGS__);fflush(stderr);} while(0)
+#  define OAI_FPRINTF_INFO(...)                                    do {fprintf (stdout,   ##__VA_ARGS__);fflush(stdout);} while(0)
+#  define OAI_VFPRINTF_ERR(...)                                    do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
+#  define OAI_VFPRINTF_INFO(...)                                   do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
+#  if EMIT_ASN_DEBUG_EXTERN
+#    define ASN_DEBUG(...)                                         do {vfprintf (stderr , ##__VA_ARGS__);fflush(stderr);} while(0)
 #  endif
 
 #ifdef __cplusplus

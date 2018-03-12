@@ -49,7 +49,6 @@ function help()
   echo_error "Options:"
   echo_error "Mandatory arguments to long options are mandatory for short options too."
   echo_error "  -c, --config-file     file_abs_path Config file to be used by MME if you don't want to use the default one: $g_mme_default_config_file"
-  echo_error "  -D, --daemon                        Run the daemon."
   echo_error "  -g, --gdb                           Run with GDB."
   echo_error "  -G, --gdb-cmd         cmd cmd_arg   Append this GDB cmd to GDB command file (ex1: break Attach.c:272, ex2: watch 0xffee0002)."
   echo_error "                                      All repetitions of this argument are valid."
@@ -79,14 +78,10 @@ function control_c()
   exit $?
 }
 
-NAME=mmed
-DAEMON=/usr/sbin/$NAME
-DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
 function main()
 {
   local -i run_gdb=0
-  local -i run_daemon=0
   local -i set_network_interfaces=0
   local -i var_check_install_mme_files=0
   local    exe_arguments=" "
@@ -101,11 +96,6 @@ function main()
         mme_config_file=$2
         echo "setting config file to: $mme_config_file"
         shift 2;
-        ;;
-      -D | --daemon)
-        run_daemon=1
-        echo "Run MME as a daemon"
-        shift;
         ;;
       -g | --gdb)
         run_gdb=1
@@ -136,7 +126,6 @@ function main()
       -k | --kill)
         $SUDO killall -q mme
         $SUDO rm /var/run/mme.pid
-        do_stop_daemon
         exit 0
         shift;
         ;;
@@ -214,14 +203,9 @@ function main()
   #####################################
   # Check executables
   #####################################
-  if [ "$run_daemon" -eq 1 ]; then
-    if [ ! -e /usr/sbin/mmed ]; then
-      echo_fatal "Cannot find /usr/sbin/mmed executable, have a look at the output of build_mme  -D ... executable"
-    fi
-  else
-    if [ ! -e /usr/local/bin/mme ]; then
-    echo_fatal "Cannot find /usr/local/bin/mme executable, have a look at the output of build_mme executable"
-    fi
+  if [ ! -e /usr/local/bin/mme ]; then
+    echo_error "Cannot find /usr/local/bin/mme executable, have a look at the output of build_mme executable"
+    return 1
   fi
 
 
@@ -236,27 +220,6 @@ function main()
     set_mme_network_interfaces $mme_config_file
   fi
     
-  #####################################
-  # Running daemon?
-  #####################################
-  DAEMON_ARGS=$DAEMON_ARGS" -c $mme_config_file"
-  if [ "$run_daemon" -eq 1 ]; then
-    # TODO options
-    $SUDO killall -q mme
-    do_stop_daemon
-    case "$?" in
-      0) echo_success "MME daemon was running -> stopped";;
-      1) ;;
-      2) echo_fatal "FAILURE: MME daemon was running -> could not stop it";;
-    esac
-    do_start_daemon
-    case "$?" in
-      0) echo_success "MME daemon started";;
-      1) echo_fatal "FAILURE: MME daemon was already running";;
-      2) echo_fatal "FAILURE: Cannot start MME daemon";;
-    esac
-    exit 0
-  fi
 
   #####################################
   # Running executable
