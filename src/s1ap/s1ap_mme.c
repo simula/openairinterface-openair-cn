@@ -40,6 +40,7 @@
 #include "queue.h"
 #include "tree.h"
 
+#include "intertask_interface.h"
 #include "hashtable.h"
 #include "log.h"
 #include "msc.h"
@@ -55,6 +56,10 @@
 #include "dynamic_memory_check.h"
 #include "mme_config.h"
 #include "timer.h"
+#include "sctp_messages_types.h"
+#include "s1ap_messages_types.h"
+#include "mme_app_messages_types.h"
+#include "timer_messages_types.h"
 #include "itti_free_defined_msg.h"
 
 #ifdef __cplusplus
@@ -85,19 +90,19 @@ static int s1ap_send_init_sctp (void)
   // Create and alloc new message
   MessageDef                             *message_p = NULL;
 
-  message_p = itti_alloc_new_message (TASK_S1AP, SCTP_INIT_MSG);
-  message_p->ittiMsg.sctpInit.port = S1AP_PORT_NUMBER;
-  message_p->ittiMsg.sctpInit.ppid = S1AP_SCTP_PPID;
-  message_p->ittiMsg.sctpInit.ipv4 = 1;
-  message_p->ittiMsg.sctpInit.ipv6 = 0;
-  message_p->ittiMsg.sctpInit.nb_ipv4_addr = 1;
-  message_p->ittiMsg.sctpInit.ipv4_address[0].s_addr = mme_config.ipv4.s1_mme.s_addr;
+  message_p = itti_alloc_new_message_sized (TASK_S1AP, SCTP_INIT_MSG, sizeof(SctpInit));
+  SCTP_INIT_MSG(message_p)->port = S1AP_PORT_NUMBER;
+  SCTP_INIT_MSG(message_p)->ppid = S1AP_SCTP_PPID;
+  SCTP_INIT_MSG(message_p)->ipv4 = 1;
+  SCTP_INIT_MSG(message_p)->ipv6 = 0;
+  SCTP_INIT_MSG(message_p)->nb_ipv4_addr = 1;
+  SCTP_INIT_MSG(message_p)->ipv4_address[0].s_addr = mme_config.ipv4.s1_mme.s_addr;
   /*
    * SR WARNING: ipv6 multi-homing fails sometimes for localhost.
    * * * * Disable it for now.
    */
-  message_p->ittiMsg.sctpInit.nb_ipv6_addr = 0;
-  message_p->ittiMsg.sctpInit.ipv6_address[0] = in6addr_loopback;
+  SCTP_INIT_MSG(message_p)->nb_ipv6_addr = 0;
+  SCTP_INIT_MSG(message_p)->ipv6_address[0] = in6addr_loopback;
   return itti_send_msg_to_task (TASK_SCTP, INSTANCE_DEFAULT, message_p);
 }
 
@@ -139,12 +144,12 @@ s1ap_mme_thread (
         /*
          * Invoke S1AP message decoder
          */
-        if (s1ap_mme_decode_pdu (&message, SCTP_DATA_IND (received_message_p).payload, &message_id) < 0) {
+        if (s1ap_mme_decode_pdu (&message, SCTP_DATA_IND (received_message_p)->payload, &message_id) < 0) {
           // TODO: Notify eNB of failure with right cause
           OAILOG_ERROR (LOG_S1AP, "Failed to decode new buffer\n");
         } else {
-          s1ap_mme_handle_message (SCTP_DATA_IND (received_message_p).assoc_id,
-                                   SCTP_DATA_IND (received_message_p).stream, &message);
+          s1ap_mme_handle_message (SCTP_DATA_IND (received_message_p)->assoc_id,
+                                   SCTP_DATA_IND (received_message_p)->stream, &message);
         }
 
         if (message_id != MESSAGES_ID_MAX) {
@@ -154,34 +159,34 @@ s1ap_mme_thread (
         /*
          * Free received PDU array
          */
-        bdestroy_wrapper (&SCTP_DATA_IND (received_message_p).payload);
+        bdestroy_wrapper (&SCTP_DATA_IND (received_message_p)->payload);
       }
       break;
 
     case SCTP_DATA_CNF:
-      s1ap_mme_itti_nas_downlink_cnf(SCTP_DATA_CNF (received_message_p).mme_ue_s1ap_id, SCTP_DATA_CNF (received_message_p).is_success);
+      s1ap_mme_itti_nas_downlink_cnf(SCTP_DATA_CNF (received_message_p)->mme_ue_s1ap_id, SCTP_DATA_CNF (received_message_p)->is_success);
       break;
       /*
        * SCTP layer notifies S1AP of disconnection of a peer.
        */
     case SCTP_CLOSE_ASSOCIATION:{
-      s1ap_handle_sctp_disconnection(SCTP_CLOSE_ASSOCIATION (received_message_p).assoc_id,
-                                     SCTP_CLOSE_ASSOCIATION (received_message_p).reset);
+      s1ap_handle_sctp_disconnection(SCTP_CLOSE_ASSOCIATION (received_message_p)->assoc_id,
+                                     SCTP_CLOSE_ASSOCIATION (received_message_p)->reset);
       }
       break;
 
     case SCTP_NEW_ASSOCIATION:{
-        s1ap_handle_new_association (&received_message_p->ittiMsg.sctp_new_peer);
+        s1ap_handle_new_association (SCTP_NEW_ASSOCIATION(received_message_p));
       }
       break;
 
     case S1AP_E_RAB_SETUP_REQ:{
-        s1ap_generate_s1ap_e_rab_setup_req (&S1AP_E_RAB_SETUP_REQ (received_message_p));
+        s1ap_generate_s1ap_e_rab_setup_req (S1AP_E_RAB_SETUP_REQ (received_message_p));
       }
       break;
 
     case S1AP_ENB_INITIATED_RESET_ACK:{
-        s1ap_handle_enb_initiated_reset_ack (&S1AP_ENB_INITIATED_RESET_ACK (received_message_p));
+        s1ap_handle_enb_initiated_reset_ack (S1AP_ENB_INITIATED_RESET_ACK (received_message_p));
       }
       break;
 
@@ -190,37 +195,37 @@ s1ap_mme_thread (
          * New message received from NAS task.
          * This corresponds to a S1AP downlink nas transport message.
          */
-        s1ap_generate_downlink_nas_transport (S1AP_NAS_DL_DATA_REQ (received_message_p).enb_ue_s1ap_id,
-            S1AP_NAS_DL_DATA_REQ (received_message_p).mme_ue_s1ap_id,
-            &S1AP_NAS_DL_DATA_REQ (received_message_p).nas_msg);
+        s1ap_generate_downlink_nas_transport (S1AP_NAS_DL_DATA_REQ (received_message_p)->enb_ue_s1ap_id,
+            S1AP_NAS_DL_DATA_REQ (received_message_p)->mme_ue_s1ap_id,
+            &S1AP_NAS_DL_DATA_REQ (received_message_p)->nas_msg);
       }
       break;
 
     // From MME_APP task
     case S1AP_UE_CONTEXT_RELEASE_COMMAND:{
-        s1ap_handle_ue_context_release_command (&received_message_p->ittiMsg.s1ap_ue_context_release_command);
+        s1ap_handle_ue_context_release_command (S1AP_UE_CONTEXT_RELEASE_COMMAND(received_message_p));
       }
       break;
 
     case MME_APP_CONNECTION_ESTABLISHMENT_CNF:{
-        s1ap_handle_conn_est_cnf (&MME_APP_CONNECTION_ESTABLISHMENT_CNF (received_message_p));
+        s1ap_handle_conn_est_cnf (MME_APP_CONNECTION_ESTABLISHMENT_CNF (received_message_p));
       }
       break;
     
     case MME_APP_S1AP_MME_UE_ID_NOTIFICATION:{
-        s1ap_handle_mme_ue_id_notification (&MME_APP_S1AP_MME_UE_ID_NOTIFICATION (received_message_p));
+        s1ap_handle_mme_ue_id_notification (MME_APP_S1AP_MME_UE_ID_NOTIFICATION (received_message_p));
       }
       break;
     
     case TIMER_HAS_EXPIRED:{
         ue_description_t                       *ue_ref_p = NULL;
-        if (received_message_p->ittiMsg.timer_has_expired.arg != NULL) { 
-          mme_ue_s1ap_id_t mme_ue_s1ap_id = *((mme_ue_s1ap_id_t *)(received_message_p->ittiMsg.timer_has_expired.arg));
+        if (TIMER_HAS_EXPIRED(received_message_p)->arg != NULL) {
+          mme_ue_s1ap_id_t mme_ue_s1ap_id = *((mme_ue_s1ap_id_t *)(TIMER_HAS_EXPIRED(received_message_p)->arg));
           if ((ue_ref_p = s1ap_is_ue_mme_id_in_list (mme_ue_s1ap_id)) == NULL) {
             OAILOG_WARNING (LOG_S1AP, "Timer expired but no assoicated UE context for UE id %d\n",mme_ue_s1ap_id);
             break;
           }
-          if (received_message_p->ittiMsg.timer_has_expired.timer_id == ue_ref_p->s1ap_ue_context_rel_timer.id) {
+          if (TIMER_HAS_EXPIRED(received_message_p)->timer_id == ue_ref_p->s1ap_ue_context_rel_timer.id) {
             // UE context release complete timer expiry handler 
             s1ap_mme_handle_ue_context_rel_comp_timer_expiry (ue_ref_p);
           } 

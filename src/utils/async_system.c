@@ -45,6 +45,7 @@
 #include "intertask_interface.h"
 #include "log.h"
 #include "async_system.h"
+#include "async_system_messages_types.h"
 #include "assertions.h"
 #include "dynamic_memory_check.h"
 #include "itti_free_defined_msg.h"
@@ -75,16 +76,16 @@ void* async_system_task (__attribute__ ((unused)) void *args_p)
 
       case ASYNC_SYSTEM_COMMAND:{
           rc = 0;
-          OAILOG_DEBUG (LOG_ASYNC_SYSTEM, "C system() call: %s\n", bdata(ASYNC_SYSTEM_COMMAND (received_message_p).system_command));
-          rc = system (bdata(ASYNC_SYSTEM_COMMAND (received_message_p).system_command));
+          OAILOG_DEBUG (LOG_ASYNC_SYSTEM, "C system() call: %s\n", bdata(ASYNC_SYSTEM_COMMAND (received_message_p)->system_command));
+          rc = system (bdata(ASYNC_SYSTEM_COMMAND (received_message_p)->system_command));
 
           if (rc) {
-            OAILOG_ERROR (LOG_ASYNC_SYSTEM, "ERROR in system command %s: %d\n", bdata(ASYNC_SYSTEM_COMMAND (received_message_p).system_command), rc);
-            if (ASYNC_SYSTEM_COMMAND (received_message_p).is_abort_on_error) {
-              bdestroy_wrapper(&ASYNC_SYSTEM_COMMAND (received_message_p).system_command);
+            OAILOG_ERROR (LOG_ASYNC_SYSTEM, "ERROR in system command %s: %d\n", bdata(ASYNC_SYSTEM_COMMAND (received_message_p)->system_command), rc);
+            if (ASYNC_SYSTEM_COMMAND (received_message_p)->is_abort_on_error) {
+              bdestroy_wrapper(&ASYNC_SYSTEM_COMMAND (received_message_p)->system_command);
               exit (-1);              // may be not exit
             }
-            bdestroy_wrapper(&ASYNC_SYSTEM_COMMAND (received_message_p).system_command);
+            bdestroy_wrapper(&ASYNC_SYSTEM_COMMAND (received_message_p)->system_command);
           }
         }
         break;
@@ -138,10 +139,10 @@ int async_system_command (int sender_itti_task, bool is_abort_on_error, char *fo
     return RETURNerror;
   }
   MessageDef                             *message_p = NULL;
-  message_p = itti_alloc_new_message (sender_itti_task, ASYNC_SYSTEM_COMMAND);
+  message_p = itti_alloc_new_message_sized (sender_itti_task, ASYNC_SYSTEM_COMMAND, sizeof(itti_async_system_command_t));
   AssertFatal (message_p , "itti_alloc_new_message Failed");
-  ASYNC_SYSTEM_COMMAND (message_p).system_command = bstr;
-  ASYNC_SYSTEM_COMMAND (message_p).is_abort_on_error = is_abort_on_error;
+  ASYNC_SYSTEM_COMMAND (message_p)->system_command = bstr;
+  ASYNC_SYSTEM_COMMAND (message_p)->is_abort_on_error = is_abort_on_error;
   rv = itti_send_msg_to_task (TASK_ASYNC_SYSTEM, INSTANCE_DEFAULT, message_p);
   return rv;
 }

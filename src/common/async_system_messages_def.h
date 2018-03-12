@@ -27,4 +27,4 @@
   \email: lionel.gauthier@eurecom.fr
 */
 
-MESSAGE_DEF(ASYNC_SYSTEM_COMMAND,           MESSAGE_PRIORITY_MED,   itti_async_system_command_t, async_system_command)
+MESSAGE_DEF(ASYNC_SYSTEM_COMMAND,           MESSAGE_PRIORITY_MED)

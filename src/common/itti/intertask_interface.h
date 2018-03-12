@@ -63,8 +63,6 @@ typedef enum message_priorities_e {
 typedef struct message_info_s {
   task_id_t id;
   message_priorities_t priority;
-  /* Message payload size */
-  MessageHeaderSize size;
   /* Printable name */
   const char * const name;
 } message_info_t;
@@ -187,15 +185,6 @@ const char *itti_get_message_name(MessagesIds message_id);
  * \param thread_id Id of the task
  **/
 const char *itti_get_task_name(task_id_t task_id);
-
-/** \brief Alloc and memset(0) a new itti message.
- * \param origin_task_id Task ID of the sending task
- * \param message_id Message ID
- * @returns NULL in case of failure or newly allocated mesage ref
- **/
-MessageDef *itti_alloc_new_message(
-  task_id_t         origin_task_id,
-  MessagesIds       message_id);
 
 /** \brief Alloc and memset(0) a new itti message.
  * \param origin_task_id Task ID of the sending task

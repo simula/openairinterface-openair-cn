@@ -33,6 +33,7 @@
 #include "bstrlib.h"
 
 #include "tree.h"
+#include "common_types.h"
 #include "assertions.h"
 #include "intertask_interface.h"
 #include "timer.h"

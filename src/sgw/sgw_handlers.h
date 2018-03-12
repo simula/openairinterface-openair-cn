@@ -29,6 +29,10 @@
 #ifndef FILE_SGW_HANDLERS_SEEN
 #define FILE_SGW_HANDLERS_SEEN
 
+#include "gtpv1_u_messages_types.h"
+#include "ip_forward_messages_types.h"
+#include "s11_messages_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

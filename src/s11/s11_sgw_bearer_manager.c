@@ -70,8 +70,8 @@ s11_sgw_handle_modify_bearer_request (
   nw_gtpv2c_msg_parser_t                     *pMsgParser;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_MODIFY_BEARER_REQUEST);
-  request_p = &message_p->ittiMsg.s11_modify_bearer_request;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_MODIFY_BEARER_REQUEST, sizeof(itti_s11_modify_bearer_request_t));
+  request_p = S11_MODIFY_BEARER_REQUEST(message_p);
   request_p->trxn = (void *)pUlpApi->u_api_info.initialReqIndInfo.hTrxn;
   request_p->teid = nwGtpv2cMsgGetTeid (pUlpApi->hMsg);
   /*
@@ -209,8 +209,8 @@ s11_sgw_handle_release_access_bearers_request (
   nw_gtpv2c_msg_parser_t                     *pMsgParser = NULL;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_RELEASE_ACCESS_BEARERS_REQUEST);
-  request_p = &message_p->ittiMsg.s11_release_access_bearers_request;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_RELEASE_ACCESS_BEARERS_REQUEST, sizeof(itti_s11_release_access_bearers_request_t));
+  request_p = S11_RELEASE_ACCESS_BEARERS_REQUEST(message_p);
 
   request_p->trxn = (void *)pUlpApi->u_api_info.initialReqIndInfo.hTrxn;
   request_p->teid = nwGtpv2cMsgGetTeid (pUlpApi->hMsg);
@@ -382,8 +382,8 @@ s11_sgw_handle_create_bearer_response (
   nw_gtpv2c_msg_parser_t                 *pMsgParser;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_CREATE_BEARER_RESPONSE);
-  resp_p = &message_p->ittiMsg.s11_create_bearer_response;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_CREATE_BEARER_RESPONSE, sizeof(itti_s11_create_bearer_response_t));
+  resp_p = S11_CREATE_BEARER_RESPONSE(message_p);
 
   resp_p->teid = nwGtpv2cMsgGetTeid(pUlpApi->hMsg);
 

@@ -52,7 +52,9 @@
 #include "mme_config.h"
 #include "spgw_config.h"
 #include "3gpp_33.401.h"
+#include "3gpp_24.301.h"
 #include "intertask_interface_conf.h"
+#include "TrackingAreaIdentity.h"
 
 #ifdef __cplusplus
 extern "C" {

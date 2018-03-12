@@ -45,6 +45,8 @@ Description NAS procedure call manager
 #include "commonDef.h"
 #include "networkDef.h"
 
+#include "s6a_messages_types.h"
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/

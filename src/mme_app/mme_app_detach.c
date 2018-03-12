@@ -40,6 +40,7 @@
 #include "assertions.h"
 #include "msc.h"
 #include "intertask_interface.h"
+#include "mme_app_messages_types.h"
 #include "gcc_diag.h"
 #include "mme_config.h"
 #include "mme_app_ue_context.h"
@@ -55,34 +56,34 @@ void mme_app_send_delete_session_request (struct ue_mm_context_s * const ue_cont
 {
   MessageDef                             *message_p = NULL;
 
-  message_p = itti_alloc_new_message (TASK_MME_APP, S11_DELETE_SESSION_REQUEST);
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, S11_DELETE_SESSION_REQUEST, sizeof(itti_s11_delete_session_request_t));
   AssertFatal (message_p , "itti_alloc_new_message Failed");
-  S11_DELETE_SESSION_REQUEST (message_p).local_teid = ue_context_p->mme_teid_s11;
-  S11_DELETE_SESSION_REQUEST (message_p).teid       = ue_context_p->pdn_contexts[cid]->s_gw_teid_s11_s4;
-  S11_DELETE_SESSION_REQUEST (message_p).lbi        = ebi; //default bearer
+  S11_DELETE_SESSION_REQUEST (message_p)->local_teid = ue_context_p->mme_teid_s11;
+  S11_DELETE_SESSION_REQUEST (message_p)->teid       = ue_context_p->pdn_contexts[cid]->s_gw_teid_s11_s4;
+  S11_DELETE_SESSION_REQUEST (message_p)->lbi        = ebi; //default bearer
 
   OAI_GCC_DIAG_OFF(pointer-to-int-cast);
-  S11_DELETE_SESSION_REQUEST (message_p).sender_fteid_for_cp.teid = (teid_t) ue_context_p;
+  S11_DELETE_SESSION_REQUEST (message_p)->sender_fteid_for_cp.teid = (teid_t) ue_context_p;
   OAI_GCC_DIAG_ON(pointer-to-int-cast);
-  S11_DELETE_SESSION_REQUEST (message_p).sender_fteid_for_cp.interface_type = S11_MME_GTP_C;
+  S11_DELETE_SESSION_REQUEST (message_p)->sender_fteid_for_cp.interface_type = S11_MME_GTP_C;
   mme_config_read_lock (&mme_config);
-  S11_DELETE_SESSION_REQUEST (message_p).sender_fteid_for_cp.ipv4_address = mme_config.ipv4.s11;
+  S11_DELETE_SESSION_REQUEST (message_p)->sender_fteid_for_cp.ipv4_address = mme_config.ipv4.s11;
   mme_config_unlock (&mme_config);
-  S11_DELETE_SESSION_REQUEST (message_p).sender_fteid_for_cp.ipv4 = 1;
-  S11_DELETE_SESSION_REQUEST (message_p).indication_flags.oi = 1;
+  S11_DELETE_SESSION_REQUEST (message_p)->sender_fteid_for_cp.ipv4 = 1;
+  S11_DELETE_SESSION_REQUEST (message_p)->indication_flags.oi = 1;
 
   /*
    * S11 stack specific parameter. Not used in standalone epc mode
    */
-  S11_DELETE_SESSION_REQUEST  (message_p).trxn = NULL;
+  S11_DELETE_SESSION_REQUEST  (message_p)->trxn = NULL;
   mme_config_read_lock (&mme_config);
-  S11_DELETE_SESSION_REQUEST (message_p).peer_ip = ue_context_p->pdn_contexts[cid]->s_gw_address_s11_s4.address.ipv4_address;
+  S11_DELETE_SESSION_REQUEST (message_p)->peer_ip = ue_context_p->pdn_contexts[cid]->s_gw_address_s11_s4.address.ipv4_address;
   mme_config_unlock (&mme_config);
 
   MSC_LOG_TX_MESSAGE (MSC_MMEAPP_MME, MSC_S11_MME,
                       NULL, 0, "0  S11_DELETE_SESSION_REQUEST teid %u lbi %u",
-                      S11_DELETE_SESSION_REQUEST  (message_p).teid,
-                      S11_DELETE_SESSION_REQUEST  (message_p).lbi);
+                      S11_DELETE_SESSION_REQUEST  (message_p)->teid,
+                      S11_DELETE_SESSION_REQUEST  (message_p)->lbi);
 
   itti_send_msg_to_task (TASK_S11, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_OUT (LOG_MME_APP);

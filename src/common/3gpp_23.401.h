@@ -28,6 +28,7 @@
 #ifndef FILE_3GPP_23_401_SEEN
 #define FILE_3GPP_23_401_SEEN
 #include "queue.h"
+#include "s11_messages_types.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

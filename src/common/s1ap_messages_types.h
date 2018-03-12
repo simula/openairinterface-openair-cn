@@ -37,17 +37,18 @@
 extern "C" {
 #endif
 
-#define S1AP_ENB_DEREGISTERED_IND(mSGpTR)        (mSGpTR)->ittiMsg.s1ap_eNB_deregistered_ind
-#define S1AP_ENB_INITIATED_RESET_REQ(mSGpTR)     (mSGpTR)->ittiMsg.s1ap_enb_initiated_reset_req
-#define S1AP_ENB_INITIATED_RESET_ACK(mSGpTR)     (mSGpTR)->ittiMsg.s1ap_enb_initiated_reset_ack
-#define S1AP_DEREGISTER_UE_REQ(mSGpTR)           (mSGpTR)->ittiMsg.s1ap_deregister_ue_req
-#define S1AP_UE_CONTEXT_RELEASE_REQ(mSGpTR)      (mSGpTR)->ittiMsg.s1ap_ue_context_release_req
-#define S1AP_UE_CONTEXT_RELEASE_COMMAND(mSGpTR)  (mSGpTR)->ittiMsg.s1ap_ue_context_release_command
-#define S1AP_UE_CONTEXT_RELEASE_COMPLETE(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_context_release_complete
-#define S1AP_E_RAB_SETUP_REQ(mSGpTR)             (mSGpTR)->ittiMsg.s1ap_e_rab_setup_req
-#define S1AP_E_RAB_SETUP_RSP(mSGpTR)             (mSGpTR)->ittiMsg.s1ap_e_rab_setup_rsp
-#define S1AP_INITIAL_UE_MESSAGE(mSGpTR)          (mSGpTR)->ittiMsg.s1ap_initial_ue_message
-#define S1AP_NAS_DL_DATA_REQ(mSGpTR)             (mSGpTR)->ittiMsg.s1ap_nas_dl_data_req
+#define S1AP_ENB_DEREGISTERED_IND(mSGpTR)        ((itti_s1ap_eNB_deregistered_ind_t*)(mSGpTR)->itti_msg)
+#define S1AP_ENB_INITIATED_RESET_REQ(mSGpTR)     ((itti_s1ap_enb_initiated_reset_req_t*)(mSGpTR)->itti_msg)
+#define S1AP_ENB_INITIATED_RESET_ACK(mSGpTR)     ((itti_s1ap_enb_initiated_reset_ack_t*)(mSGpTR)->itti_msg)
+#define S1AP_DEREGISTER_UE_REQ(mSGpTR)           ((itti_s1ap_deregister_ue_req_t*)(mSGpTR)->itti_msg)
+#define S1AP_UE_CONTEXT_RELEASE_REQ(mSGpTR)      ((itti_s1ap_ue_context_release_req_t*)(mSGpTR)->itti_msg)
+#define S1AP_UE_CONTEXT_RELEASE_COMMAND(mSGpTR)  ((itti_s1ap_ue_context_release_command_t*)(mSGpTR)->itti_msg)
+#define S1AP_UE_CONTEXT_RELEASE_COMPLETE(mSGpTR) ((itti_s1ap_ue_context_release_complete_t*)(mSGpTR)->itti_msg)
+#define S1AP_E_RAB_SETUP_REQ(mSGpTR)             ((itti_s1ap_e_rab_setup_req_t*)(mSGpTR)->itti_msg)
+#define S1AP_E_RAB_SETUP_RSP(mSGpTR)             ((itti_s1ap_e_rab_setup_rsp_t*)(mSGpTR)->itti_msg)
+#define S1AP_INITIAL_UE_MESSAGE(mSGpTR)          ((itti_s1ap_initial_ue_message_t*)(mSGpTR)->itti_msg)
+#define S1AP_NAS_DL_DATA_REQ(mSGpTR)             ((itti_s1ap_nas_dl_data_req_t*)(mSGpTR)->itti_msg)
+#define S1AP_UE_CAPABILITIES_IND(mSGpTR)         ((itti_s1ap_ue_cap_ind_t*)(mSGpTR)->itti_msg)
 
 // NOT a ITTI message
 typedef struct s1ap_initial_ue_message_s {

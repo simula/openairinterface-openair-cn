@@ -24,7 +24,7 @@
 
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
-#define TIMER_HAS_EXPIRED(mSGpTR)   (mSGpTR)->ittiMsg.timer_has_expired
+#define TIMER_HAS_EXPIRED(mSGpTR)   ((timer_has_expired_t*)(mSGpTR)->itti_msg)
 
 //-------------------------------------------------------------------------------------------//
 typedef struct timer_has_expired_s {

@@ -30,6 +30,8 @@
 #ifndef FILE_S11_SGW_BEARER_MANAGER_SEEN
 #define FILE_S11_SGW_BEARER_MANAGER_SEEN
 
+#include "s11_messages_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

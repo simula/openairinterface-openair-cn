@@ -30,6 +30,9 @@
 #ifndef FILE_S1AP_MME_HANDLERS_SEEN
 #define FILE_S1AP_MME_HANDLERS_SEEN
 
+#include "sctp_messages_types.h"
+#include "s1ap_messages_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

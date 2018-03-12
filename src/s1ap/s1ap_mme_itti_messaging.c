@@ -37,6 +37,9 @@
 #include "assertions.h"
 #include "intertask_interface.h"
 #include "s1ap_common.h"
+#include "s1ap_messages_types.h"
+#include "sctp_messages_types.h"
+#include "nas_messages_types.h"
 #include "s1ap_mme_itti_messaging.h"
 
 #ifdef __cplusplus
@@ -53,12 +56,12 @@ s1ap_mme_itti_send_sctp_request (
 {
   MessageDef                             *message_p = NULL;
 
-  message_p = itti_alloc_new_message (TASK_S1AP, SCTP_DATA_REQ);
-  SCTP_DATA_REQ (message_p).payload = *payload;
+  message_p = itti_alloc_new_message_sized (TASK_S1AP, SCTP_DATA_REQ, sizeof(sctp_data_req_t));
+  SCTP_DATA_REQ (message_p)->payload = *payload;
   *payload = NULL;
-  SCTP_DATA_REQ (message_p).assoc_id = assoc_id;
-  SCTP_DATA_REQ (message_p).stream = stream;
-  SCTP_DATA_REQ (message_p).mme_ue_s1ap_id = ue_id;
+  SCTP_DATA_REQ (message_p)->assoc_id = assoc_id;
+  SCTP_DATA_REQ (message_p)->stream = stream;
+  SCTP_DATA_REQ (message_p)->mme_ue_s1ap_id = ue_id;
   return itti_send_msg_to_task (TASK_SCTP, INSTANCE_DEFAULT, message_p);
 }
 
@@ -72,15 +75,15 @@ s1ap_mme_itti_nas_uplink_ind (
 {
   MessageDef                             *message_p = NULL;
 
-  message_p = itti_alloc_new_message (TASK_S1AP, NAS_UPLINK_DATA_IND);
-  NAS_UL_DATA_IND (message_p).ue_id          = ue_id;
-  NAS_UL_DATA_IND (message_p).nas_msg        = *payload;
+  message_p = itti_alloc_new_message_sized (TASK_S1AP, NAS_UPLINK_DATA_IND, sizeof(itti_nas_ul_data_ind_t));
+  NAS_UPLINK_DATA_IND (message_p)->ue_id          = ue_id;
+  NAS_UPLINK_DATA_IND (message_p)->nas_msg        = *payload;
   *payload = NULL;
-  NAS_UL_DATA_IND (message_p).tai            = *tai;
-  NAS_UL_DATA_IND (message_p).cgi            = *cgi;
+  NAS_UPLINK_DATA_IND (message_p)->tai            = *tai;
+  NAS_UPLINK_DATA_IND (message_p)->cgi            = *cgi;
 
   MSC_LOG_TX_MESSAGE (MSC_S1AP_MME, MSC_NAS_MME, NULL, 0, "0 NAS_UPLINK_DATA_IND ue_id " MME_UE_S1AP_ID_FMT " len %u",
-      NAS_UL_DATA_IND (message_p).ue_id, blength(NAS_UL_DATA_IND (message_p).nas_msg));
+      NAS_UPLINK_DATA_IND (message_p)->ue_id, blength(NAS_UPLINK_DATA_IND (message_p)->nas_msg));
   // yes, to TASK_MME_APP instead of NAS (threading issue with S1AP UE CTXT RELEASE)
   return itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }
@@ -100,16 +103,16 @@ s1ap_mme_itti_nas_downlink_cnf (
     // Drop this cnf message here since this is related to connection less S1AP message hence no need to send it to NAS module
     OAILOG_FUNC_RETURN (LOG_S1AP, RETURNok);
   } 
-  message_p = itti_alloc_new_message (TASK_S1AP, NAS_DOWNLINK_DATA_CNF);
-  NAS_DL_DATA_CNF (message_p).ue_id = ue_id;
+  message_p = itti_alloc_new_message_sized (TASK_S1AP, NAS_DOWNLINK_DATA_CNF, sizeof(itti_nas_dl_data_cnf_t));
+  NAS_DOWNLINK_DATA_CNF (message_p)->ue_id = ue_id;
   if (is_success) {
-    NAS_DL_DATA_CNF (message_p).err_code = AS_SUCCESS;
+    NAS_DOWNLINK_DATA_CNF (message_p)->err_code = AS_SUCCESS;
   } else {
-    NAS_DL_DATA_CNF (message_p).err_code = AS_FAILURE;
+    NAS_DOWNLINK_DATA_CNF (message_p)->err_code = AS_FAILURE;
     OAILOG_ERROR (LOG_S1AP, "ERROR: Failed to send S1AP message to eNB. mme_ue_s1ap_id =  %d \n", ue_id);
   }
   MSC_LOG_TX_MESSAGE (MSC_S1AP_MME, MSC_NAS_MME, NULL, 0, "0 NAS_DOWNLINK_DATA_CNF ue_id " MME_UE_S1AP_ID_FMT " err_code %u",
-      NAS_DL_DATA_CNF (message_p).ue_id, NAS_DL_DATA_CNF (message_p).err_code);
+      NAS_DOWNLINK_DATA_CNF (message_p)->ue_id, NAS_DOWNLINK_DATA_CNF (message_p)->err_code);
   return itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
 
@@ -135,39 +138,39 @@ void s1ap_mme_itti_s1ap_initial_ue_message(
 
   OAILOG_FUNC_IN (LOG_S1AP);
   AssertFatal((nas_msg_length < 1000), "Bad length for NAS message %lu", nas_msg_length);
-  message_p = itti_alloc_new_message(TASK_S1AP, S1AP_INITIAL_UE_MESSAGE);
+  message_p = itti_alloc_new_message_sized(TASK_S1AP, S1AP_INITIAL_UE_MESSAGE, sizeof(s1ap_initial_ue_message_t));
 
-  S1AP_INITIAL_UE_MESSAGE(message_p).sctp_assoc_id          = assoc_id;
-  S1AP_INITIAL_UE_MESSAGE(message_p).enb_ue_s1ap_id         = enb_ue_s1ap_id;
-  S1AP_INITIAL_UE_MESSAGE(message_p).enb_id                 = enb_id;
+  S1AP_INITIAL_UE_MESSAGE(message_p)->sctp_assoc_id          = assoc_id;
+  S1AP_INITIAL_UE_MESSAGE(message_p)->enb_ue_s1ap_id         = enb_ue_s1ap_id;
+  S1AP_INITIAL_UE_MESSAGE(message_p)->enb_id                 = enb_id;
 
-  S1AP_INITIAL_UE_MESSAGE(message_p).nas                    = blk2bstr(nas_msg, nas_msg_length);
+  S1AP_INITIAL_UE_MESSAGE(message_p)->nas                    = blk2bstr(nas_msg, nas_msg_length);
 
-  S1AP_INITIAL_UE_MESSAGE(message_p).tai                    = *tai;
-  S1AP_INITIAL_UE_MESSAGE(message_p).ecgi                    = *ecgi;
-  S1AP_INITIAL_UE_MESSAGE(message_p).rrc_establishment_cause = rrc_cause + 1;
+  S1AP_INITIAL_UE_MESSAGE(message_p)->tai                    = *tai;
+  S1AP_INITIAL_UE_MESSAGE(message_p)->ecgi                    = *ecgi;
+  S1AP_INITIAL_UE_MESSAGE(message_p)->rrc_establishment_cause = rrc_cause + 1;
 
   if (opt_s_tmsi) {
-    S1AP_INITIAL_UE_MESSAGE(message_p).is_s_tmsi_valid      = true;
-    S1AP_INITIAL_UE_MESSAGE(message_p).opt_s_tmsi           = *opt_s_tmsi;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->is_s_tmsi_valid      = true;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->opt_s_tmsi           = *opt_s_tmsi;
   } else {
-    S1AP_INITIAL_UE_MESSAGE(message_p).is_s_tmsi_valid      = false;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->is_s_tmsi_valid      = false;
   }
   if (opt_csg_id) {
-    S1AP_INITIAL_UE_MESSAGE(message_p).is_csg_id_valid      = true;
-    S1AP_INITIAL_UE_MESSAGE(message_p).opt_csg_id           = *opt_csg_id;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->is_csg_id_valid      = true;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->opt_csg_id           = *opt_csg_id;
   } else {
-    S1AP_INITIAL_UE_MESSAGE(message_p).is_csg_id_valid      = false;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->is_csg_id_valid      = false;
   }
   if (opt_gummei) {
-    S1AP_INITIAL_UE_MESSAGE(message_p).is_gummei_valid      = true;
-    S1AP_INITIAL_UE_MESSAGE(message_p).opt_gummei           = *opt_gummei;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->is_gummei_valid      = true;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->opt_gummei           = *opt_gummei;
   } else {
-    S1AP_INITIAL_UE_MESSAGE(message_p).is_gummei_valid      = false;
+    S1AP_INITIAL_UE_MESSAGE(message_p)->is_gummei_valid      = false;
   }
 
-  S1AP_INITIAL_UE_MESSAGE(message_p).transparent.enb_ue_s1ap_id = enb_ue_s1ap_id;
-  S1AP_INITIAL_UE_MESSAGE(message_p).transparent.e_utran_cgi    = *ecgi;
+  S1AP_INITIAL_UE_MESSAGE(message_p)->transparent.enb_ue_s1ap_id = enb_ue_s1ap_id;
+  S1AP_INITIAL_UE_MESSAGE(message_p)->transparent.e_utran_cgi    = *ecgi;
 
 
   MSC_LOG_TX_MESSAGE(
@@ -176,15 +179,15 @@ void s1ap_mme_itti_s1ap_initial_ue_message(
         NULL,0,
         "0 S1AP_INITIAL_UE_MESSAGE eNB ue_id "ENB_UE_S1AP_ID_FMT" as cause %u tai:%c%c%c.%c%c%c:%u len %u ",
         enb_ue_s1ap_id,
-        S1AP_INITIAL_UE_MESSAGE(message_p).rrc_establishment_cause,
-        (char)(S1AP_INITIAL_UE_MESSAGE(message_p).tai.mcc_digit1 + 0x30),
-        (char)(S1AP_INITIAL_UE_MESSAGE(message_p).tai.mcc_digit2 + 0x30),
-        (char)(S1AP_INITIAL_UE_MESSAGE(message_p).tai.mcc_digit3 + 0x30),
-        (char)(S1AP_INITIAL_UE_MESSAGE(message_p).tai.mnc_digit1 + 0x30),
-        (char)(S1AP_INITIAL_UE_MESSAGE(message_p).tai.mnc_digit2 + 0x30),
-        (9 < S1AP_INITIAL_UE_MESSAGE(message_p).tai.mnc_digit3) ? ' ': (char)(S1AP_INITIAL_UE_MESSAGE(message_p).tai.mnc_digit3 + 0x30),
-        S1AP_INITIAL_UE_MESSAGE(message_p).tai.tac,
-        S1AP_INITIAL_UE_MESSAGE(message_p).nas->slen);
+        S1AP_INITIAL_UE_MESSAGE(message_p)->rrc_establishment_cause,
+        (char)(S1AP_INITIAL_UE_MESSAGE(message_p)->tai.mcc_digit1 + 0x30),
+        (char)(S1AP_INITIAL_UE_MESSAGE(message_p)->tai.mcc_digit2 + 0x30),
+        (char)(S1AP_INITIAL_UE_MESSAGE(message_p)->tai.mcc_digit3 + 0x30),
+        (char)(S1AP_INITIAL_UE_MESSAGE(message_p)->tai.mnc_digit1 + 0x30),
+        (char)(S1AP_INITIAL_UE_MESSAGE(message_p)->tai.mnc_digit2 + 0x30),
+        (9 < S1AP_INITIAL_UE_MESSAGE(message_p)->tai.mnc_digit3) ? ' ': (char)(S1AP_INITIAL_UE_MESSAGE(message_p)->tai.mnc_digit3 + 0x30),
+        S1AP_INITIAL_UE_MESSAGE(message_p)->tai.tac,
+        S1AP_INITIAL_UE_MESSAGE(message_p)->nas->slen);
   itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_OUT (LOG_S1AP);
 }
@@ -228,12 +231,12 @@ void s1ap_mme_itti_nas_non_delivery_ind(
   MessageDef     *message_p = NULL;
   // TODO translate, insert, cause in message
   OAILOG_FUNC_IN (LOG_S1AP);
-  message_p = itti_alloc_new_message(TASK_S1AP, NAS_DOWNLINK_DATA_REJ);
+  message_p = itti_alloc_new_message_sized(TASK_S1AP, NAS_DOWNLINK_DATA_REJ, sizeof(itti_nas_dl_data_rej_t));
 
-  NAS_DL_DATA_REJ(message_p).ue_id               = ue_id;
+  NAS_DOWNLINK_DATA_REJ(message_p)->ue_id               = ue_id;
   /* Mapping between asn1 definition and NAS definition */
-  NAS_DL_DATA_REJ(message_p).err_code            = s1ap_mme_non_delivery_cause_2_nas_data_rej_cause(cause);
-  NAS_DL_DATA_REJ(message_p).nas_msg  = blk2bstr(nas_msg, nas_msg_length);
+  NAS_DOWNLINK_DATA_REJ(message_p)->err_code            = s1ap_mme_non_delivery_cause_2_nas_data_rej_cause(cause);
+  NAS_DOWNLINK_DATA_REJ(message_p)->nas_msg  = blk2bstr(nas_msg, nas_msg_length);
 
   MSC_LOG_TX_MESSAGE(
   		MSC_S1AP_MME,
@@ -241,7 +244,7 @@ void s1ap_mme_itti_nas_non_delivery_ind(
   		NULL,0,
   		"0 NAS_DOWNLINK_DATA_REJ ue_id "MME_UE_S1AP_ID_FMT" len %u",
   		ue_id,
-  		NAS_DL_DATA_REJ(message_p).nas_msg->slen);
+  		NAS_DOWNLINK_DATA_REJ(message_p)->nas_msg->slen);
 
   // should be sent to MME_APP, but this one would forward it to NAS_MME, so send it directly to NAS_MME
   // but let's see

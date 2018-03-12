@@ -30,6 +30,7 @@
 #define FILE_S1AP_MME_ITTI_MESSAGING_SEEN
 
 #include "common_defs.h"
+#include "TrackingAreaIdentity.h"
 
 
 int s1ap_mme_itti_send_sctp_request(STOLEN_REF bstring *payload,

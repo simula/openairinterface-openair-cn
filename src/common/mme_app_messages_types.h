@@ -28,16 +28,20 @@
 #ifndef FILE_MME_APP_MESSAGES_TYPES_SEEN
 #define FILE_MME_APP_MESSAGES_TYPES_SEEN
 
+#include "3gpp_24.007.h"
+#include "3gpp_29.274.h"
+#include "securityDef.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define MME_APP_CONNECTION_ESTABLISHMENT_CNF(mSGpTR)     (mSGpTR)->ittiMsg.mme_app_connection_establishment_cnf
-#define MME_APP_INITIAL_CONTEXT_SETUP_RSP(mSGpTR)        (mSGpTR)->ittiMsg.mme_app_initial_context_setup_rsp
-#define MME_APP_INITIAL_CONTEXT_SETUP_FAILURE(mSGpTR)    (mSGpTR)->ittiMsg.mme_app_initial_context_setup_failure
-#define MME_APP_S1AP_MME_UE_ID_NOTIFICATION(mSGpTR)      (mSGpTR)->ittiMsg.mme_app_s1ap_mme_ue_id_notification
-#define MME_APP_CREATE_DEDICATED_BEARER_REQ(mSGpTR)      (mSGpTR)->ittiMsg.mme_app_create_dedicated_bearer_req
-#define MME_APP_CREATE_DEDICATED_BEARER_RSP(mSGpTR)      (mSGpTR)->ittiMsg.mme_app_create_dedicated_bearer_rsp
-#define MME_APP_CREATE_DEDICATED_BEARER_REJ(mSGpTR)      (mSGpTR)->ittiMsg.mme_app_create_dedicated_bearer_rej
+#define MME_APP_CONNECTION_ESTABLISHMENT_CNF(mSGpTR)     ((itti_mme_app_connection_establishment_cnf_t*)(mSGpTR)->itti_msg)
+#define MME_APP_INITIAL_CONTEXT_SETUP_RSP(mSGpTR)        ((itti_mme_app_initial_context_setup_rsp_t*)(mSGpTR)->itti_msg)
+#define MME_APP_INITIAL_CONTEXT_SETUP_FAILURE(mSGpTR)    ((itti_mme_app_initial_context_setup_failure_t*)(mSGpTR)->itti_msg)
+#define MME_APP_S1AP_MME_UE_ID_NOTIFICATION(mSGpTR)      ((itti_mme_app_s1ap_mme_ue_id_notification_t*)(mSGpTR)->itti_msg)
+#define MME_APP_CREATE_DEDICATED_BEARER_REQ(mSGpTR)      ((itti_mme_app_create_dedicated_bearer_req_t*)(mSGpTR)->itti_msg)
+#define MME_APP_CREATE_DEDICATED_BEARER_RSP(mSGpTR)      ((itti_mme_app_create_dedicated_bearer_rsp_t*)(mSGpTR)->itti_msg)
+#define MME_APP_CREATE_DEDICATED_BEARER_REJ(mSGpTR)      ((itti_mme_app_create_dedicated_bearer_rej_t*)(mSGpTR)->itti_msg)
 
 typedef struct itti_mme_app_connection_establishment_cnf_s {
   mme_ue_s1ap_id_t        ue_id;

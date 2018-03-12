@@ -35,6 +35,15 @@
 extern "C" {
 #endif
 
+#define GTPV1U_CREATE_TUNNEL_REQ(mSGpTR)    ((Gtpv1uCreateTunnelReq*)(mSGpTR)->itti_msg)
+#define GTPV1U_CREATE_TUNNEL_RESP(mSGpTR)   ((Gtpv1uCreateTunnelResp*)(mSGpTR)->itti_msg)
+#define GTPV1U_UPDATE_TUNNEL_REQ(mSGpTR)    ((Gtpv1uUpdateTunnelReq*)(mSGpTR)->itti_msg)
+#define GTPV1U_UPDATE_TUNNEL_RESP(mSGpTR)   ((Gtpv1uUpdateTunnelResp*)(mSGpTR)->itti_msg)
+#define GTPV1U_DELETE_TUNNEL_REQ(mSGpTR)    ((Gtpv1uDeleteTunnelReq*)(mSGpTR)->itti_msg)
+#define GTPV1U_DELETE_TUNNEL_RESP(mSGpTR)   ((Gtpv1uDeleteTunnelResp*)(mSGpTR)->itti_msg)
+#define GTPV1U_TUNNEL_DATA_IND(mSGpTR)      ((Gtpv1uTunnelDataInd*)(mSGpTR)->itti_msg)
+#define GTPV1U_TUNNEL_DATA_REQ(mSGpTR)      ((Gtpv1uTunnelDataReq*)(mSGpTR)->itti_msg)
+
 typedef struct {
   teid_t           context_teid;               ///< Tunnel Endpoint Identifier
   ebi_t            eps_bearer_id;

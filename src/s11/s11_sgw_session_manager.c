@@ -48,6 +48,7 @@
 #include "s11_sgw_session_manager.h"
 #include "s11_ie_formatter.h"
 #include "log.h"
+#include "s11_messages_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,8 +71,8 @@ s11_sgw_handle_create_session_request (
   nw_gtpv2c_msg_parser_t                     *pMsgParser;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_CREATE_SESSION_REQUEST);
-  create_session_request_p = &message_p->ittiMsg.s11_create_session_request;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_CREATE_SESSION_REQUEST, sizeof(itti_s11_create_session_request_t));
+  create_session_request_p = S11_CREATE_SESSION_REQUEST(message_p);
   /*
    * Create a new message parser
    */
@@ -342,8 +343,8 @@ s11_sgw_handle_delete_session_request (
   nw_gtpv2c_msg_parser_t                     *pMsgParser;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_DELETE_SESSION_REQUEST);
-  delete_session_request_p = &message_p->ittiMsg.s11_delete_session_request;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_DELETE_SESSION_REQUEST, sizeof(itti_s11_delete_session_request_t));
+  delete_session_request_p = S11_DELETE_SESSION_REQUEST(message_p);
   /*
    * Create a new message parser
    */

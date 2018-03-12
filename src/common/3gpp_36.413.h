@@ -28,6 +28,9 @@
 
 #ifndef FILE_3GPP_36_413_SEEN
 #define FILE_3GPP_36_413_SEEN
+
+#include "3gpp_24.007.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

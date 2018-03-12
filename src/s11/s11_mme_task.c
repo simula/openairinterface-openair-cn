@@ -42,6 +42,9 @@
 #include "msc.h"
 #include "mme_config.h"
 #include "intertask_interface.h"
+#include "s11_messages_types.h"
+#include "udp_messages_types.h"
+#include "timer_messages_types.h"
 #include "itti_free_defined_msg.h"
 #include "timer.h"
 #include "NwLog.h"
@@ -140,8 +143,8 @@ s11_mme_send_udp_msg (
   udp_data_req_t                         *udp_data_req_p;
   int                                     ret = 0;
 
-  message_p = itti_alloc_new_message (TASK_S11, UDP_DATA_REQ);
-  udp_data_req_p = &message_p->ittiMsg.udp_data_req;
+  message_p = itti_alloc_new_message_sized (TASK_S11, UDP_DATA_REQ, sizeof(udp_data_req_t));
+  udp_data_req_p = UDP_DATA_REQ(message_p);
   udp_data_req_p->peer_address.s_addr = peerIpAddr->s_addr;
   udp_data_req_p->peer_port = peerPort;
   udp_data_req_p->buffer = buffer;
@@ -204,27 +207,27 @@ s11_mme_thread (
       break;
 
     case S11_CREATE_BEARER_RESPONSE:{
-      s11_mme_create_bearer_response (&s11_mme_stack_handle, &received_message_p->ittiMsg.s11_create_bearer_response);
+      s11_mme_create_bearer_response (&s11_mme_stack_handle, S11_CREATE_BEARER_RESPONSE(received_message_p));
       }
       break;
 
     case S11_CREATE_SESSION_REQUEST:{
-        s11_mme_create_session_request (&s11_mme_stack_handle, &received_message_p->ittiMsg.s11_create_session_request);
+        s11_mme_create_session_request (&s11_mme_stack_handle, S11_CREATE_SESSION_REQUEST(received_message_p));
       }
       break;
 
     case S11_DELETE_SESSION_REQUEST:{
-        s11_mme_delete_session_request (&s11_mme_stack_handle, &received_message_p->ittiMsg.s11_delete_session_request);
+        s11_mme_delete_session_request (&s11_mme_stack_handle, S11_DELETE_SESSION_REQUEST(received_message_p));
       }
       break;
 
     case S11_MODIFY_BEARER_REQUEST:{
-        s11_mme_modify_bearer_request (&s11_mme_stack_handle, &received_message_p->ittiMsg.s11_modify_bearer_request);
+        s11_mme_modify_bearer_request (&s11_mme_stack_handle, S11_MODIFY_BEARER_REQUEST(received_message_p));
       }
       break;
 
     case S11_RELEASE_ACCESS_BEARERS_REQUEST:{
-        s11_mme_release_access_bearers_request (&s11_mme_stack_handle, &received_message_p->ittiMsg.s11_release_access_bearers_request);
+        s11_mme_release_access_bearers_request (&s11_mme_stack_handle, S11_RELEASE_ACCESS_BEARERS_REQUEST(received_message_p));
       }
       break;
 
@@ -236,8 +239,8 @@ s11_mme_thread (
       break;
 
     case TIMER_HAS_EXPIRED:{
-        OAILOG_DEBUG (LOG_S11, "Processing timeout for timer_id 0x%lx and arg %p\n", received_message_p->ittiMsg.timer_has_expired.timer_id, received_message_p->ittiMsg.timer_has_expired.arg);
-        DevAssert (nwGtpv2cProcessTimeout (received_message_p->ittiMsg.timer_has_expired.arg) == NW_OK);
+        OAILOG_DEBUG (LOG_S11, "Processing timeout for timer_id 0x%lx and arg %p\n", TIMER_HAS_EXPIRED(received_message_p)->timer_id, TIMER_HAS_EXPIRED(received_message_p)->arg);
+        DevAssert (nwGtpv2cProcessTimeout (TIMER_HAS_EXPIRED(received_message_p)->arg) == NW_OK);
       }
       break;
 
@@ -248,7 +251,7 @@ s11_mme_thread (
         nw_rc_t                                   rc;
         udp_data_ind_t                         *udp_data_ind;
 
-        udp_data_ind = &received_message_p->ittiMsg.udp_data_ind;
+        udp_data_ind = UDP_DATA_IND(received_message_p);
         rc = nwGtpv2cProcessUdpReq (s11_mme_stack_handle, udp_data_ind->buffer, udp_data_ind->buffer_length, udp_data_ind->peer_port, &udp_data_ind->peer_address);
         DevAssert (rc == NW_OK);
       }
@@ -272,15 +275,15 @@ s11_send_init_udp (
   struct in_addr *address,
   uint16_t port_number)
 {
-  MessageDef                             *message_p = itti_alloc_new_message (TASK_S11, UDP_INIT);
+  MessageDef                             *message_p = itti_alloc_new_message_sized (TASK_S11, UDP_INIT, sizeof(udp_init_t));
   if (message_p == NULL) {
     return RETURNerror;
   }
-  message_p->ittiMsg.udp_init.port = port_number;
-  message_p->ittiMsg.udp_init.address.s_addr = address->s_addr;
+  UDP_INIT(message_p)->port = port_number;
+  UDP_INIT(message_p)->address.s_addr = address->s_addr;
   char ipv4[INET_ADDRSTRLEN];
-  inet_ntop (AF_INET, (void*)&message_p->ittiMsg.udp_init.address, ipv4, INET_ADDRSTRLEN);
-  OAILOG_DEBUG (LOG_S11, "Tx UDP_INIT IP addr %s:%" PRIu16 "\n", ipv4, message_p->ittiMsg.udp_init.port);
+  inet_ntop (AF_INET, (void*)&UDP_INIT(message_p)->address, ipv4, INET_ADDRSTRLEN);
+  OAILOG_DEBUG (LOG_S11, "Tx UDP_INIT IP addr %s:%" PRIu16 "\n", ipv4, UDP_INIT(message_p)->port);
   return itti_send_msg_to_task (TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
 

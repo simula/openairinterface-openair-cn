@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-#define ASYNC_SYSTEM_COMMAND(mSGpTR)                     (mSGpTR)->ittiMsg.async_system_command
+#define ASYNC_SYSTEM_COMMAND(mSGpTR)                     ((itti_async_system_command_t*)(mSGpTR)->itti_msg)
 
 typedef struct itti_async_system_command_s {
   bstring                  system_command;

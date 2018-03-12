@@ -354,24 +354,16 @@ itti_alloc_new_message_sized (
     origin_task_id = itti_get_current_task_id ();
   }
 
-  temp = itti_malloc (origin_task_id, TASK_UNKNOWN, sizeof (MessageHeader) + size);
-
-  // better to do it here than in client code
-  memset(&temp->ittiMsg, 0, size);
+  temp = itti_malloc (origin_task_id, TASK_UNKNOWN, sizeof (MessageHeader));
+  // better to clear here than in client code
+  temp->itti_msg = itti_malloc (origin_task_id, TASK_UNKNOWN, size);
+  memset(temp->itti_msg, 0, size);
 
   temp->ittiMsgHeader.messageId = message_id;
   temp->ittiMsgHeader.originTaskId = origin_task_id;
   temp->ittiMsgHeader.ittiMsgSize = size;
   VCD_SIGNAL_DUMPER_DUMP_VARIABLE_BY_NAME (VCD_SIGNAL_DUMPER_VARIABLE_ITTI_ALLOC_MSG, 0);
   return temp;
-}
-
-MessageDef                             *
-itti_alloc_new_message (
-  task_id_t origin_task_id,
-  MessagesIds message_id)
-{
-  return itti_alloc_new_message_sized (origin_task_id, message_id, itti_desc.messages_info[message_id].size);
 }
 
 int
@@ -970,6 +962,6 @@ itti_send_terminate_message (
 {
   MessageDef                             *terminate_message_p;
 
-  terminate_message_p = itti_alloc_new_message (task_id, TERMINATE_MESSAGE);
+  terminate_message_p = itti_alloc_new_message_sized (task_id, TERMINATE_MESSAGE, 0);
   itti_send_broadcast_message (terminate_message_p);
 }

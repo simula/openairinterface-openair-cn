@@ -46,6 +46,23 @@
 #include "common_defs.h"
 #include "intertask_interface.h"
 #include "itti_free_defined_msg.h"
+#include "intertask_messages_types.h"
+#include "timer_messages_types.h"
+#include "gtpv1_u_messages_types.h"
+#include "s11_messages_types.h"
+#if MME_BUILD
+#include "s1ap_messages_types.h"
+#include "nas_messages_types.h"
+#include "s6a_messages_types.h"
+#include "sctp_messages_types.h"
+#include "mme_app_messages_types.h"
+#endif
+#if SPGW_BUILD
+#include "sgw_messages_types.h"
+#include "ip_forward_messages_types.h"
+#endif
+#include "udp_messages_types.h"
+#include "async_system_messages_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,8 +72,8 @@ void itti_free_msg_content (MessageDef * const message_p)
 {
   switch (ITTI_MSG_ID (message_p)) {
   case ASYNC_SYSTEM_COMMAND:{
-      if (ASYNC_SYSTEM_COMMAND (message_p).system_command) {
-        bdestroy_wrapper(&ASYNC_SYSTEM_COMMAND (message_p).system_command);
+      if (ASYNC_SYSTEM_COMMAND (message_p)->system_command) {
+        bdestroy_wrapper(&ASYNC_SYSTEM_COMMAND (message_p)->system_command);
       }
     }
     break;
@@ -80,7 +97,7 @@ void itti_free_msg_content (MessageDef * const message_p)
     break;
 
   case SGI_CREATE_ENDPOINT_RESPONSE: {
-    clear_protocol_configuration_options(&message_p->ittiMsg.sgi_create_end_point_response.pco);
+    clear_protocol_configuration_options(&SGI_CREATE_ENDPOINT_RESPONSE(message_p)->pco);
   }
   break;
 
@@ -104,16 +121,16 @@ void itti_free_msg_content (MessageDef * const message_p)
     break;
 
   case NAS_PDN_CONNECTIVITY_REQ:{
-    clear_protocol_configuration_options(&message_p->ittiMsg.nas_pdn_connectivity_req.pco);
-    bdestroy_wrapper (&message_p->ittiMsg.nas_pdn_connectivity_req.apn);
-    bdestroy_wrapper (&message_p->ittiMsg.nas_pdn_connectivity_req.pdn_addr);
-    AssertFatal(NULL == message_p->ittiMsg.nas_pdn_connectivity_req.pdn_addr, "TODO clean pointer");
+    clear_protocol_configuration_options(&NAS_PDN_CONNECTIVITY_REQ(message_p)->pco);
+    bdestroy_wrapper (&NAS_PDN_CONNECTIVITY_REQ(message_p)->apn);
+    bdestroy_wrapper (&NAS_PDN_CONNECTIVITY_REQ(message_p)->pdn_addr);
+    AssertFatal(NULL == NAS_PDN_CONNECTIVITY_REQ(message_p)->pdn_addr, "TODO clean pointer");
   }
   break;
 
   case NAS_CONNECTION_ESTABLISHMENT_CNF:
-    bdestroy_wrapper (&message_p->ittiMsg.nas_conn_est_cnf.nas_msg);
-    AssertFatal(NULL == message_p->ittiMsg.nas_conn_est_cnf.nas_msg, "TODO clean pointer");
+    bdestroy_wrapper (&NAS_CONNECTION_ESTABLISHMENT_CNF(message_p)->nas_msg);
+    AssertFatal(NULL == NAS_CONNECTION_ESTABLISHMENT_CNF(message_p)->nas_msg, "TODO clean pointer");
     break;
 
   case NAS_CONNECTION_RELEASE_IND:
@@ -121,13 +138,13 @@ void itti_free_msg_content (MessageDef * const message_p)
     break;
 
   case NAS_UPLINK_DATA_IND:
-    bdestroy_wrapper (&message_p->ittiMsg.nas_ul_data_ind.nas_msg);
-    AssertFatal(NULL == message_p->ittiMsg.nas_ul_data_ind.nas_msg, "TODO clean pointer");
+    bdestroy_wrapper (&NAS_UPLINK_DATA_IND(message_p)->nas_msg);
+    AssertFatal(NULL == NAS_UPLINK_DATA_IND(message_p)->nas_msg, "TODO clean pointer");
     break;
 
   case NAS_DOWNLINK_DATA_REQ:
-    bdestroy_wrapper (&message_p->ittiMsg.nas_dl_data_req.nas_msg);
-    AssertFatal(NULL == message_p->ittiMsg.nas_dl_data_req.nas_msg, "TODO clean pointer");
+    bdestroy_wrapper (&NAS_DOWNLINK_DATA_REQ(message_p)->nas_msg);
+    AssertFatal(NULL == NAS_DOWNLINK_DATA_REQ(message_p)->nas_msg, "TODO clean pointer");
     break;
 
   case NAS_DOWNLINK_DATA_CNF:
@@ -135,8 +152,8 @@ void itti_free_msg_content (MessageDef * const message_p)
     break;
 
   case NAS_DOWNLINK_DATA_REJ:
-    bdestroy_wrapper (&message_p->ittiMsg.nas_dl_data_rej.nas_msg);
-    AssertFatal(NULL == message_p->ittiMsg.nas_dl_data_rej.nas_msg, "TODO clean pointer");
+    bdestroy_wrapper (&NAS_DOWNLINK_DATA_REJ(message_p)->nas_msg);
+    AssertFatal(NULL == NAS_DOWNLINK_DATA_REJ(message_p)->nas_msg, "TODO clean pointer");
     break;
 
   case NAS_AUTHENTICATION_PARAM_REQ:
@@ -145,9 +162,9 @@ void itti_free_msg_content (MessageDef * const message_p)
     break;
 
   case NAS_PDN_CONNECTIVITY_RSP:{
-    clear_protocol_configuration_options(&message_p->ittiMsg.nas_pdn_connectivity_rsp.pco);
-    bdestroy_wrapper (&message_p->ittiMsg.nas_pdn_connectivity_rsp.pdn_addr);
-    AssertFatal(NULL == message_p->ittiMsg.nas_pdn_connectivity_rsp.pdn_addr, "TODO clean pointer");
+    clear_protocol_configuration_options(&NAS_PDN_CONNECTIVITY_RSP(message_p)->pco);
+    bdestroy_wrapper (&NAS_PDN_CONNECTIVITY_RSP(message_p)->pdn_addr);
+    AssertFatal(NULL == NAS_PDN_CONNECTIVITY_RSP(message_p)->pdn_addr, "TODO clean pointer");
   }
   break;
 
@@ -157,22 +174,22 @@ void itti_free_msg_content (MessageDef * const message_p)
 #endif
 
   case S11_CREATE_SESSION_REQUEST: {
-    clear_protocol_configuration_options(&message_p->ittiMsg.s11_create_session_request.pco);
+    clear_protocol_configuration_options(&S11_CREATE_SESSION_REQUEST(message_p)->pco);
   }
   break;
 
   case S11_CREATE_SESSION_RESPONSE: {
-    clear_protocol_configuration_options(&message_p->ittiMsg.s11_create_session_response.pco);
+    clear_protocol_configuration_options(&S11_CREATE_SESSION_RESPONSE(message_p)->pco);
   }
   break;
 
   case S11_CREATE_BEARER_REQUEST: {
-    clear_protocol_configuration_options(&message_p->ittiMsg.s11_create_bearer_request.pco);
+    clear_protocol_configuration_options(&S11_CREATE_BEARER_REQUEST(message_p)->pco);
   }
   break;
 
   case S11_CREATE_BEARER_RESPONSE: {
-    clear_protocol_configuration_options(&message_p->ittiMsg.s11_create_bearer_response.pco);
+    clear_protocol_configuration_options(&S11_CREATE_BEARER_RESPONSE(message_p)->pco);
   }
   break;
 
@@ -183,7 +200,7 @@ void itti_free_msg_content (MessageDef * const message_p)
     break;
 
   case S11_DELETE_SESSION_RESPONSE: {
-    clear_protocol_configuration_options(&message_p->ittiMsg.s11_delete_session_response.pco);
+    clear_protocol_configuration_options(&S11_DELETE_SESSION_RESPONSE(message_p)->pco);
   }
   break;
 
@@ -227,11 +244,11 @@ void itti_free_msg_content (MessageDef * const message_p)
     break;
 
   case SCTP_DATA_REQ:
-    bdestroy_wrapper (&message_p->ittiMsg.sctp_data_req.payload);
+    bdestroy_wrapper (&SCTP_DATA_REQ(message_p)->payload);
     break;
 
   case SCTP_DATA_IND:
-    bdestroy_wrapper (&message_p->ittiMsg.sctp_data_ind.payload);
+    bdestroy_wrapper (&SCTP_DATA_IND(message_p)->payload);
     break;
 
   case SCTP_DATA_CNF:
@@ -249,6 +266,8 @@ void itti_free_msg_content (MessageDef * const message_p)
   default:
     ;
   }
+  itti_free (ITTI_MSG_ORIGIN_ID (message_p), message_p->itti_msg);
+  message_p->itti_msg = NULL;
 }
 
 #ifdef __cplusplus

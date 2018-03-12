@@ -69,7 +69,7 @@ s6a_peer_connected_cb (
     /*
      * Inform S1AP that connection to HSS is established
      */
-    message_p = itti_alloc_new_message (TASK_S6A, ACTIVATE_MESSAGE);
+    message_p = itti_alloc_new_message_sized (TASK_S6A, ACTIVATE_MESSAGE, 0);
     itti_send_msg_to_task (TASK_S1AP, INSTANCE_DEFAULT, message_p);
   }
 
@@ -174,7 +174,7 @@ s6a_fd_new_peer (
           /*
            * Inform S1AP that connection to HSS is established
            */
-          message_p = itti_alloc_new_message (TASK_S6A, ACTIVATE_MESSAGE);
+          message_p = itti_alloc_new_message_sized (TASK_S6A, ACTIVATE_MESSAGE, 0);
           itti_send_msg_to_task (TASK_S1AP, INSTANCE_DEFAULT, message_p);
 
           {

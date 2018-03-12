@@ -48,6 +48,7 @@
 #include "msc.h"
 #include "conversions.h"
 #include "intertask_interface.h"
+#include "udp_messages_types.h"
 #include "udp_primitives_server.h"
 #include "itti_free_defined_msg.h"
 
@@ -237,9 +238,9 @@ udp_server_receive_and_process (
       forwarded_buffer = itti_malloc (TASK_UDP, udp_sock_pP->task_id, bytes_received);
       DevAssert (forwarded_buffer != NULL);
       memcpy (forwarded_buffer, udp_sock_pP->buffer, bytes_received);
-      message_p = itti_alloc_new_message (TASK_UDP, UDP_DATA_IND);
+      message_p = itti_alloc_new_message_sized (TASK_UDP, UDP_DATA_IND, sizeof(udp_data_ind_t));
       DevAssert (message_p != NULL);
-      udp_data_ind_p = &message_p->ittiMsg.udp_data_ind;
+      udp_data_ind_p = UDP_DATA_IND(message_p);
       udp_data_ind_p->buffer = forwarded_buffer;
       udp_data_ind_p->buffer_length = bytes_received;
       udp_data_ind_p->peer_port = htons (addr.sin_port);
@@ -293,7 +294,7 @@ static void *udp_intertask_interface (void *args_p)
         break;
 
       case UDP_INIT:{
-          udp_init_t                             *udp_init_p = &received_message_p->ittiMsg.udp_init;
+          udp_init_t                             *udp_init_p = UDP_INIT(received_message_p);
           rc = udp_server_create_socket (udp_init_p->port, &udp_init_p->address, ITTI_MSG_ORIGIN_ID (received_message_p));
         }
         break;
@@ -305,7 +306,7 @@ static void *udp_intertask_interface (void *args_p)
           udp_data_req_t                         *udp_data_req_p;
           struct sockaddr_in                      peer_addr;
 
-          udp_data_req_p = &received_message_p->ittiMsg.udp_data_req;
+          udp_data_req_p = UDP_DATA_REQ(received_message_p);
           //UDP_DEBUG("-- UDP_DATA_REQ -----------------------------------------------------\n%s :\n",
           //        __FUNCTION__);
           //udp_print_hex_octets(&udp_data_req_p->buffer[udp_data_req_p->buffer_offset],

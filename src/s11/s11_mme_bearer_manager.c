@@ -46,6 +46,7 @@
 #include "NwGtpv2cMsg.h"
 #include "NwGtpv2cMsgParser.h"
 
+#include "s11_messages_types.h"
 #include "s11_common.h"
 #include "s11_mme_bearer_manager.h"
 #include "s11_ie_formatter.h"
@@ -110,8 +111,8 @@ s11_mme_handle_release_access_bearer_response (
   nw_gtpv2c_msg_parser_t                     *pMsgParser;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_RELEASE_ACCESS_BEARERS_RESPONSE);
-  resp_p = &message_p->ittiMsg.s11_release_access_bearers_response;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_RELEASE_ACCESS_BEARERS_RESPONSE, sizeof(itti_s11_release_access_bearers_response_t));
+  resp_p = S11_RELEASE_ACCESS_BEARERS_RESPONSE(message_p);
 
   resp_p->teid = nwGtpv2cMsgGetTeid(pUlpApi->hMsg);
 
@@ -275,8 +276,8 @@ s11_mme_handle_modify_bearer_response (
   nw_gtpv2c_msg_parser_t                     *pMsgParser;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_MODIFY_BEARER_RESPONSE);
-  resp_p = &message_p->ittiMsg.s11_modify_bearer_response;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_MODIFY_BEARER_RESPONSE, sizeof(itti_s11_modify_bearer_response_t));
+  resp_p = S11_MODIFY_BEARER_RESPONSE(message_p);
 
   resp_p->teid = nwGtpv2cMsgGetTeid(pUlpApi->hMsg);
 
@@ -347,10 +348,10 @@ s11_mme_handle_create_bearer_request (
   nw_gtpv2c_msg_parser_t                     *pMsgParser;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_CREATE_BEARER_REQUEST);
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_CREATE_BEARER_REQUEST, sizeof(itti_s11_create_bearer_request_t));
 
   if (message_p) {
-    req_p = &message_p->ittiMsg.s11_create_bearer_request;
+    req_p = S11_CREATE_BEARER_REQUEST(message_p);
 
     req_p->teid = nwGtpv2cMsgGetTeid(pUlpApi->hMsg);
     req_p->trxn = (void *)pUlpApi->u_api_info.initialReqIndInfo.hTrxn;

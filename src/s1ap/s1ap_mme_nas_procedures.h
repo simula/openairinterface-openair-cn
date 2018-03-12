@@ -31,6 +31,8 @@
 #define FILE_S1AP_MME_NAS_PROCEDURES_SEEN
 
 #include "common_defs.h"
+#include "mme_app_messages_types.h"
+#include "s1ap_messages_types.h"
 
 #ifdef __cplusplus
 extern "C" {

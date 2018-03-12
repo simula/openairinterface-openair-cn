@@ -33,10 +33,10 @@ extern "C" {
 #endif
 
 
-#define S6A_UPDATE_LOCATION_REQ(mSGpTR)  (mSGpTR)->ittiMsg.s6a_update_location_req
-#define S6A_UPDATE_LOCATION_ANS(mSGpTR)  (mSGpTR)->ittiMsg.s6a_update_location_ans
-#define S6A_AUTH_INFO_REQ(mSGpTR)        (mSGpTR)->ittiMsg.s6a_auth_info_req
-#define S6A_AUTH_INFO_ANS(mSGpTR)        (mSGpTR)->ittiMsg.s6a_auth_info_ans
+#define S6A_UPDATE_LOCATION_REQ(mSGpTR)  ((s6a_update_location_req_t*)(mSGpTR)->itti_msg)
+#define S6A_UPDATE_LOCATION_ANS(mSGpTR)  ((s6a_update_location_ans_t*)(mSGpTR)->itti_msg)
+#define S6A_AUTH_INFO_REQ(mSGpTR)        ((s6a_auth_info_req_t*)(mSGpTR)->itti_msg)
+#define S6A_AUTH_INFO_ANS(mSGpTR)        ((s6a_auth_info_ans_t*)(mSGpTR)->itti_msg)
 
 
 #define AUTS_LENGTH 14

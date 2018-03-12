@@ -45,6 +45,7 @@
 #include "log.h"
 #include "msc.h"
 #include "intertask_interface.h"
+#include "sctp_messages_types.h"
 #include "itti_free_defined_msg.h"
 #include "sctp_primitives_server.h"
 #include "conversions.h"
@@ -639,7 +640,7 @@ static void * sctp_intertask_interface (
         /*
          * We received a new connection request
          */
-        if ((sctp_sd = sctp_create_new_listener (&received_message_p->ittiMsg.sctpInit)) < 0) {
+        if ((sctp_sd = sctp_create_new_listener (SCTP_INIT_MSG(received_message_p))) < 0) {
           /*
            * SCTP socket creation or bind failed...
            * Die as this MME is not going to be useful.
@@ -654,21 +655,21 @@ static void * sctp_intertask_interface (
       break;
 
     case SCTP_DATA_REQ:{
-        if (sctp_send_msg (SCTP_DATA_REQ (received_message_p).assoc_id,
-            SCTP_DATA_REQ (received_message_p).stream,
-            &SCTP_DATA_REQ (received_message_p).payload) < 0) {
+        if (sctp_send_msg (SCTP_DATA_REQ (received_message_p)->assoc_id,
+            SCTP_DATA_REQ (received_message_p)->stream,
+            &SCTP_DATA_REQ (received_message_p)->payload) < 0) {
 
           sctp_itti_send_lower_layer_conf(received_message_p->ittiMsgHeader.originTaskId,
-              SCTP_DATA_REQ (received_message_p).assoc_id,
-              SCTP_DATA_REQ (received_message_p).stream,
-              SCTP_DATA_REQ (received_message_p).mme_ue_s1ap_id,
+              SCTP_DATA_REQ (received_message_p)->assoc_id,
+              SCTP_DATA_REQ (received_message_p)->stream,
+              SCTP_DATA_REQ (received_message_p)->mme_ue_s1ap_id,
               false);
         } /* NO NEED FOR CONFIRM success yet else {
-          if (INVALID_MME_UE_S1AP_ID != SCTP_DATA_REQ (received_message_p).mme_ue_s1ap_id) {
+          if (INVALID_MME_UE_S1AP_ID != SCTP_DATA_REQ (received_message_p)->mme_ue_s1ap_id) {
             sctp_itti_send_lower_layer_conf(received_message_p->ittiMsgHeader.originTaskId,
-                SCTP_DATA_REQ (received_message_p).assoc_id,
-                SCTP_DATA_REQ (received_message_p).stream,
-                SCTP_DATA_REQ (received_message_p).mme_ue_s1ap_id,
+                SCTP_DATA_REQ (received_message_p)->assoc_id,
+                SCTP_DATA_REQ (received_message_p)->stream,
+                SCTP_DATA_REQ (received_message_p)->mme_ue_s1ap_id,
                 true);
           }
         }*/

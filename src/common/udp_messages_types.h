@@ -31,7 +31,9 @@
 extern "C" {
 #endif
 
-#define UDP_INIT(mSGpTR)    (mSGpTR)->ittiMsg.udp_init
+#define UDP_INIT(mSGpTR)        ((udp_init_t*)(mSGpTR)->itti_msg)
+#define UDP_DATA_IND(mSGpTR)    ((udp_data_ind_t*)(mSGpTR)->itti_msg)
+#define UDP_DATA_REQ(mSGpTR)    ((udp_data_req_t*)(mSGpTR)->itti_msg)
 
 typedef struct {
   struct in_addr  address;

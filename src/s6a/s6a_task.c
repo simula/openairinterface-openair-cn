@@ -116,11 +116,11 @@ void *s6a_thread (void *args)
       }
       break;
     case S6A_AUTH_INFO_REQ:{
-        s6a_generate_authentication_info_req (&received_message_p->ittiMsg.s6a_auth_info_req);
+        s6a_generate_authentication_info_req (S6A_AUTH_INFO_REQ(received_message_p));
       }
       break;
     case S6A_UPDATE_LOCATION_REQ:{
-        s6a_generate_update_location (&received_message_p->ittiMsg.s6a_update_location_req);
+        s6a_generate_update_location (S6A_UPDATE_LOCATION_REQ(received_message_p));
       }
       break;
     case TIMER_HAS_EXPIRED:{

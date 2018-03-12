@@ -28,6 +28,8 @@
 #ifndef S6A_MESSAGES_H_
 #define S6A_MESSAGES_H_
 
+#include "s6a_messages_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

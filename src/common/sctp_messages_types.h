@@ -29,16 +29,18 @@
 #ifndef FILE_SCTP_MESSAGES_TYPES_SEEN
 #define FILE_SCTP_MESSAGES_TYPES_SEEN
 
+#include "common_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define SCTP_DATA_IND(mSGpTR)           (mSGpTR)->ittiMsg.sctp_data_ind
-#define SCTP_DATA_REQ(mSGpTR)           (mSGpTR)->ittiMsg.sctp_data_req
-#define SCTP_DATA_CNF(mSGpTR)           (mSGpTR)->ittiMsg.sctp_data_cnf
-#define SCTP_INIT_MSG(mSGpTR)           (mSGpTR)->ittiMsg.sctpInit
-#define SCTP_NEW_ASSOCIATION(mSGpTR)    (mSGpTR)->ittiMsg.sctp_new_peer
-#define SCTP_CLOSE_ASSOCIATION(mSGpTR)  (mSGpTR)->ittiMsg.sctp_close_association
+#define SCTP_DATA_IND(mSGpTR)           ((sctp_data_ind_t*)(mSGpTR)->itti_msg)
+#define SCTP_DATA_REQ(mSGpTR)           ((sctp_data_req_t*)(mSGpTR)->itti_msg)
+#define SCTP_DATA_CNF(mSGpTR)           ((sctp_data_cnf_t*)(mSGpTR)->itti_msg)
+#define SCTP_INIT_MSG(mSGpTR)           ((SctpInit*)(mSGpTR)->itti_msg)
+#define SCTP_NEW_ASSOCIATION(mSGpTR)    ((sctp_new_peer_t*)(mSGpTR)->itti_msg)
+#define SCTP_CLOSE_ASSOCIATION(mSGpTR)  ((sctp_close_association_t*)(mSGpTR)->itti_msg)
 
 
 //typedef struct sctp_data_rej_s {

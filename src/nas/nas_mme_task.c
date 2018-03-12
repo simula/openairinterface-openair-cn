@@ -39,6 +39,9 @@
 #include "assertions.h"
 #include "common_defs.h"
 #include "intertask_interface.h"
+#include "mme_app_messages_types.h"
+#include "nas_messages_types.h"
+#include "timer_messages_types.h"
 #include "itti_free_defined_msg.h"
 #include "mme_config.h"
 #include "nas_defs.h"
@@ -70,41 +73,41 @@ static void *nas_intertask_interface (void *args_p)
       break;
 
     case MME_APP_CREATE_DEDICATED_BEARER_REQ:
-      nas_proc_create_dedicated_bearer(&MME_APP_CREATE_DEDICATED_BEARER_REQ (received_message_p));
+      nas_proc_create_dedicated_bearer(MME_APP_CREATE_DEDICATED_BEARER_REQ (received_message_p));
       break;
 
     case NAS_DOWNLINK_DATA_CNF:{
-        nas_proc_dl_transfer_cnf (NAS_DL_DATA_CNF (received_message_p).ue_id, NAS_DL_DATA_CNF (received_message_p).err_code, &NAS_DL_DATA_REJ (received_message_p).nas_msg);
+        nas_proc_dl_transfer_cnf (NAS_DOWNLINK_DATA_CNF (received_message_p)->ue_id, NAS_DOWNLINK_DATA_CNF (received_message_p)->err_code, &NAS_DOWNLINK_DATA_REJ (received_message_p)->nas_msg);
       }
       break;
 
     case NAS_DOWNLINK_DATA_REJ:{
-        nas_proc_dl_transfer_rej (NAS_DL_DATA_REJ (received_message_p).ue_id, NAS_DL_DATA_REJ (received_message_p).err_code, &NAS_DL_DATA_REJ (received_message_p).nas_msg);
+        nas_proc_dl_transfer_rej (NAS_DOWNLINK_DATA_REJ (received_message_p)->ue_id, NAS_DOWNLINK_DATA_REJ (received_message_p)->err_code, &NAS_DOWNLINK_DATA_REJ (received_message_p)->nas_msg);
       }
       break;
 
     case NAS_PDN_CONFIG_RSP:{
-      nas_proc_pdn_config_res (&NAS_PDN_CONFIG_RSP (received_message_p));
+      nas_proc_pdn_config_res (NAS_PDN_CONFIG_RSP (received_message_p));
     }
     break;
 
     case NAS_PDN_CONNECTIVITY_FAIL:{
-        nas_proc_pdn_connectivity_fail (&NAS_PDN_CONNECTIVITY_FAIL (received_message_p));
+        nas_proc_pdn_connectivity_fail (NAS_PDN_CONNECTIVITY_FAIL (received_message_p));
       }
       break;
 
     case NAS_PDN_CONNECTIVITY_RSP:{
-        nas_proc_pdn_connectivity_res (&NAS_PDN_CONNECTIVITY_RSP (received_message_p));
+        nas_proc_pdn_connectivity_res (NAS_PDN_CONNECTIVITY_RSP (received_message_p));
       }
       break;
 
     case NAS_IMPLICIT_DETACH_UE_IND:{
-        nas_proc_implicit_detach_ue_ind (NAS_IMPLICIT_DETACH_UE_IND (received_message_p).ue_id);
+        nas_proc_implicit_detach_ue_ind (NAS_IMPLICIT_DETACH_UE_IND (received_message_p)->ue_id);
       }
       break;
 
     case S1AP_DEREGISTER_UE_REQ:{
-        nas_proc_deregister_ue (S1AP_DEREGISTER_UE_REQ (received_message_p).mme_ue_s1ap_id);
+        nas_proc_deregister_ue (S1AP_DEREGISTER_UE_REQ (received_message_p)->mme_ue_s1ap_id);
       }
       break;
 
@@ -113,7 +116,7 @@ static void *nas_intertask_interface (void *args_p)
          * We received the authentication vectors from HSS, trigger a ULR
          * for now. Normaly should trigger an authentication procedure with UE.
          */
-        nas_proc_authentication_info_answer (&S6A_AUTH_INFO_ANS(received_message_p));
+        nas_proc_authentication_info_answer (S6A_AUTH_INFO_ANS(received_message_p));
       }
       break;
 
@@ -130,7 +133,7 @@ static void *nas_intertask_interface (void *args_p)
         /*
          * Call the NAS timer api
          */
-        nas_timer_handle_signal_expiry (TIMER_HAS_EXPIRED (received_message_p).timer_id, TIMER_HAS_EXPIRED (received_message_p).arg);
+        nas_timer_handle_signal_expiry (TIMER_HAS_EXPIRED (received_message_p)->timer_id, TIMER_HAS_EXPIRED (received_message_p)->arg);
       }
       break;
 

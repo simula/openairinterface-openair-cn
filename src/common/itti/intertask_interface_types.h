@@ -53,11 +53,9 @@
 /* Extract the instance from a message */
 #define ITTI_MESSAGE_GET_INSTANCE(mESSAGE)  ((mESSAGE)->ittiMsgHeader.instance)
 
-#include <messages_types.h>
-
 /* This enum defines messages ids. Each one is unique. */
 typedef enum {
-#define MESSAGE_DEF(iD, pRIO, sTRUCT, fIELDnAME) iD,
+#define MESSAGE_DEF(iD, pRIO) iD,
 #include <messages_def.h>
 #undef MESSAGE_DEF
 
@@ -101,12 +99,6 @@ typedef enum {
   TASK_FIRST = 1,
 } task_id_t;
 
-typedef union msg_s {
-#define MESSAGE_DEF(iD, pRIO, sTRUCT, fIELDnAME) sTRUCT fIELDnAME;
-#include <messages_def.h>
-#undef MESSAGE_DEF
-} msg_t;
-
 typedef uint16_t MessageHeaderSize;
 
 typedef struct itti_lte_time_s {
@@ -135,7 +127,7 @@ typedef struct MessageHeader_s {
  */
 typedef struct __attribute__ ((__packed__)) MessageDef_s {
   MessageHeader ittiMsgHeader; /**< Message header */
-  msg_t         ittiMsg; /**< Union of payloads as defined in x_messages_def.h headers */
+  void*         itti_msg; /**< Union of payloads as defined in x_messages_def.h headers */
 } MessageDef;
 
 #endif /* INTERTASK_INTERFACE_TYPES_H_ */

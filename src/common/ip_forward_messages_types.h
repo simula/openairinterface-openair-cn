@@ -30,6 +30,13 @@
 extern "C" {
 #endif
 
+#define SGI_CREATE_ENDPOINT_REQUEST(mSGpTR)       ((itti_sgi_create_end_point_request_t*)(mSGpTR)->itti_msg)
+#define SGI_CREATE_ENDPOINT_RESPONSE(mSGpTR)      ((itti_sgi_create_end_point_response_t*)(mSGpTR)->itti_msg)
+#define SGI_UPDATE_ENDPOINT_REQUEST(mSGpTR)       ((itti_sgi_update_end_point_request_t*)(mSGpTR)->itti_msg)
+#define SGI_UPDATE_ENDPOINT_RESPONSE(mSGpTR)      ((itti_sgi_update_end_point_response_t*)(mSGpTR)->itti_msg)
+#define SGI_DELETE_ENDPOINT_REQUEST(mSGpTR)       ((itti_sgi_delete_end_point_request_t*)(mSGpTR)->itti_msg)
+#define SGI_DELETE_ENDPOINT_RESPONSE(mSGpTR)      ((itti_sgi_delete_end_point_response_t*)(mSGpTR)->itti_msg)
+
 typedef enum SGIStatus_e {
   SGI_STATUS_OK                                           = 16,
   SGI_STATUS_ERROR_CONTEXT_NOT_FOUND                      = 64,

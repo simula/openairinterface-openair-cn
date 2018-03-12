@@ -34,6 +34,7 @@
 
 #include "intertask_interface.h"
 #include "timer.h"
+#include "timer_messages_types.h"
 #include "log.h"
 #include "queue.h"
 #include "dynamic_memory_check.h"
@@ -89,8 +90,8 @@ timer_handle_signal (
   // TMR_DEBUG("Timer with id 0x%lx has expired", (long)timer_p->timer);
   task_id = timer_p->task_id;
   instance = timer_p->instance;
-  message_p = itti_alloc_new_message (TASK_TIMER, TIMER_HAS_EXPIRED);
-  timer_expired_p = &message_p->ittiMsg.timer_has_expired;
+  message_p = itti_alloc_new_message_sized (TASK_TIMER, TIMER_HAS_EXPIRED, sizeof(timer_has_expired_t));
+  timer_expired_p = TIMER_HAS_EXPIRED(message_p);
   timer_expired_p->timer_id = (long)timer_p->timer;
   timer_expired_p->arg = timer_p->timer_arg;
 

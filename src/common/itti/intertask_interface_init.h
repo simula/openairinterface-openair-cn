@@ -54,7 +54,7 @@ const task_info_t tasks_info[] = {
 
 /* Map message id to message information */
 const message_info_t messages_info[] = {
-#define MESSAGE_DEF(iD, pRIO, sTRUCT, fIELDnAME) { iD, pRIO, sizeof(sTRUCT), #iD },
+#define MESSAGE_DEF(iD, pRIO) { iD, pRIO, #iD },
 #include <messages_def.h>
 #undef MESSAGE_DEF
 };

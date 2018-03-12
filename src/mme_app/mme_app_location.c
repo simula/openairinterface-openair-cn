@@ -43,6 +43,7 @@
 #include "common_types.h"
 #include "conversions.h"
 #include "intertask_interface.h"
+#include "mme_app_messages_types.h"
 #include "gcc_diag.h"
 #include "common_defs.h"
 #include "mme_config.h"
@@ -64,13 +65,13 @@ int mme_app_send_s6a_update_location_req (
   int                                     rc = RETURNok;
 
 
-  message_p = itti_alloc_new_message (TASK_MME_APP, S6A_UPDATE_LOCATION_REQ);
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, S6A_UPDATE_LOCATION_REQ, sizeof(s6a_update_location_req_t));
 
   if (message_p == NULL) {
     OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
   }
 
-  s6a_ulr_p = &message_p->ittiMsg.s6a_update_location_req;
+  s6a_ulr_p = S6A_UPDATE_LOCATION_REQ(message_p);
   IMSI_TO_STRING((&ue_mm_context->emm_context._imsi),s6a_ulr_p->imsi, IMSI_BCD_DIGITS_MAX+1);
   s6a_ulr_p->imsi_length = strlen (s6a_ulr_p->imsi);
   s6a_ulr_p->initial_attach = INITIAL_ATTACH;
@@ -159,7 +160,7 @@ int mme_app_handle_s6a_update_location_ans (
   MessageDef                             *message_p = NULL;
   itti_nas_pdn_config_rsp_t              *nas_pdn_config_rsp = NULL;
 
-  message_p = itti_alloc_new_message (TASK_MME_APP, NAS_PDN_CONFIG_RSP);
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, NAS_PDN_CONFIG_RSP, sizeof(itti_nas_pdn_config_rsp_t));
 
   if (message_p == NULL) {
     unlock_ue_contexts(ue_mm_context);
@@ -177,7 +178,7 @@ int mme_app_handle_s6a_update_location_ans (
   ue_mm_context->implicit_detach_timer.sec = (ue_mm_context->mobile_reachability_timer.sec) + MME_APP_DELTA_REACHABILITY_IMPLICIT_DETACH_TIMER * 60;
 
 
-  nas_pdn_config_rsp = &message_p->ittiMsg.nas_pdn_config_rsp;
+  nas_pdn_config_rsp = NAS_PDN_CONFIG_RSP(message_p);
   nas_pdn_config_rsp->ue_id = ue_mm_context->mme_ue_s1ap_id;
   MSC_LOG_TX_MESSAGE (MSC_MMEAPP_MME, MSC_NAS_MME, NULL, 0, "0 NAS_PDN_CONFIG_RESP imsi %s", ula_pP->imsi);
   rc =  itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);

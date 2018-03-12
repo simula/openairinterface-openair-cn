@@ -32,28 +32,29 @@
 #include "nas_message.h"
 #include "as_message.h"
 #include "networkDef.h"
+#include "3gpp_29.274.h"
+#include "s1ap_messages_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define NAS_UL_DATA_IND(mSGpTR)                     (mSGpTR)->ittiMsg.nas_ul_data_ind
-#define NAS_DL_DATA_REQ(mSGpTR)                     (mSGpTR)->ittiMsg.nas_dl_data_req
-#define NAS_DL_DATA_CNF(mSGpTR)                     (mSGpTR)->ittiMsg.nas_dl_data_cnf
-#define NAS_DL_DATA_REJ(mSGpTR)                     (mSGpTR)->ittiMsg.nas_dl_data_rej
-#define NAS_PDN_CONFIG_REQ(mSGpTR)                  (mSGpTR)->ittiMsg.nas_pdn_config_req
-#define NAS_PDN_CONFIG_RSP(mSGpTR)                  (mSGpTR)->ittiMsg.nas_pdn_config_rsp
-#define NAS_PDN_CONFIG_FAIL(mSGpTR)                 (mSGpTR)->ittiMsg.nas_pdn_config_fail
-#define NAS_PDN_CONNECTIVITY_REQ(mSGpTR)            (mSGpTR)->ittiMsg.nas_pdn_connectivity_req
-#define NAS_PDN_CONNECTIVITY_RSP(mSGpTR)            (mSGpTR)->ittiMsg.nas_pdn_connectivity_rsp
-#define NAS_PDN_CONNECTIVITY_FAIL(mSGpTR)           (mSGpTR)->ittiMsg.nas_pdn_connectivity_fail
-#define NAS_CONNECTION_ESTABLISHMENT_CNF(mSGpTR)    (mSGpTR)->ittiMsg.nas_conn_est_cnf
-#define NAS_BEARER_PARAM(mSGpTR)                    (mSGpTR)->ittiMsg.nas_bearer_param
-#define NAS_AUTHENTICATION_REQ(mSGpTR)              (mSGpTR)->ittiMsg.nas_auth_req
-#define NAS_AUTHENTICATION_PARAM_REQ(mSGpTR)        (mSGpTR)->ittiMsg.nas_auth_param_req
-#define NAS_DETACH_REQ(mSGpTR)                      (mSGpTR)->ittiMsg.nas_detach_req
-#define NAS_ERAB_SETUP_REQ(mSGpTR)                  (mSGpTR)->ittiMsg.itti_erab_setup_req
-#define NAS_IMPLICIT_DETACH_UE_IND(mSGpTR)          (mSGpTR)->ittiMsg.nas_implicit_detach_ue_ind
+#define NAS_UPLINK_DATA_IND(mSGpTR)                 ((itti_nas_ul_data_ind_t*)(mSGpTR)->itti_msg)
+#define NAS_DOWNLINK_DATA_REQ(mSGpTR)               ((itti_nas_dl_data_req_t*)(mSGpTR)->itti_msg)
+#define NAS_DOWNLINK_DATA_CNF(mSGpTR)               ((itti_nas_dl_data_cnf_t*)(mSGpTR)->itti_msg)
+#define NAS_DOWNLINK_DATA_REJ(mSGpTR)               ((itti_nas_dl_data_rej_t*)(mSGpTR)->itti_msg)
+#define NAS_PDN_CONFIG_REQ(mSGpTR)                  ((itti_nas_pdn_config_req_t*)(mSGpTR)->itti_msg)
+#define NAS_PDN_CONFIG_RSP(mSGpTR)                  ((itti_nas_pdn_config_rsp_t*)(mSGpTR)->itti_msg)
+#define NAS_PDN_CONFIG_FAIL(mSGpTR)                 ((itti_nas_pdn_config_fail_t*)(mSGpTR)->itti_msg)
+#define NAS_PDN_CONNECTIVITY_REQ(mSGpTR)            ((itti_nas_pdn_connectivity_req_t*)(mSGpTR)->itti_msg)
+#define NAS_PDN_CONNECTIVITY_RSP(mSGpTR)            ((itti_nas_pdn_connectivity_rsp_t*)(mSGpTR)->itti_msg)
+#define NAS_PDN_CONNECTIVITY_FAIL(mSGpTR)           ((itti_nas_pdn_connectivity_fail_t*)(mSGpTR)->itti_msg)
+#define NAS_CONNECTION_ESTABLISHMENT_CNF(mSGpTR)    ((itti_nas_conn_est_cnf_t*)(mSGpTR)->itti_msg)
+#define NAS_AUTHENTICATION_REQ(mSGpTR)              ((itti_nas_auth_req_t*)(mSGpTR)->itti_msg)
+#define NAS_AUTHENTICATION_PARAM_REQ(mSGpTR)        ((itti_nas_auth_param_req_t*)(mSGpTR)->itti_msg)
+#define NAS_DETACH_REQ(mSGpTR)                      ((itti_nas_detach_req_t*)(mSGpTR)->itti_msg)
+#define NAS_ERAB_SETUP_REQ(mSGpTR)                  ((itti_erab_setup_req_t*)(mSGpTR)->itti_msg)
+#define NAS_IMPLICIT_DETACH_UE_IND(mSGpTR)          ((itti_nas_implicit_detach_ue_ind_t*)(mSGpTR)->itti_msg)
 
 
 typedef enum pdn_conn_rsp_cause_e {

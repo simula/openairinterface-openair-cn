@@ -83,7 +83,7 @@ main (
   gtpv1u_init (&mme_config);
   ipv4_init (&mme_config);
   sgw_lite_init (&mme_config);
-  message_p = itti_alloc_new_message (TASK_S1AP, MESSAGE_TEST);
+  message_p = itti_alloc_new_message_sized (TASK_S1AP, MESSAGE_TEST, 0);
 
   while (i < (1 << 15)) {
     if (send_broadcast_message (message_p) < 0) {

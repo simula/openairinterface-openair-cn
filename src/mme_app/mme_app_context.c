@@ -1155,19 +1155,18 @@ mme_app_handle_enb_reset_req (const itti_s1ap_enb_initiated_reset_req_t const * 
   }
   // Send Reset Ack to S1AP module
 
-  message_p = itti_alloc_new_message (TASK_MME_APP, S1AP_ENB_INITIATED_RESET_ACK);
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, S1AP_ENB_INITIATED_RESET_ACK, sizeof(itti_s1ap_enb_initiated_reset_ack_t));
   DevAssert (message_p != NULL);
-  memset ((void *)&message_p->ittiMsg.s1ap_enb_initiated_reset_ack, 0, sizeof (itti_s1ap_enb_initiated_reset_ack_t));
-  S1AP_ENB_INITIATED_RESET_ACK (message_p).s1ap_reset_type = enb_reset_req->s1ap_reset_type;
-  S1AP_ENB_INITIATED_RESET_ACK (message_p).sctp_assoc_id = enb_reset_req->sctp_assoc_id;
-  S1AP_ENB_INITIATED_RESET_ACK (message_p).sctp_stream_id = enb_reset_req->sctp_stream_id;
-  S1AP_ENB_INITIATED_RESET_ACK (message_p).num_ue = enb_reset_req->num_ue;
+  S1AP_ENB_INITIATED_RESET_ACK (message_p)->s1ap_reset_type = enb_reset_req->s1ap_reset_type;
+  S1AP_ENB_INITIATED_RESET_ACK (message_p)->sctp_assoc_id = enb_reset_req->sctp_assoc_id;
+  S1AP_ENB_INITIATED_RESET_ACK (message_p)->sctp_stream_id = enb_reset_req->sctp_stream_id;
+  S1AP_ENB_INITIATED_RESET_ACK (message_p)->num_ue = enb_reset_req->num_ue;
   /* 
    * Send the same ue_reset_list to S1AP module to be used to construct S1AP Reset Ack message. This would be freed by
    * S1AP module.
    */
   
-  S1AP_ENB_INITIATED_RESET_ACK (message_p).ue_to_reset_list = enb_reset_req->ue_to_reset_list; 
+  S1AP_ENB_INITIATED_RESET_ACK (message_p)->ue_to_reset_list = enb_reset_req->ue_to_reset_list;
   itti_send_msg_to_task (TASK_S1AP, INSTANCE_DEFAULT, message_p);
   OAILOG_DEBUG (LOG_MME_APP, " Reset Ack sent to S1AP. eNB id = %d, reset_type  %d \n ", enb_reset_req->enb_id, enb_reset_req->s1ap_reset_type); 
   OAILOG_FUNC_OUT (LOG_MME_APP);
@@ -1329,9 +1328,9 @@ _mme_app_handle_s1ap_ue_context_release (const mme_ue_s1ap_id_t mme_ue_s1ap_id,
   }
   if (ue_mm_context->mm_state == UE_UNREGISTERED) {
     // Initiate Implicit Detach for the UE
-    message_p = itti_alloc_new_message (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND);
+    message_p = itti_alloc_new_message_sized (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND, sizeof(itti_nas_implicit_detach_ue_ind_t));
     DevAssert (message_p != NULL);
-    message_p->ittiMsg.nas_implicit_detach_ue_ind.ue_id = ue_mm_context->mme_ue_s1ap_id;
+    NAS_IMPLICIT_DETACH_UE_IND(message_p)->ue_id = ue_mm_context->mme_ue_s1ap_id;
     itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
   } else {
     // release S1-U tunnel mapping in S_GW for all the active bearers for the UE

@@ -33,17 +33,17 @@
 extern "C" {
 #endif
 
-#define S11_CREATE_SESSION_REQUEST(mSGpTR)         (mSGpTR)->ittiMsg.s11_create_session_request
-#define S11_CREATE_SESSION_RESPONSE(mSGpTR)        (mSGpTR)->ittiMsg.s11_create_session_response
-#define S11_CREATE_BEARER_REQUEST(mSGpTR)          (mSGpTR)->ittiMsg.s11_create_bearer_request
-#define S11_CREATE_BEARER_RESPONSE(mSGpTR)         (mSGpTR)->ittiMsg.s11_create_bearer_response
-#define S11_MODIFY_BEARER_REQUEST(mSGpTR)          (mSGpTR)->ittiMsg.s11_modify_bearer_request
-#define S11_MODIFY_BEARER_RESPONSE(mSGpTR)         (mSGpTR)->ittiMsg.s11_modify_bearer_response
-#define S11_DELETE_SESSION_REQUEST(mSGpTR)         (mSGpTR)->ittiMsg.s11_delete_session_request
-#define S11_DELETE_BEARER_COMMAND(mSGpTR)          (mSGpTR)->ittiMsg.s11_delete_bearer_command
-#define S11_DELETE_SESSION_RESPONSE(mSGpTR)        (mSGpTR)->ittiMsg.s11_delete_session_response
-#define S11_RELEASE_ACCESS_BEARERS_REQUEST(mSGpTR) (mSGpTR)->ittiMsg.s11_release_access_bearers_request
-#define S11_RELEASE_ACCESS_BEARERS_RESPONSE(mSGpTR) (mSGpTR)->ittiMsg.s11_release_access_bearers_response
+#define S11_CREATE_SESSION_REQUEST(mSGpTR)         ((itti_s11_create_session_request_t*)(mSGpTR)->itti_msg)
+#define S11_CREATE_SESSION_RESPONSE(mSGpTR)        ((itti_s11_create_session_response_t*)(mSGpTR)->itti_msg)
+#define S11_CREATE_BEARER_REQUEST(mSGpTR)          ((itti_s11_create_bearer_request_t*)(mSGpTR)->itti_msg)
+#define S11_CREATE_BEARER_RESPONSE(mSGpTR)         ((itti_s11_create_bearer_response_t*)(mSGpTR)->itti_msg)
+#define S11_MODIFY_BEARER_REQUEST(mSGpTR)          ((itti_s11_modify_bearer_request_t*)(mSGpTR)->itti_msg)
+#define S11_MODIFY_BEARER_RESPONSE(mSGpTR)         ((itti_s11_modify_bearer_response_t*)(mSGpTR)->itti_msg)
+#define S11_DELETE_SESSION_REQUEST(mSGpTR)         ((itti_s11_delete_session_request_t*)(mSGpTR)->itti_msg)
+#define S11_DELETE_BEARER_COMMAND(mSGpTR)          ((itti_s11_delete_bearer_command_t*)(mSGpTR)->itti_msg)
+#define S11_DELETE_SESSION_RESPONSE(mSGpTR)        ((itti_s11_delete_session_response_t*)(mSGpTR)->itti_msg)
+#define S11_RELEASE_ACCESS_BEARERS_REQUEST(mSGpTR) ((itti_s11_release_access_bearers_request_t*)(mSGpTR)->itti_msg)
+#define S11_RELEASE_ACCESS_BEARERS_RESPONSE(mSGpTR) ((itti_s11_release_access_bearers_response_t*)(mSGpTR)->itti_msg)
 
 //-----------------------------------------------------------------------------
 /** @struct itti_s11_create_session_request_t
@@ -1090,7 +1090,7 @@ typedef struct itti_s11_delete_bearer_command_s {
   // TODO
   void           *trxn;
   struct in_addr  peer_ip;
-} itti_s11_delete_bearer_command_s;
+} itti_s11_delete_bearer_command_t;
 
 #ifdef __cplusplus
 }

@@ -40,7 +40,8 @@ Description
 
 #ifndef FILE_EMM_CNDEF_SEEN
 #define FILE_EMM_CNDEF_SEEN
-#include "intertask_interface.h"
+#include "mme_app_messages_types.h"
+#include "nas_messages_types.h"
 
 #ifdef __cplusplus
 extern "C" {

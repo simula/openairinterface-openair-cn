@@ -66,13 +66,13 @@ void mme_app_itti_ue_context_release(struct ue_mm_context_s *ue_context_p, enum 
 {
   MessageDef *message_p;
 
-  message_p = itti_alloc_new_message(TASK_MME_APP, S1AP_UE_CONTEXT_RELEASE_COMMAND);
+  message_p = itti_alloc_new_message_sized(TASK_MME_APP, S1AP_UE_CONTEXT_RELEASE_COMMAND, sizeof(itti_s1ap_ue_context_release_command_t));
 
-  S1AP_UE_CONTEXT_RELEASE_COMMAND (message_p).mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
-  S1AP_UE_CONTEXT_RELEASE_COMMAND (message_p).enb_ue_s1ap_id = ue_context_p->enb_ue_s1ap_id;
-  S1AP_UE_CONTEXT_RELEASE_COMMAND (message_p).cause = cause;
+  S1AP_UE_CONTEXT_RELEASE_COMMAND (message_p)->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
+  S1AP_UE_CONTEXT_RELEASE_COMMAND (message_p)->enb_ue_s1ap_id = ue_context_p->enb_ue_s1ap_id;
+  S1AP_UE_CONTEXT_RELEASE_COMMAND (message_p)->cause = cause;
   MSC_LOG_TX_MESSAGE (MSC_MMEAPP_MME, MSC_S1AP_MME, NULL, 0, "0 S1AP_UE_CONTEXT_RELEASE_COMMAND mme_ue_s1ap_id %06" PRIX32 " ",
-                      S1AP_UE_CONTEXT_RELEASE_COMMAND (message_p).mme_ue_s1ap_id);
+                      S1AP_UE_CONTEXT_RELEASE_COMMAND (message_p)->mme_ue_s1ap_id);
   itti_send_msg_to_task (TASK_S1AP, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_OUT (LOG_MME_APP);
 }
@@ -89,8 +89,8 @@ int mme_app_send_s11_release_access_bearers_req (struct ue_mm_context_s *const u
   int                                     rc = RETURNok;
 
   DevAssert (ue_mm_context );
-  message_p = itti_alloc_new_message (TASK_MME_APP, S11_RELEASE_ACCESS_BEARERS_REQUEST);
-  release_access_bearers_request_p = &message_p->ittiMsg.s11_release_access_bearers_request;
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, S11_RELEASE_ACCESS_BEARERS_REQUEST, sizeof(itti_s11_release_access_bearers_request_t));
+  release_access_bearers_request_p = S11_RELEASE_ACCESS_BEARERS_REQUEST(message_p);
   release_access_bearers_request_p->local_teid = ue_mm_context->mme_teid_s11;
   pdn_context_t * pdn_connection = ue_mm_context->pdn_contexts[pdn_index];
   release_access_bearers_request_p->teid = pdn_connection->s_gw_teid_s11_s4;
@@ -128,7 +128,7 @@ int mme_app_send_s11_create_session_req (struct ue_mm_context_s *const ue_mm_con
     DevMessage ("Not implemented: ACCESS NOT GRANTED, send ESM Failure to NAS\n");
   }
 
-  message_p = itti_alloc_new_message (TASK_MME_APP, S11_CREATE_SESSION_REQUEST);
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, S11_CREATE_SESSION_REQUEST, sizeof(itti_s11_create_session_request_t));
   /*
    * WARNING:
    * Some parameters should be provided by NAS Layer:
@@ -144,7 +144,7 @@ int mme_app_send_s11_create_session_req (struct ue_mm_context_s *const ue_mm_con
    * - selection_mode
    * Set these parameters with random values for now.
    */
-  session_request_p = &message_p->ittiMsg.s11_create_session_request;
+  session_request_p = S11_CREATE_SESSION_REQUEST(message_p);
   /*
    * As the create session request is the first exchanged message and as
    * no tunnel had been previously setup, the distant teid is set to 0.

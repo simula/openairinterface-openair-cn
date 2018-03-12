@@ -29,6 +29,8 @@
 #ifndef FILE_3GPP_29_274_SEEN
 #define FILE_3GPP_29_274_SEEN
 #include <arpa/inet.h>
+#include "common_types.h"
+#include "3gpp_24.008.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

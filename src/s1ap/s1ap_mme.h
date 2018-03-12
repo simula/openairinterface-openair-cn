@@ -34,6 +34,8 @@
 #endif
 
 #include "hashtable.h"
+#include "common_types.h"
+#include "3gpp_36.401.h"
 
 #ifdef __cplusplus
 extern "C" {

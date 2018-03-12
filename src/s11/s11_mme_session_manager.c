@@ -47,6 +47,7 @@
 #include "NwGtpv2cMsg.h"
 #include "NwGtpv2cMsgParser.h"
 
+#include "s11_messages_types.h"
 #include "s11_common.h"
 #include "s11_mme_session_manager.h"
 #include "s11_ie_formatter.h"
@@ -148,8 +149,8 @@ s11_mme_handle_create_session_response (
   nw_gtpv2c_msg_parser_t                     *pMsgParser;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_CREATE_SESSION_RESPONSE);
-  resp_p = &message_p->ittiMsg.s11_create_session_response;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_CREATE_SESSION_RESPONSE, sizeof(itti_s11_create_session_response_t));
+  resp_p = S11_CREATE_SESSION_RESPONSE(message_p);
 
   resp_p->teid = nwGtpv2cMsgGetTeid(pUlpApi->hMsg);
 
@@ -300,8 +301,8 @@ s11_mme_handle_delete_session_response (
   hashtable_rc_t                          hash_rc = HASH_TABLE_OK;
 
   DevAssert (stack_p );
-  message_p = itti_alloc_new_message (TASK_S11, S11_DELETE_SESSION_RESPONSE);
-  resp_p = &message_p->ittiMsg.s11_delete_session_response;
+  message_p = itti_alloc_new_message_sized (TASK_S11, S11_DELETE_SESSION_RESPONSE, sizeof(itti_s11_delete_session_response_t));
+  resp_p = S11_DELETE_SESSION_RESPONSE(message_p);
 
   resp_p->teid = nwGtpv2cMsgGetTeid(pUlpApi->hMsg);
 

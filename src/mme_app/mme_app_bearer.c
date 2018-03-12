@@ -42,6 +42,7 @@
 #include "conversions.h"
 #include "common_types.h"
 #include "intertask_interface.h"
+#include "mme_app_messages_types.h"
 #include "mme_config.h"
 #include "mme_app_extern.h"
 #include "mme_app_ue_context.h"
@@ -125,8 +126,8 @@ mme_app_handle_conn_est_cnf (
     OAILOG_FUNC_OUT (LOG_MME_APP);
   }
 
-  message_p = itti_alloc_new_message (TASK_MME_APP, MME_APP_CONNECTION_ESTABLISHMENT_CNF);
-  establishment_cnf_p = &message_p->ittiMsg.mme_app_connection_establishment_cnf;
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, MME_APP_CONNECTION_ESTABLISHMENT_CNF, sizeof(itti_mme_app_connection_establishment_cnf_t));
+  establishment_cnf_p = MME_APP_CONNECTION_ESTABLISHMENT_CNF(message_p);
 
   establishment_cnf_p->ue_id = nas_conn_est_cnf_pP->ue_id;
 
@@ -362,8 +363,8 @@ mme_app_handle_erab_setup_req (itti_erab_setup_req_t * const itti_erab_setup_req
   bearer_context_t* bearer_context = mme_app_get_bearer_context(ue_context_p, itti_erab_setup_req->ebi);
 
   if (bearer_context) {
-    MessageDef  *message_p = itti_alloc_new_message (TASK_MME_APP, S1AP_E_RAB_SETUP_REQ);
-    itti_s1ap_e_rab_setup_req_t *s1ap_e_rab_setup_req = &message_p->ittiMsg.s1ap_e_rab_setup_req;
+    MessageDef  *message_p = itti_alloc_new_message_sized (TASK_MME_APP, S1AP_E_RAB_SETUP_REQ, sizeof(itti_s1ap_e_rab_setup_req_t));
+    itti_s1ap_e_rab_setup_req_t *s1ap_e_rab_setup_req = S1AP_E_RAB_SETUP_REQ(message_p);
 
     s1ap_e_rab_setup_req->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
     s1ap_e_rab_setup_req->enb_ue_s1ap_id = ue_context_p->enb_ue_s1ap_id;
@@ -502,9 +503,8 @@ mme_app_handle_create_sess_resp (
 
   if (create_sess_resp_pP->cause.cause_value != REQUEST_ACCEPTED) {
     // Send PDN CONNECTIVITY FAIL message  to NAS layer
-    message_p = itti_alloc_new_message (TASK_MME_APP, NAS_PDN_CONNECTIVITY_FAIL);
-    itti_nas_pdn_connectivity_fail_t *nas_pdn_connectivity_fail = &message_p->ittiMsg.nas_pdn_connectivity_fail;
-    memset ((void *)nas_pdn_connectivity_fail, 0, sizeof (itti_nas_pdn_connectivity_fail_t));
+    message_p = itti_alloc_new_message_sized (TASK_MME_APP, NAS_PDN_CONNECTIVITY_FAIL, sizeof(itti_nas_pdn_connectivity_fail_t));
+    itti_nas_pdn_connectivity_fail_t *nas_pdn_connectivity_fail = NAS_PDN_CONNECTIVITY_FAIL(message_p);
     bearer_id = create_sess_resp_pP->bearer_contexts_created.bearer_contexts[0].eps_bearer_id /* - 5 */ ;
     current_bearer_p = mme_app_get_bearer_context(ue_context_p, bearer_id);
     if (current_bearer_p) {
@@ -572,8 +572,8 @@ mme_app_handle_create_sess_resp (
   }
 
   //uint8_t *keNB = NULL;
-  message_p = itti_alloc_new_message (TASK_MME_APP, NAS_PDN_CONNECTIVITY_RSP);
-  itti_nas_pdn_connectivity_rsp_t *nas_pdn_connectivity_rsp = &message_p->ittiMsg.nas_pdn_connectivity_rsp;
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, NAS_PDN_CONNECTIVITY_RSP, sizeof(itti_nas_pdn_connectivity_rsp_t));
+  itti_nas_pdn_connectivity_rsp_t *nas_pdn_connectivity_rsp = NAS_PDN_CONNECTIVITY_RSP(message_p);
 
   nas_pdn_connectivity_rsp->pdn_cid = pdn_cx_id;
   nas_pdn_connectivity_rsp->pti = transaction_identifier;  // NAS internal ref
@@ -642,9 +642,9 @@ mme_app_handle_initial_context_setup_rsp (
     ue_context_p->initial_context_setup_rsp_timer.id = MME_APP_TIMER_INACTIVE_ID;
   }
 
-  message_p = itti_alloc_new_message (TASK_MME_APP, S11_MODIFY_BEARER_REQUEST);
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, S11_MODIFY_BEARER_REQUEST, sizeof(itti_s11_modify_bearer_request_t));
   AssertFatal (message_p , "itti_alloc_new_message Failed");
-  itti_s11_modify_bearer_request_t *s11_modify_bearer_request = &message_p->ittiMsg.s11_modify_bearer_request;
+  itti_s11_modify_bearer_request_t *s11_modify_bearer_request = S11_MODIFY_BEARER_REQUEST(message_p);
   s11_modify_bearer_request->local_teid = ue_context_p->mme_teid_s11;
   /*
    * Delay Value in integer multiples of 50 millisecs, or zero
@@ -793,24 +793,24 @@ mme_app_handle_s11_create_bearer_req (
     dedicated_bc->preemption_capability    = msg_bc->bearer_level_qos.pci;
 
     // forward request to NAS
-    MessageDef  *message_p = itti_alloc_new_message (TASK_MME_APP, MME_APP_CREATE_DEDICATED_BEARER_REQ);
+    MessageDef  *message_p = itti_alloc_new_message_sized (TASK_MME_APP, MME_APP_CREATE_DEDICATED_BEARER_REQ, sizeof(itti_mme_app_create_dedicated_bearer_req_t));
     AssertFatal (message_p , "itti_alloc_new_message Failed");
-    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).ue_id          = ue_context_p->mme_ue_s1ap_id;
-    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).cid            = cid;
-    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).ebi            = dedicated_bc->ebi;
-    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).linked_ebi     = ue_context_p->pdn_contexts[cid]->default_ebi;
-    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).bearer_qos     = msg_bc->bearer_level_qos;
+    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->ue_id          = ue_context_p->mme_ue_s1ap_id;
+    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->cid            = cid;
+    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->ebi            = dedicated_bc->ebi;
+    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->linked_ebi     = ue_context_p->pdn_contexts[cid]->default_ebi;
+    MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->bearer_qos     = msg_bc->bearer_level_qos;
     if (msg_bc->tft.numberofpacketfilters) {
-      MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).tft = calloc(1, sizeof(traffic_flow_template_t));
-      copy_traffic_flow_template(MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).tft, &msg_bc->tft);
+      MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->tft = calloc(1, sizeof(traffic_flow_template_t));
+      copy_traffic_flow_template(MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->tft, &msg_bc->tft);
     }
     if (msg_bc->pco.num_protocol_or_container_id) {
-      MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).pco = calloc(1, sizeof(protocol_configuration_options_t));
-      copy_protocol_configuration_options(MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).pco, &msg_bc->pco);
+      MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->pco = calloc(1, sizeof(protocol_configuration_options_t));
+      copy_protocol_configuration_options(MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->pco, &msg_bc->pco);
     }
 
     MSC_LOG_TX_MESSAGE (MSC_MMEAPP_MME, MSC_NAS_MME, NULL, 0, "0 MME_APP_CREATE_DEDICATED_BEARER_REQ mme_ue_s1ap_id " MME_UE_S1AP_ID_FMT " qci %u ebi %u cid %u",
-        MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p).ue_id, dedicated_bc->qci, dedicated_bc->ebi, cid);
+        MME_APP_CREATE_DEDICATED_BEARER_REQ (message_p)->ue_id, dedicated_bc->qci, dedicated_bc->ebi, cid);
     itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
   }
   unlock_ue_contexts(ue_context_p);
@@ -881,9 +881,9 @@ void mme_app_handle_e_rab_setup_rsp (itti_s1ap_e_rab_setup_rsp_t  * const e_rab_
 
   // check if UE already responded with NAS (may depend on eNB implementation?) -> send response to SGW
   if (send_s11_response) {
-    MessageDef  *message_p = itti_alloc_new_message (TASK_MME_APP, S11_CREATE_BEARER_RESPONSE);
+    MessageDef  *message_p = itti_alloc_new_message_sized (TASK_MME_APP, S11_CREATE_BEARER_RESPONSE, sizeof(itti_s11_create_bearer_response_t));
     AssertFatal (message_p , "itti_alloc_new_message Failed");
-    itti_s11_create_bearer_response_t *s11_create_bearer_response = &message_p->ittiMsg.s11_create_bearer_response;
+    itti_s11_create_bearer_response_t *s11_create_bearer_response = S11_CREATE_BEARER_RESPONSE(message_p);
     s11_create_bearer_response->local_teid = ue_context_p->mme_teid_s11;
     s11_create_bearer_response->trxn = NULL;
     s11_create_bearer_response->cause.cause_value = 0;
@@ -963,9 +963,9 @@ mme_app_handle_implicit_detach_timer_expiry (struct ue_mm_context_s *ue_context_
   ue_context_p->implicit_detach_timer.id = MME_APP_TIMER_INACTIVE_ID;
   
   // Initiate Implicit Detach for the UE
-  message_p = itti_alloc_new_message (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND);
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND, sizeof(itti_nas_implicit_detach_ue_ind_t));
   DevAssert (message_p != NULL);
-  message_p->ittiMsg.nas_implicit_detach_ue_ind.ue_id = ue_context_p->mme_ue_s1ap_id;
+  NAS_IMPLICIT_DETACH_UE_IND(message_p)->ue_id = ue_context_p->mme_ue_s1ap_id;
   MSC_LOG_TX_MESSAGE (MSC_MMEAPP_MME, MSC_NAS_MME, NULL, 0, "0 NAS_IMPLICIT_DETACH_UE_IND_MESSAGE");
   itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_OUT (LOG_MME_APP);
@@ -988,9 +988,9 @@ mme_app_handle_initial_context_setup_rsp_timer_expiry (struct ue_mm_context_s *u
   ue_context_p->ue_context_rel_cause = S1AP_INITIAL_CONTEXT_SETUP_FAILED;
   if (ue_context_p->mm_state == UE_UNREGISTERED) {
     // Initiate Implicit Detach for the UE
-    message_p = itti_alloc_new_message (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND);
+    message_p = itti_alloc_new_message_sized (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND, sizeof(itti_nas_implicit_detach_ue_ind_t));
     DevAssert (message_p != NULL);
-    message_p->ittiMsg.nas_implicit_detach_ue_ind.ue_id = ue_context_p->mme_ue_s1ap_id;
+    NAS_IMPLICIT_DETACH_UE_IND(message_p)->ue_id = ue_context_p->mme_ue_s1ap_id;
     itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
   } else {
     // Release S1-U bearer and move the UE to idle mode
@@ -1033,9 +1033,9 @@ mme_app_handle_initial_context_setup_failure (
   ue_context_p->ue_context_rel_cause = S1AP_INITIAL_CONTEXT_SETUP_FAILED;
   if (ue_context_p->mm_state == UE_UNREGISTERED) {
     // Initiate Implicit Detach for the UE
-    message_p = itti_alloc_new_message (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND);
+    message_p = itti_alloc_new_message_sized (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND, sizeof(itti_nas_implicit_detach_ue_ind_t));
     DevAssert (message_p != NULL);
-    message_p->ittiMsg.nas_implicit_detach_ue_ind.ue_id = ue_context_p->mme_ue_s1ap_id;
+    NAS_IMPLICIT_DETACH_UE_IND(message_p)->ue_id = ue_context_p->mme_ue_s1ap_id;
     itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
   } else {
     // Release S1-U bearer and move the UE to idle mode 
@@ -1114,9 +1114,8 @@ static void notify_s1ap_new_ue_mme_s1ap_id_association (struct ue_mm_context_s *
     OAILOG_ERROR (LOG_MME_APP, " NULL UE context ptr\n" );
     OAILOG_FUNC_OUT (LOG_MME_APP);
   }
-  message_p = itti_alloc_new_message (TASK_MME_APP, MME_APP_S1AP_MME_UE_ID_NOTIFICATION);
-  notification_p = &message_p->ittiMsg.mme_app_s1ap_mme_ue_id_notification;
-  memset (notification_p, 0, sizeof (itti_mme_app_s1ap_mme_ue_id_notification_t)); 
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, MME_APP_S1AP_MME_UE_ID_NOTIFICATION, sizeof(itti_mme_app_s1ap_mme_ue_id_notification_t));
+  notification_p = MME_APP_S1AP_MME_UE_ID_NOTIFICATION(message_p);
   notification_p->enb_ue_s1ap_id = ue_context_p->enb_ue_s1ap_id; 
   notification_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
   notification_p->sctp_assoc_id  = ue_context_p->sctp_assoc_id_key;

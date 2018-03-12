@@ -41,6 +41,7 @@
 #include "common_types.h"
 #include "common_defs.h"
 #include "intertask_interface.h"
+#include "s6a_messages_types.h"
 #include "s6a_defs.h"
 #include "s6a_messages.h"
 
@@ -230,8 +231,8 @@ s6a_aia_cb (
    */
   CHECK_FCT (fd_msg_answ_getq (ans, &qry));
   DevAssert (qry );
-  message_p = itti_alloc_new_message (TASK_S6A, S6A_AUTH_INFO_ANS);
-  s6a_auth_info_ans_p = &message_p->ittiMsg.s6a_auth_info_ans;
+  message_p = itti_alloc_new_message_sized (TASK_S6A, S6A_AUTH_INFO_ANS, sizeof(s6a_auth_info_ans_t));
+  s6a_auth_info_ans_p = S6A_AUTH_INFO_ANS(message_p);
   OAILOG_DEBUG (LOG_S6A, "Received S6A Authentication Information Answer (AIA)\n");
   CHECK_FCT (fd_msg_search_avp (qry, s6a_fd_cnf.dataobj_s6a_user_name, &avp));
 

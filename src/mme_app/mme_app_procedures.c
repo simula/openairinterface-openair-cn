@@ -130,10 +130,10 @@ static void mme_app_free_s11_procedure_create_bearer(mme_app_s11_proc_t **s11_pr
 //------------------------------------------------------------------------------
 void mme_app_s11_procedure_create_bearer_send_response(ue_mm_context_t * const ue_context_p, mme_app_s11_proc_create_bearer_t* s11_proc_create)
 {
-  MessageDef  *message_p = itti_alloc_new_message (TASK_MME_APP, S11_CREATE_BEARER_RESPONSE);
+  MessageDef  *message_p = itti_alloc_new_message_sized (TASK_MME_APP, S11_CREATE_BEARER_RESPONSE, sizeof(itti_s11_create_bearer_response_t));
   AssertFatal (message_p , "itti_alloc_new_message Failed");
 
-  itti_s11_create_bearer_response_t *s11_create_bearer_response = &message_p->ittiMsg.s11_create_bearer_response;
+  itti_s11_create_bearer_response_t *s11_create_bearer_response = S11_CREATE_BEARER_RESPONSE(message_p);
   s11_create_bearer_response->local_teid = ue_context_p->mme_teid_s11;
   s11_create_bearer_response->trxn = (void*)s11_proc_create->proc.s11_trxn;
   s11_create_bearer_response->cause.cause_value = 0;

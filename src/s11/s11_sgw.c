@@ -54,6 +54,8 @@
 #include "s11_sgw.h"
 #include "s11_sgw_bearer_manager.h"
 #include "s11_sgw_session_manager.h"
+#include "timer_messages_types.h"
+#include "udp_messages_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -138,8 +140,8 @@ static nw_rc_t s11_sgw_send_udp_msg (
   udp_data_req_t                         *udp_data_req_p;
   int                                     ret = 0;
 
-  message_p = itti_alloc_new_message (TASK_S11, UDP_DATA_REQ);
-  udp_data_req_p = &message_p->ittiMsg.udp_data_req;
+  message_p = itti_alloc_new_message_sized (TASK_S11, UDP_DATA_REQ, sizeof(udp_data_req_t));
+  udp_data_req_p = UDP_DATA_REQ(message_p);
   udp_data_req_p->peer_address.s_addr = peerIpAddr->s_addr;
   udp_data_req_p->peer_port = peerPort;
   udp_data_req_p->buffer = buffer;
@@ -212,7 +214,7 @@ static void *s11_sgw_thread (void *args)
         nw_rc_t                                   rc;
         udp_data_ind_t                         *udp_data_ind;
 
-        udp_data_ind = &received_message_p->ittiMsg.udp_data_ind;
+        udp_data_ind = UDP_DATA_IND(received_message_p);
         OAILOG_DEBUG (LOG_S11, "Processing new data indication from UDP\n");
         rc = nwGtpv2cProcessUdpReq (s11_sgw_stack_handle, udp_data_ind->buffer, udp_data_ind->buffer_length, udp_data_ind->peer_port, &udp_data_ind->peer_address);
         DevAssert (rc == NW_OK);
@@ -221,38 +223,38 @@ static void *s11_sgw_thread (void *args)
 
     case S11_CREATE_BEARER_REQUEST:{
         OAILOG_DEBUG (LOG_S11, "Received S11_CREATE_BEARER_REQUEST from S-PGW APP\n");
-        s11_sgw_handle_create_bearer_request (&s11_sgw_stack_handle, &received_message_p->ittiMsg.s11_create_bearer_request);
+        s11_sgw_handle_create_bearer_request (&s11_sgw_stack_handle, S11_CREATE_BEARER_REQUEST(received_message_p));
       }
       break;
 
     case S11_CREATE_SESSION_RESPONSE:{
         OAILOG_DEBUG (LOG_S11, "Received S11_CREATE_SESSION_RESPONSE from S-PGW APP\n");
-        s11_sgw_handle_create_session_response (&s11_sgw_stack_handle, &received_message_p->ittiMsg.s11_create_session_response);
+        s11_sgw_handle_create_session_response (&s11_sgw_stack_handle, S11_CREATE_SESSION_RESPONSE(received_message_p));
       }
       break;
 
     case S11_DELETE_SESSION_RESPONSE:{
         OAILOG_DEBUG (LOG_S11, "Received S11_DELETE_SESSION_RESPONSE from S-PGW APP\n");
-        s11_sgw_handle_delete_session_response (&s11_sgw_stack_handle, &received_message_p->ittiMsg.s11_delete_session_response);
+        s11_sgw_handle_delete_session_response (&s11_sgw_stack_handle, S11_DELETE_SESSION_RESPONSE(received_message_p));
       }
       break;
 
     case S11_MODIFY_BEARER_RESPONSE:{
         OAILOG_DEBUG (LOG_S11, "Received S11_MODIFY_BEARER_RESPONSE from S-PGW APP\n");
-        s11_sgw_handle_modify_bearer_response (&s11_sgw_stack_handle, &received_message_p->ittiMsg.s11_modify_bearer_response);
+        s11_sgw_handle_modify_bearer_response (&s11_sgw_stack_handle, S11_MODIFY_BEARER_RESPONSE(received_message_p));
       }
       break;
 
     case S11_RELEASE_ACCESS_BEARERS_RESPONSE:{
         OAILOG_DEBUG (LOG_S11, "Received S11_RELEASE_ACCESS_BEARERS_RESPONSE from S-PGW APP\n");
-        s11_sgw_handle_release_access_bearers_response (&s11_sgw_stack_handle, &received_message_p->ittiMsg.s11_release_access_bearers_response);
+        s11_sgw_handle_release_access_bearers_response (&s11_sgw_stack_handle, S11_RELEASE_ACCESS_BEARERS_RESPONSE(received_message_p));
       }
       break;
 
     case TIMER_HAS_EXPIRED:{
         OAILOG_DEBUG (LOG_S11, "Received event TIMER_HAS_EXPIRED for timer_id 0x%lx and arg %p\n",
-            received_message_p->ittiMsg.timer_has_expired.timer_id, received_message_p->ittiMsg.timer_has_expired.arg);
-        DevAssert (nwGtpv2cProcessTimeout (received_message_p->ittiMsg.timer_has_expired.arg) == NW_OK);
+            TIMER_HAS_EXPIRED(received_message_p)->timer_id, TIMER_HAS_EXPIRED(received_message_p)->arg);
+        DevAssert (nwGtpv2cProcessTimeout (TIMER_HAS_EXPIRED(received_message_p)->arg) == NW_OK);
       }
       break;
 
@@ -282,17 +284,17 @@ static int s11_send_init_udp (struct in_addr *address, uint16_t port_number)
 {
   MessageDef                             *message_p;
 
-  message_p = itti_alloc_new_message (TASK_S11, UDP_INIT);
+  message_p = itti_alloc_new_message_sized (TASK_S11, UDP_INIT, sizeof(udp_init_t));
 
   if (message_p == NULL) {
     return RETURNerror;
   }
 
-  message_p->ittiMsg.udp_init.port = port_number;
-  message_p->ittiMsg.udp_init.address.s_addr = address->s_addr;
+  UDP_INIT(message_p)->port = port_number;
+  UDP_INIT(message_p)->address.s_addr = address->s_addr;
   char ipv4[INET_ADDRSTRLEN];
-  inet_ntop (AF_INET, (void*)&message_p->ittiMsg.udp_init.address, ipv4, INET_ADDRSTRLEN);
-  OAILOG_DEBUG (LOG_S11, "Tx UDP_INIT IP addr %s:%" PRIu16"\n", ipv4, message_p->ittiMsg.udp_init.port);
+  inet_ntop (AF_INET, (void*)&UDP_INIT(message_p)->address, ipv4, INET_ADDRSTRLEN);
+  OAILOG_DEBUG (LOG_S11, "Tx UDP_INIT IP addr %s:%" PRIu16"\n", ipv4, UDP_INIT(message_p)->port);
   return itti_send_msg_to_task (TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
 

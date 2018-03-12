@@ -64,7 +64,7 @@ int mme_app_handle_nas_dl_req (
   enb_ue_s1ap_id_t                        enb_ue_s1ap_id = 0;
 
 
-  message_p = itti_alloc_new_message (TASK_MME_APP, S1AP_NAS_DL_DATA_REQ);
+  message_p = itti_alloc_new_message_sized (TASK_MME_APP, S1AP_NAS_DL_DATA_REQ, sizeof(itti_s1ap_nas_dl_data_req_t));
 
   ue_mm_context_t   *ue_context = mme_ue_context_exists_mme_ue_s1ap_id (&mme_app_desc.mme_ue_contexts, nas_dl_req_pP->ue_id);
   DevAssert(ue_context != NULL);
@@ -75,9 +75,9 @@ int mme_app_handle_nas_dl_req (
     OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
   }
   
-  S1AP_NAS_DL_DATA_REQ (message_p).enb_ue_s1ap_id         = enb_ue_s1ap_id;
-  S1AP_NAS_DL_DATA_REQ (message_p).mme_ue_s1ap_id         = nas_dl_req_pP->ue_id;
-  S1AP_NAS_DL_DATA_REQ (message_p).nas_msg                = bstrcpy(nas_dl_req_pP->nas_msg);
+  S1AP_NAS_DL_DATA_REQ (message_p)->enb_ue_s1ap_id         = enb_ue_s1ap_id;
+  S1AP_NAS_DL_DATA_REQ (message_p)->mme_ue_s1ap_id         = nas_dl_req_pP->ue_id;
+  S1AP_NAS_DL_DATA_REQ (message_p)->nas_msg                = bstrcpy(nas_dl_req_pP->nas_msg);
 
   MSC_LOG_TX_MESSAGE (MSC_MMEAPP_MME,TASK_S1AP,NULL, 0,
       "0 DOWNLINK NAS TRANSPORT enb_ue_s1ap_id " ENB_UE_S1AP_ID_FMT " ue id " MME_UE_S1AP_ID_FMT " ",
