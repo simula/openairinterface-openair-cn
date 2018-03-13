@@ -1,0 +1,131 @@
+################################################################################
+# Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The OpenAirInterface Software Alliance licenses this file to You under
+# the Apache License, Version 2.0  (the "License"); you may not use this file
+# except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#-------------------------------------------------------------------------------
+# For more information about the OpenAirInterface (OAI) Software Alliance:
+#      contact@openairinterface.org
+################################################################################
+
+# file build_helper
+# brief
+# author Laurent Thomas, Lionel GAUTHIER
+#
+#######################################
+SCRIPT=$(readlink -f ${BASH_SOURCE})
+THIS_SCRIPT_PATH=`dirname $SCRIPT`
+source $THIS_SCRIPT_PATH/build_helper
+#-------------------------------------------------------------------------------
+install_ovs_from_source(){
+  if [ $1 -eq 0 ]; then
+    OPTION=""
+    read -p "Do you want to install Open vSwitch patched? <y/N> " prompt
+  else
+    prompt='y'
+    OPTION="-y"
+  fi
+  
+  if [[ $prompt =~ [yY](es)* ]]
+  then
+    # optional but recommended for secure connection towards controller
+    $SUDO apt-get install $OPTION libssl-dev libcap-ng-dev python-pip python-six
+    [[ $? -ne 0 ]] && return $?
+
+    # required by ovs
+    # if problems with locale:
+    # locale
+    # sudo locale-gen "en_US.UTF-8"
+    # sudo dpkg-reconfigure locales
+    
+    #echo 'OVS: Upgrading pip'
+    # sudo -H python -m pip install --upgrade pip
+    #sudo -H pip install --upgrade pip
+    #[[ $? -ne 0 ]] && return $?
+    
+    #echo 'OVS: Installing six'
+    #sudo -H python -m pip install six
+    #sudo -H pip install six
+    #echo $?
+    #[[ $? -ne 0 ]] && return $?
+
+    $SUDO modprobe --quiet --remove gtp
+    $SUDO modprobe --quiet --remove openvswitch  
+
+    $SUDO rm -rf /tmp/gtp
+    mkdir /tmp/gtp
+    cd /tmp/gtp
+    echo 'OVS: Cloning openair-cn-extras'
+    git clone https://github.com/OPENAIRINTERFACE/openair-cn-extras.git
+    [[ $? -ne 0 ]] && return $?
+
+    cd openair-cn-extras/linux-4.9.0-gtp-module/
+    make
+    [[ $? -ne 0 ]] && return $?
+    $SUDO make install
+    [[ $? -ne 0 ]] && return $?
+    $SUDO sync
+    $SUDO depmod -a
+    $SUDO modprobe udp_tunnel
+    $SUDO modprobe ip6_udp_tunnel
+    $SUDO modprobe gtp
+    [[ $? -ne 0 ]] && return $?
+
+    git_username=`git config --get user.name`
+    if [ "$git_username" == "" ]; then
+      if [ $1 -eq 0 ]; then
+        echo "You haven't configured your Git yet. Please, provide a name and e-mail address."
+        echo -n 'Name:' 
+        read git_username
+        echo -n 'E-mail:' 
+        read git_email
+        git config --global user.name "$git_username"
+        git config --global user.email "$git_email"
+      else
+        git config --global user.name "ciopenaircn"
+        git config --global user.email "ciopenaircn@openairinterface.org"
+      fi
+    fi
+
+    $SUDO rm -rf /tmp/ovs
+    cd /tmp
+    git clone https://github.com/openvswitch/ovs.git
+    [[ $? -ne 0 ]] && return $?
+    cd ovs
+    git checkout 31b88c97512b5dca9f1f6f73bb33292618eee88a
+    [[ $? -ne 0 ]] && return $?
+    git am /tmp/gtp/openair-cn-extras/ovs/0001-datapath-GPRS-Tunneling-Protocol-GTP-support.patch
+    [[ $? -ne 0 ]] && return $?
+    git am /tmp/gtp/openair-cn-extras/ovs/0002-userspace-GPRS-Tunneling-Protocol-GTP-support.patch
+    [[ $? -ne 0 ]] && return $?
+
+    ./boot.sh
+    ./configure --with-linux=/lib/modules/`uname -r`/build
+    [[ $? -ne 0 ]] && return $?
+    make -j`nproc`
+    [[ $? -ne 0 ]] && return $?
+    cat /tmp/gtp/openair-cn-extras/linux-4.9.0-gtp-module/Module.symvers >> datapath/linux/Module.symvers
+    make
+    $SUDO make modules_install  # this overwrites openvswitch.ko, vport.ko, vport-gtp.ko, etc.
+    [[ $? -ne 0 ]] && return $?
+    $SUDO make install
+    [[ $? -ne 0 ]] && return $?
+    $SUDO mkdir -p /usr/local/etc/openvswitch
+    $SUDO mkdir -p /usr/local/var/run/openvswitch
+    $SUDO ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema
+    [[ $? -ne 0 ]] && return $?
+  fi
+  return 0
+}
+
