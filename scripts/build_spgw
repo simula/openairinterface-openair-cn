@@ -81,7 +81,7 @@ function main()
       -h | --help)
         help
         shift;
-        exit 0
+        return 0
         ;;
       -i | --check-installed-software)
         echo "Check installed software packages necessary to build and run S/P-GW (support $SUPPORTED_DISTRO):"
@@ -104,7 +104,7 @@ function main()
       *)   
         echo "Unknown option $1"
         help
-        exit 1
+        return 1
         ;;
     esac
   done

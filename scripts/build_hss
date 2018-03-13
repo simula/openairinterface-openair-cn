@@ -89,7 +89,7 @@ function main()
         ;;
       -h | --help)
         help
-        exit 0
+        return 0
         ;;
       -i | --check-installed-software)
         echo "Check installed software packages necessary to build and run HSS (support $SUPPORTED_DISTRO):"
@@ -107,7 +107,7 @@ function main()
       *)   
         echo "Unknown option $1"
         help
-        exit 1
+        return 1
         ;;
     esac
   done
@@ -136,7 +136,7 @@ function main()
   
   if [[ z$OPENAIRCN_DIR = z ]]; then
     echo_error "OPENAIRCN_DIR env variable not set, exiting"
-    [[ $? -ne 0 ]] && return $?
+    return 1
   fi
 
 

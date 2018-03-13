@@ -118,7 +118,8 @@ function main()
         ;;
       -S | --split-mob-lfs-repo)
         if [ ! -d $2 ]; then
-          echo_fatal "\"$2\" is not a known directory on this local file system, abort"
+          echo_error "\"$2\" is not a known directory on this local file system, abort"
+          return 1
         fi
         
         cmake_args="$cmake_args -DMOBILITY_REPO=True -DMOBILITY_REPO_SRC=$2"
@@ -144,7 +145,7 @@ function main()
       *)   
         echo "Unknown option $1"
         help
-        exit 1
+        return 1
         ;;
     esac
   done
