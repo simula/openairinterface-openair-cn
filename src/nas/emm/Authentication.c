@@ -76,6 +76,7 @@
 #include "emm_cause.h"
 #include "nas_itti_messaging.h"
 #include "mme_app_defs.h"
+#include "service303.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -850,6 +851,8 @@ static void  _authentication_t3460_handler (void *args)
       /*
        * Abort the authentication procedure
        */
+      increment_counter ("nas_auth_rsp_timer_expired", 1, NO_LABELS);
+      increment_counter ("ue_attach", 1, 2, "result", "failure", "cause","no_response_for_auth_request");
       emm_sap_t                               emm_sap = {0};
       emm_sap.primitive = EMMREG_COMMON_PROC_ABORT;
       emm_sap.u.emm_reg.ue_id     = auth_proc->ue_id;

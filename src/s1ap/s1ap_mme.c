@@ -167,7 +167,12 @@ s1ap_mme_thread (
       break;
 
     case SCTP_NEW_ASSOCIATION:{
-        s1ap_handle_new_association (&received_message_p->ittiMsg.sctp_new_peer);
+        increment_counter ("mme_new_association", 1, NO_LABELS);
+        if (s1ap_handle_new_association (&received_message_p->ittiMsg.sctp_new_peer)) {
+          increment_counter ("mme_new_association", 1, 1, "result", "failure");
+        } else {
+          increment_counter ("mme_new_association", 1, 1, "result", "success");
+        }
       }
       break;
 

@@ -175,6 +175,7 @@ static int _emm_cn_deregister_ue (const mme_ue_s1ap_id_t ue_id)
 
   OAILOG_FUNC_IN (LOG_NAS_EMM);
   OAILOG_WARNING (LOG_NAS_EMM, "EMM-PROC  - " "TODO deregister UE " MME_UE_S1AP_ID_FMT ", following procedure is a test\n", ue_id);
+  increment_counter ("ue_detach", 1, 1, "cause", "deregister_ue"); 
   emm_detach_request_ies_t * params = calloc(1, sizeof(*params));
   params->type         = EMM_DETACH_TYPE_EPS;
   params->switch_off   = false;

@@ -75,6 +75,7 @@
 #include "secu_defs.h"
 #include "mme_app_defs.h"
 #include "nas_itti_messaging.h"
+#include "service303.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -604,6 +605,9 @@ static void _security_t3460_handler  (void *args)
       /*
        * Abort the security mode control procedure
        */
+      increment_counter ("nas_security_mode_command_timer_expired", 1, NO_LABELS);
+      increment_counter ("ue_attach", 1, 2, "result", "failure", "cause", "no_response_for_security_mode_command");
+
       emm_sap_t                               emm_sap = {0};
       emm_sap.primitive = EMMREG_COMMON_PROC_ABORT;
       emm_sap.u.emm_reg.ue_id     = smc_proc->ue_id;

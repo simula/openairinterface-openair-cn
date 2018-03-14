@@ -237,6 +237,7 @@ int emm_proc_attach_request (
     no_attach_proc.emm_cause   = ue_ctx.emm_context.emm_cause;
     no_attach_proc.esm_msg_out = NULL;
     rc = _emm_attach_reject (&ue_ctx.emm_context, (struct nas_base_proc_s *)&no_attach_proc);
+    increment_counter ("ue_attach", 1, 2, "result", "failure", "cause", "emergency_attach");
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
   }
   /*
@@ -626,6 +627,7 @@ int emm_proc_attach_complete (
     emm_sap.u.emm_reg.free_proc = true;
     emm_sap.u.emm_reg.u.attach.proc = attach_proc;
     rc = emm_sap_send (&emm_sap);
+    increment_counter ("ue_attach", 1, 1, "result", "attach_proc_successful");
   } else if (esm_sap.err != ESM_SAP_DISCARDED) {
     /*
      * Notify EMM that attach procedure failed
@@ -816,6 +818,7 @@ int _emm_attach_reject (emm_context_t *emm_context, struct nas_base_proc_s * nas
     emm_as_set_security_data (&emm_sap.u.emm_as.u.establish.sctx, NULL, false, false);
   }
   rc = emm_sap_send (&emm_sap);
+  increment_counter ("ue_attach", 1, 1, "action", "attach_reject_sent");
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
 
@@ -859,6 +862,7 @@ static int _emm_attach_abort (struct emm_context_s* emm_context, struct nas_base
     rc = emm_sap_send (&emm_sap);
   }
 
+  increment_counter ("ue_attach", 1, 1, "action", "attach_abort");
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
 

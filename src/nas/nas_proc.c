@@ -401,6 +401,7 @@ nas_proc_authentication_info_answer (
   } else {
     OAILOG_ERROR (LOG_NAS_EMM, "INFORMING NAS ABOUT AUTH RESP ERROR CODE\n");
     MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_AUTH_INFO_ANS S6A Failure imsi " IMSI_64_FMT, imsi64);
+    increment_counter ("ue_attach", 1, 2, "result", "failure", "cause", "auth_info_failure_from_hss");
 
     /*
      * Inform NAS layer with the right failure

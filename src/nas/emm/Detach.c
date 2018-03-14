@@ -247,6 +247,7 @@ emm_proc_detach_request (
 
   if (ue_mm_context == NULL) {
     OAILOG_WARNING (LOG_NAS_EMM, "No EMM context exists for the UE (ue_id=" MME_UE_S1AP_ID_FMT ")\n", ue_id);
+    increment_counter ("ue_detach", 1, 2, "result", "failure", "cause", "no_emm_context");
     // There may be MME APP Context. Trigger clean up in MME APP 
     nas_itti_detach_req(ue_id);
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNok);

@@ -867,6 +867,7 @@ sgw_handle_delete_session_request (
   s_plus_p_gw_eps_bearer_context_information_t *ctx_p = NULL;
   int                                     rv = RETURNok;
 
+  increment_counter ("spgw_delete_session", 1, NO_LABELS);
   message_p = itti_alloc_new_message (TASK_SPGW_APP, S11_DELETE_SESSION_RESPONSE);
 
   if (!message_p) {
@@ -891,6 +892,7 @@ sgw_handle_delete_session_request (
       if (delete_session_req_pP->teid != ctx_p->sgw_eps_bearer_context_information.mme_teid_S11) {
         delete_session_resp_p->teid = ctx_p->sgw_eps_bearer_context_information.mme_teid_S11;
         delete_session_resp_p->cause.cause_value = INVALID_PEER;
+        increment_counter ("spgw_delete_session", 1, 2, "result", "failure", "cause", "invalid_mme_teid");
         OAILOG_DEBUG (LOG_SPGW_APP, "Mismatch in MME Teid for CP\n");
       } else {
         delete_session_resp_p->teid = delete_session_req_pP->sender_fteid_for_cp.teid;
@@ -969,6 +971,7 @@ sgw_handle_delete_session_request (
 
       sgw_cm_remove_bearer_context_information(delete_session_req_pP->teid);
       sgw_cm_remove_s11_tunnel(delete_session_req_pP->teid);
+      increment_counter ("spgw_delete_session", 1, 1, "result", "success");
     }
 
     delete_session_resp_p->trxn = delete_session_req_pP->trxn;
@@ -994,6 +997,7 @@ sgw_handle_delete_session_request (
     delete_session_resp_p->peer_ip.s_addr = delete_session_req_pP->peer_ip.s_addr;
     MSC_LOG_TX_MESSAGE (MSC_SP_GWAPP_MME, MSC_S11_MME, NULL, 0, "0 S11_DELETE_SESSION_RESPONSE CONTEXT_NOT_FOUND trxn %u", delete_session_resp_p->trxn);
     rv = itti_send_msg_to_task (TASK_S11, INSTANCE_DEFAULT, message_p);
+    increment_counter ("spgw_delete_session", 1, 2, "result", "failure", "cause", "context_not_found");
     OAILOG_FUNC_RETURN(LOG_SPGW_APP, rv);
   }
 

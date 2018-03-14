@@ -496,6 +496,7 @@ emm_recv_detach_request (
   /*
    * Execute the UE initiated detach procedure completion by the network
    */
+  increment_counter ("ue_detach", 1, 1, "cause", "ue_initiated");
   rc = emm_proc_detach_request (ue_id, params);
   *emm_cause = RETURNok == rc ? EMM_CAUSE_SUCCESS : EMM_CAUSE_PROTOCOL_ERROR;
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
