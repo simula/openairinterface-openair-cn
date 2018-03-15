@@ -44,5 +44,3 @@ add_library (SGW
   spgw_config.c
   )
 
-target_link_libraries (SGW
-    PUBLIC GTPV1U ${GTPNL_LIBRARIES})

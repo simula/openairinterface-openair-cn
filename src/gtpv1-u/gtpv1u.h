@@ -30,6 +30,7 @@
 
 #include <arpa/inet.h>
 #include <net/if.h>
+#include "3gpp_23.003.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,15 +59,17 @@ extern "C" {
  * int (*reset)(void);
  *     This function is called to reset the GTP network device to clean state.
  *
- * int (*add_tunnel)(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei);
+ * int (*add_tunnel)(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei, imsi_t imsi);
  *     Add a gtp tunnel.
  *         @ue: UE IP address
  *         @enb: eNB IP address
  *         @i_tei: RX GTP Tunnel ID
  *         @o_tei: TX GTP Tunnel ID.
+ *         @imsi: UE IMSI
  *
  * int (*del_tunnel)(uint32_t i_tei, uint32_t o_tei);
  *     Delete a gtp tunnel.
+ *         @ue: UE IP address
  *         @i_tei: RX GTP Tunnel ID
  *         @o_tei: TX GTP Tunnel ID.
  */
@@ -74,8 +77,8 @@ struct gtp_tunnel_ops {
   int  (*init)(struct in_addr *ue_net, uint32_t mask, int mtu, int *fd0, int *fd1u);
   int  (*uninit)(void);
   int  (*reset)(void);
-  int  (*add_tunnel)(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei);
-  int  (*del_tunnel)(uint32_t i_tei, uint32_t o_tei);
+  int  (*add_tunnel)(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei, imsi_t imsi);
+  int  (*del_tunnel)(struct in_addr ue, uint32_t i_tei, uint32_t o_tei);
 };
 
 uint32_t gtpv1u_new_teid(void);

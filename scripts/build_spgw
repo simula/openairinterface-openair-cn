@@ -31,6 +31,10 @@
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/../build/tools/build_helper.spgw
 
+OPENFLOW="OPENFLOW"
+LIBGTPNL="LIBGTPNL"
+GTPU_API=$OPENFLOW
+
 function help()
 {
   echo_error " "
@@ -42,6 +46,7 @@ function help()
   echo_error "  -b, --build-type                          Build type as defined in cmake, allowed values are: Debug Release RelWithDebInfo MinSizeRel"
   echo_error "  -c, --clean                               Clean the build generated files: config, object, executable files (build from scratch)"
   echo_error "  -f, --force                               No interactive script for installation of software packages."
+  echo_error "  --gtpu       api                          GTPV1-U implementation, choice in [$OPENFLOW (default), $LIBGTPNL]"
   echo_error "  -h, --help                                Print this help."
   echo_error "  -i, --check-installed-software            Check installed software packages necessary to build and run S/P-GW (support $SUPPORTED_DISTRO)."
   echo_error "  -v, --verbose                             Build process verbose."
@@ -78,6 +83,12 @@ function main()
         echo "Force set (no interactive)"
         shift;
         ;;
+      --gtpu)
+        list_include_item "$OPENFLOW $LIBGTPNL" $2
+        [[ $? -ne 0 ]] && echo_error "GTPV1U API type $2 not recognized" && return $?
+        GTPU_API=$2
+        shift 2;
+        ;;
       -h | --help)
         help
         shift;
@@ -109,6 +120,9 @@ function main()
     esac
   done
 
+  cmake_args="$cmake_args -DENABLE_$GTPU_API=1"
+
+  export ENABLE_"$GTPU_API"=1
   
   if [ ! -d /usr/local/etc/oai/freeDiameter ]; then
     $SUDO mkdir -p /usr/local/etc/oai/freeDiameter

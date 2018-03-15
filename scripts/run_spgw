@@ -109,7 +109,7 @@ function main()
         ;;
       -h | --help)
         help
-        exit 0
+        return 0
         ;;
       -i | --set-nw-interfaces)
         set_network_interfaces=1
@@ -119,7 +119,7 @@ function main()
       -k | --kill)
         $SUDO killall -q spgw
         $SUDO rm /var/run/spgw.pid
-        exit 0
+        return 0
         shift;
         ;;
       -m | --mscgen)
@@ -130,7 +130,7 @@ function main()
           shift 2;
         else
           echo_error "Mscgen log dir does not exist"
-          exit -1
+          return -1
         fi
         ;;      
       -v | --verbosity-level)
@@ -142,7 +142,7 @@ function main()
       *)   
         echo "Unknown option $1"
         help
-        exit 0
+        return 1
         ;;
     esac
   done
@@ -152,7 +152,8 @@ function main()
   
 
   if [ ! -f $spgw_config_file ]; then 
-    echo_fatal "Please provide -c|--config-file valid argument (\"$spgw_config_file\" not a valid file)"
+    echo_error "Please provide -c|--config-file valid argument (\"$spgw_config_file\" not a valid file)"
+    return 1
   fi
 
 
@@ -195,6 +196,7 @@ function main()
       $SUDO $THIS_SCRIPT_PATH/msc_gen --profile EPC --dir $g_msc_dir --type png
     fi
   fi
+  return $?
 }
 
 main "$@"

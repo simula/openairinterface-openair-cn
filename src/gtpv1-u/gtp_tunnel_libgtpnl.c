@@ -129,7 +129,7 @@ int libgtpnl_reset(void)
   return rv;
 }
 
-int libgtpnl_add_tunnel(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei)
+int libgtpnl_add_tunnel(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei, imsi_t imsi)
 {
   struct gtp_tunnel *t;
   int ret;
@@ -155,7 +155,7 @@ int libgtpnl_add_tunnel(struct in_addr ue, struct in_addr enb, uint32_t i_tei, u
   return ret;
 }
 
-int libgtpnl_del_tunnel(uint32_t i_tei, uint32_t o_tei)
+int libgtpnl_del_tunnel(struct in_addr ue, uint32_t i_tei, uint32_t o_tei)
 {
   struct gtp_tunnel *t;
   int ret;
@@ -189,6 +189,7 @@ static const struct gtp_tunnel_ops libgtpnl_ops = {
 };
 
 const struct gtp_tunnel_ops *gtp_tunnel_ops_init(void) {
+  OAILOG_DEBUG (LOG_GTPV1U , "Initializing gtp_tunnel_ops_libgtpnl\n");
   return &libgtpnl_ops;
 }
 

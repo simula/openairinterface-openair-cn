@@ -27,8 +27,67 @@
 SCRIPT=$(readlink -f ${BASH_SOURCE})
 THIS_SCRIPT_PATH=`dirname $SCRIPT`
 source $THIS_SCRIPT_PATH/build_helper
+
+#-------------------------------------------------------------------------------
+# Followed http://opennetworkingfoundation.github.io/libfluid/md_doc_QuickStart.html
+install_libfluid_from_source(){
+  if [ $1 -eq 0 ]; then
+    OPTION=""
+    read -p "Do you want to install libfluid? <y/N> " prompt
+  else
+    prompt='y'
+    OPTION="-y"
+  fi
+  
+  if [[ $prompt =~ [yY](es)* ]]
+  then
+    # optional but recommended for secure connection towards controller
+    $SUDO apt-get install $OPTION autoconf libtool build-essential pkg-config
+    [[ $? -ne 0 ]] && return $?
+    $SUDO apt-get install $OPTION libevent-dev libssl-dev
+    [[ $? -ne 0 ]] && return $?
+
+    SAVEDPWD=${PWD}
+    
+    $SUDO rm -rf /tmp/fluid
+    mkdir /tmp/fluid
+    cd /tmp/fluid
+    git clone https://github.com/OpenNetworkingFoundation/libfluid.git
+    [[ $? -ne 0 ]] && return $?
+    cd libfluid
+    ./bootstrap.sh
+    [[ $? -ne 0 ]] && return $?
+
+
+    cd libfluid_base
+    [[ $? -ne 0 ]] && return $?
+    ./configure --prefix=/usr
+    [[ $? -ne 0 ]] && return $?
+    make
+    [[ $? -ne 0 ]] && return $?
+    $SUDO make install
+    [[ $? -ne 0 ]] && return $?
+
+    cd /tmp/fluid/libfluid/libfluid_msg
+    [[ $? -ne 0 ]] && return $?
+    ./configure --prefix=/usr
+    [[ $? -ne 0 ]] && return $?
+    make
+    [[ $? -ne 0 ]] && return $?
+    $SUDO make install
+    [[ $? -ne 0 ]] && return $?
+    cd $SAVEDPWD
+  fi
+  return 0
+}
+
+
 #-------------------------------------------------------------------------------
 install_ovs_from_source(){
+
+  local DATA_PLANE_SUPPORTED_KERNEL_MIN_VERSION="4.9.1"
+  local DATA_PLANE_SUPPORTED_KERNEL_MAX_VERSION="4.9.86"
+
   if [ $1 -eq 0 ]; then
     OPTION=""
     read -p "Do you want to install Open vSwitch patched? <y/N> " prompt
@@ -39,6 +98,20 @@ install_ovs_from_source(){
   
   if [[ $prompt =~ [yY](es)* ]]
   then
+    echo "Check kernel"
+    current_kernel_release=`uname -r | cut -d '-' -f1`
+
+    version_le $current_kernel_release $DATA_PLANE_SUPPORTED_KERNEL_MAX_VERSION
+    if [ $? -ne 0 ]; then
+     echo_error "Kernel in $DATA_PLANE_SUPPORTED_KERNEL_MIN_VERSION...$DATA_PLANE_SUPPORTED_KERNEL_MAX_VERSION required. Aborting installation"
+      return 1
+    fi
+    version_ge $current_kernel_release $DATA_PLANE_SUPPORTED_KERNEL_MIN_VERSION
+    if [ $? -ne 0 ]; then
+      echo_error "Kernel in $DATA_PLANE_SUPPORTED_KERNEL_MIN_VERSION...$DATA_PLANE_SUPPORTED_KERNEL_MAX_VERSION required. Aborting installation"
+      return 1
+    fi
+
     # optional but recommended for secure connection towards controller
     $SUDO apt-get install $OPTION libssl-dev libcap-ng-dev python-pip python-six
     [[ $? -ne 0 ]] && return $?
@@ -62,6 +135,8 @@ install_ovs_from_source(){
 
     $SUDO modprobe --quiet --remove gtp
     $SUDO modprobe --quiet --remove openvswitch  
+
+    SAVEDPWD=${PWD}
 
     $SUDO rm -rf /tmp/gtp
     mkdir /tmp/gtp
@@ -125,6 +200,7 @@ install_ovs_from_source(){
     $SUDO mkdir -p /usr/local/var/run/openvswitch
     $SUDO ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema
     [[ $? -ne 0 ]] && return $?
+    cd $SAVEDPWD
   fi
   return 0
 }

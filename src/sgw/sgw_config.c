@@ -262,7 +262,6 @@ int sgw_config_parse_file (sgw_config_t * config_pP)
   }
 
   config_destroy (&cfg);
-  OAILOG_SET_CONFIG(&config_pP->log_config);
   return RETURNok;
 }
 

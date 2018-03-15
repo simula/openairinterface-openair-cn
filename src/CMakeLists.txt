@@ -222,6 +222,8 @@ add_integer_option( ITTI_TASK_STACK_SIZE            0        "pthread allocated 
 add_boolean_option( ITTI_LITE                       False    "Do not use ITTI systematically for each message exchanged between layer modules") 
 add_boolean_option( MESSAGE_CHART_GENERATOR         False    "For generating sequence diagrams")
 add_boolean_option( DISABLE_EXECUTE_SHELL_COMMAND   False    "disable execution of C int system(const char *command);")
+add_boolean_option( ENABLE_OPENFLOW                 False    "Use openflow for setting GTPV1U tunnels")
+add_boolean_option( ENABLE_LIBGTPNL                 False    "Use libgtpnl for setting GTPV!U tunnels")
 # NAS LAYER OPTIONS
 ##########################
 add_boolean_option( MME_BUILD                       False    "BUILD MME executable")

@@ -647,11 +647,10 @@ sgw_handle_sgi_endpoint_updated (
       struct in_addr ue = {.s_addr = 0};
       ue.s_addr = eps_bearer_ctxt_p->paa.ipv4_address.s_addr;
 
-      if (spgw_config.pgw_config.use_gtp_kernel_module) {
-        rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
-        if (rv < 0) {
-          OAILOG_ERROR (LOG_SPGW_APP, "ERROR in setting up TUNNEL err=%d\n", rv);
-        }
+      imsi_t imsi = new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.imsi;
+      rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u, imsi);
+      if (rv < 0) {
+        OAILOG_ERROR (LOG_SPGW_APP, "ERROR in setting up TUNNEL err=%d\n", rv);
       }
 
       // may be removed
@@ -747,7 +746,9 @@ sgw_handle_sgi_endpoint_deleted (
       OAILOG_DEBUG (LOG_SPGW_APP, "Rx SGI_DELETE_ENDPOINT_REQUEST: REQUEST_ACCEPTED\n");
       // if default bearer
       //#pragma message  "TODO define constant for default eps_bearer id"
-      rv = gtp_tunnel_ops->del_tunnel(eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
+
+      // delete GTPv1-U tunnel
+      rv = gtp_tunnel_ops->del_tunnel(eps_bearer_ctxt_p->paa.ipv4_address, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
       if (rv < 0) {
         OAILOG_ERROR (LOG_SPGW_APP, "ERROR in deleting TUNNEL\n");
       }
@@ -904,7 +905,7 @@ sgw_handle_delete_session_request (
 
         if (eps_bearer_ctxt_p) {
           if (ebi != delete_session_req_pP->lbi) {
-            rv = gtp_tunnel_ops->del_tunnel(eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
+            rv = gtp_tunnel_ops->del_tunnel(eps_bearer_ctxt_p->paa.ipv4_address, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
             if (rv < 0) {
               OAILOG_ERROR (LOG_SPGW_APP, "ERROR in deleting TUNNEL " TEID_FMT " (eNB) <-> (SGW) " TEID_FMT "\n",
                   eps_bearer_ctxt_p->enb_teid_S1u, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up);
@@ -929,7 +930,7 @@ sgw_handle_delete_session_request (
       eps_bearer_ctxt_p = sgw_cm_get_eps_bearer_entry(&ctx_p->sgw_eps_bearer_context_information.pdn_connection, delete_session_req_pP->lbi);
       if (eps_bearer_ctxt_p) {
         if (spgw_config.pgw_config.use_gtp_kernel_module) {
-          rv = gtp_tunnel_ops->del_tunnel(eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
+          rv = gtp_tunnel_ops->del_tunnel(eps_bearer_ctxt_p->paa.ipv4_address, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
           if (rv < 0) {
             OAILOG_ERROR (LOG_SPGW_APP, "ERROR in deleting TUNNEL " TEID_FMT " (eNB) <-> (SGW) " TEID_FMT "\n",
                 eps_bearer_ctxt_p->enb_teid_S1u, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up);
@@ -1209,7 +1210,8 @@ sgw_handle_create_bearer_response (
                   ue.s_addr = eps_bearer_ctxt_p->paa.ipv4_address.s_addr;
 
                   if (spgw_config.pgw_config.use_gtp_kernel_module) {
-                    rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u);
+                    imsi_t imsi = ctx_p->sgw_eps_bearer_context_information.imsi;
+                    rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u, imsi);
                     if (rv < 0) {
                       OAILOG_ERROR (LOG_SPGW_APP, "ERROR in setting up TUNNEL err=%d\n", rv);
                     }

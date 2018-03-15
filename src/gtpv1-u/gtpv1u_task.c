@@ -112,8 +112,9 @@ int gtpv1u_init (spgw_config_t *spgw_config)
 
   // START-GTP quick integration only for evaluation purpose
 
-  OAILOG_DEBUG (LOG_GTPV1U , "Initializing gtp_tunnel_ops\n");
+  // Init gtp_tunnel_ops
   gtp_tunnel_ops = gtp_tunnel_ops_init();
+
   if (gtp_tunnel_ops == NULL) {
     OAILOG_CRITICAL (LOG_GTPV1U, "ERROR in initializing gtp_tunnel_ops\n");
     return -1;
@@ -132,6 +133,7 @@ int gtpv1u_init (spgw_config_t *spgw_config)
                          spgw_config->pgw_config.ue_pool_mask[i], spgw_config->pgw_config.ipv4.mtu_SGI,
                          &sgw_app.gtpv1u_data.fd0, &sgw_app.gtpv1u_data.fd1u);
   }
+
   // END-GTP quick integration only for evaluation purpose
 
   if (itti_create_task (TASK_GTPV1_U, &gtpv1u_thread, &sgw_app.gtpv1u_data) < 0) {

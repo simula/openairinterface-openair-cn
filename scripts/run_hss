@@ -98,7 +98,7 @@ function main()
         ;;
       -h | --help)
         help
-        exit 0
+        return 0
         ;;
       -i | --import-db)
         import_db=1
@@ -114,12 +114,12 @@ function main()
       -k | --kill)
         $SUDO killall -q oai_hss
         shift 1;
-        exit 0
+        return 0
         ;;
       *)   
         echo "Unknown option $1"
         help
-        exit 0
+        return 1
         ;;
     esac
   done
@@ -132,7 +132,8 @@ function main()
   #####################################
   if [ ! -f $hss_config_file ]; then 
     if [ $g_hss_default_config_file != $hss_config_file ]; then
-      echo_fatal "Please provide -c|--config-file valid argument (\"$hss_config_file\" not a valid file)"
+      echo_error "Please provide -c|--config-file valid argument (\"$hss_config_file\" not a valid file)"
+      return 1
     fi
   fi
   
@@ -141,13 +142,15 @@ function main()
   
     if [ ! -f /usr/local/etc/oai/hss.conf ]; then
       $SUDO cp -upv $THIS_SCRIPT_PATH/../etc/hss.conf    /usr/local/etc/oai
-      echo_fatal "Please customize /usr/local/etc/oai/hss.conf (login/password/OP key), after, please re-run run_hss -I"
+      echo_error "Please customize /usr/local/etc/oai/hss.conf (login/password/OP key), after, please re-run run_hss -I"
+      return 1
     else
       if [  $THIS_SCRIPT_PATH/../etc/hss.conf -nt  /usr/local/etc/oai/hss.conf ]; then
         read -p "Do you want to update /usr/local/etc/oai/hss.conf with $OPENAIRCN_DIR/etc/hss.conf ? <y/N> " prompt
         if [[ $prompt =~ [yY](es)* ]]; then
           $SUDO cp -upv $THIS_SCRIPT_PATH/../etc/hss.conf    /usr/local/etc/oai
-          echo_fatal "Please customize /usr/local/etc/oai/hss.conf, after, please re-run run_hss -I"
+          echo_error "Please customize /usr/local/etc/oai/hss.conf, after, please re-run run_hss -I"
+          return 1
         fi
       fi
     fi 
@@ -178,6 +181,7 @@ function main()
   exe_arguments=$exe_arguments" -c $hss_config_file"
   if [ $export_db -eq 1 -a $import_db -eq 1 ]; then 
     echo_error "Options -e and -i cannot be set together"
+    return 1
   fi
   
   #####################################
@@ -190,7 +194,8 @@ function main()
       if [[ $prompt =~ [yY](es)* ]]; then
         rm $dump_file
       else
-        echo_fatal "$dump_file exist, exiting"
+        echo_error "$dump_file exist, exiting"
+        return 1
       fi
     fi
     value="`cat $hss_config_file | tr -d " " | grep "="`"
@@ -208,7 +213,8 @@ function main()
       eval "$value"
       $OPENAIRCN_DIR/scripts/hss_db_import $MYSQL_server $MYSQL_user $MYSQL_pass $MYSQL_db $dump_file
     else
-      echo_fatal "$dump_file does not exist, exiting"
+      echo_error "$dump_file does not exist, exiting"
+      return 1
     fi
   fi
   
@@ -230,6 +236,7 @@ function main()
     $SUDO cat ~/.gdb_hss
     $SUDO gdb -n -x ~/.gdb_hss 2>&1
   fi
+  return $?
 }
 
 

@@ -7,6 +7,7 @@ include_directories(${SRC_TOP_DIR}/common/itti)
 include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 include_directories(${SRC_TOP_DIR}/utils)
 include_directories(${SRC_TOP_DIR}/utils/bstr)
+include_directories(${SRC_TOP_DIR}/utils/hashtable)
 include_directories(${SRC_TOP_DIR}/utils/msc)
 
 # Header leaks of spgw_config.h, sgw_config.h, pgw_config.h, sgw.h
@@ -25,12 +26,24 @@ include_directories("${SRC_TOP_DIR}/nas/api/network")
 include_directories("${SRC_TOP_DIR}/nas/api/mme")
 include_directories("${SRC_TOP_DIR}/mme_app")
 
+if(ENABLE_LIBGTPNL)
+pkg_search_module(GTPNL libgtpnl REQUIRED)
 include_directories(${GTPNL_INCLUDE_DIRS})
-include_directories(${SRC_TOP_DIR}/utils/hashtable)
+endif(ENABLE_LIBGTPNL)
+
+
 set (GTPV1U_SRC
     gtpv1u_task.c
     gtpv1u_teid_pool.c
-    gtp_tunnel_libgtpnl.c
     )
+
+if(ENABLE_LIBGTPNL)
+list(APPEND GTPV1U_SRC gtp_tunnel_libgtpnl.c)
+endif(ENABLE_LIBGTPNL)
+
 add_library(GTPV1U ${GTPV1U_SRC})
+
+if(ENABLE_LIBGTPNL)
+target_link_libraries(GTPV1U ${GTPNL_LIBRARIES})
+endif(ENABLE_LIBGTPNL)
 

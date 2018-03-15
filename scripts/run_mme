@@ -111,7 +111,7 @@ function main()
         ;;
       -h | --help)
         help
-        exit 0
+        return 0
         ;;
       -i | --set-nw-interfaces)
         set_network_interfaces=1
@@ -126,7 +126,7 @@ function main()
       -k | --kill)
         $SUDO killall -q mme
         $SUDO rm /var/run/mme.pid
-        exit 0
+        return 0
         shift;
         ;;
       -m | --mscgen)
@@ -137,7 +137,7 @@ function main()
           shift 2;
         else
           echo_error "Mscgen log dir does not exist"
-          exit -1
+          return -1
         fi
         ;;          
       -v | --verbosity-level)
@@ -149,7 +149,7 @@ function main()
       *)   
         echo "Unknown option $1"
         help
-        exit 0
+        return 1
         ;;
     esac
   done
@@ -162,7 +162,8 @@ function main()
   #####################################
   if [ ! -f $mme_config_file ]; then 
     if [ $g_mme_default_config_file != $mme_config_file ]; then
-      echo_fatal "Please provide -c|--config-file valid argument (\"$mme_config_file\" not a valid file)"
+      echo_error "Please provide -c|--config-file valid argument (\"$mme_config_file\" not a valid file)"
+      return 1
     fi
   fi
   
@@ -171,13 +172,15 @@ function main()
   
     if [ ! -f /usr/local/etc/oai/mme.conf ]; then
       $SUDO cp -upv $THIS_SCRIPT_PATH/../etc/mme.conf    /usr/local/etc/oai
-      echo_fatal "Please customize /usr/local/etc/oai/mme.conf (interfaces, TAIs, GUMMEI, HSS hostname, SGW IP address, logging, etc), after, please re-run run_mme -I"
+      echo_error "Please customize /usr/local/etc/oai/mme.conf (interfaces, TAIs, GUMMEI, HSS hostname, SGW IP address, logging, etc), after, please re-run run_mme -I"
+      return 1
     else
       if [  $THIS_SCRIPT_PATH/../etc/mme.conf -nt  /usr/local/etc/oai/mme.conf ]; then
         read -p "Do you want to update /usr/local/etc/oai/mme.conf with $OPENAIRCN_DIR/etc/mme.conf ? <y/N> " prompt
         if [[ $prompt =~ [yY](es)* ]]; then
           $SUDO cp -upv $THIS_SCRIPT_PATH/../etc/mme.conf    /usr/local/etc/oai
-          echo_fatal "Please customize /usr/local/etc/oai/mme.conf (interfaces, TAIs, GUMMEI, HSS hostname, SGW IP address, logging, etc), after, please re-run run_mme -I"
+          echo_error "Please customize /usr/local/etc/oai/mme.conf (interfaces, TAIs, GUMMEI, HSS hostname, SGW IP address, logging, etc), after, please re-run run_mme -I"
+          return 1
         fi
       fi
     fi 
@@ -189,8 +192,8 @@ function main()
     # hardcoded MME diameter ID 
     fqdn=`hostname --fqdn`
     if [ "a$fqdn" == "a" ]; then
-      echo_error "Please allow the IP resolution of MME FQDN (in /etc/hosts, example: 127.0.1.1 myhostname.openair4G.eur myhostname)."
-      echo_fatal "Please allow the IP resolution of HSS FQDN (in /etc/hosts, example: 127.0.1.1 hss.openair4G.eur hss if HSS run on MME host)."
+      echo_error "Please allow the IP resolution of MME FQDN."
+      return 1
     fi
 
     # generate certificates if necessary
@@ -248,6 +251,7 @@ function main()
       $SUDO $THIS_SCRIPT_PATH/msc_gen --profile MME --dir $g_msc_dir --type png
     fi
   fi
+  return $?
 }
 
 main "$@"

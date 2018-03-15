@@ -28,6 +28,7 @@
 #ifndef FILE_LOG_SEEN
 #define FILE_LOG_SEEN
 
+#include <stdbool.h>
 #include <pthread.h>
 
 #include "bstrlib.h"

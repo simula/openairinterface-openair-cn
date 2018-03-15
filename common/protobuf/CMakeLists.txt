@@ -17,31 +17,18 @@ set(PROTO_FILES
     "${PROTO_PATH}/metricsd.proto"
 )
 
+set(GRPC_PROTO_FILES
+    "${PROTO_PATH}/service303.proto"
+    )
+
 list(APPEND PROTO_SRCS "")
 list(APPEND PROTO_HDRS "")
-
-# build protobuf c++ bindings
-foreach(PROTO_FILE ${PROTO_FILES})
-    get_filename_component(ABS_PATH ${PROTO_FILE} ABSOLUTE)
-    get_filename_component(BASE_NAME ${PROTO_FILE} NAME_WE)
-
-    list(APPEND PROTO_SRCS ${OUTPUT_DIR}/protos/${BASE_NAME}.pb.cc)
-    list(APPEND PROTO_HDRS ${OUTPUT_DIR}/protos/${BASE_NAME}.pb.h)
-
-    add_custom_command(
-        OUTPUT "${OUTPUT_DIR}/protos/${BASE_NAME}.pb.cc"
-               "${OUTPUT_DIR}/protos/${BASE_NAME}.pb.h"
-        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
-        ARGS -I ${PROTO_PATH} -I ${PROTO_PATH}/prometheus
-        --cpp_out=${OUTPUT_DIR} ${ABS_PATH}
-        DEPENDS ${ABS_PATH} ${PROTOBUF_PROTOC_EXECUTABLE}
-        COMMENT "Running C++ protobuf compiler on ${PROTO_FILE}"
-        VERBATIM )
-endforeach()
 
 # Build prometheus metrics protos
 list(APPEND PROTO_SRCS ${OUTPUT_DIR}/protos/metrics.pb.cc)
 list(APPEND PROTO_HDRS ${OUTPUT_DIR}/protos/metrics.pb.h)
+
+get_filename_component(ABS_PATH ${PROTO_PATH}/prometheus/metrics.proto ABSOLUTE)
 add_custom_command(
     OUTPUT "${OUTPUT_DIR}/protos/metrics.pb.cc"
            "${OUTPUT_DIR}/protos/metrics.pb.h"
@@ -51,6 +38,45 @@ add_custom_command(
     DEPENDS ${ABS_PATH} ${PROTOBUF_PROTOC_EXECUTABLE}
     COMMENT "Running C++ protobuf compiler on metrics.proto"
     VERBATIM )
+
+# build protobuf c++ bindings
+foreach(PROTO_FILE ${PROTO_FILES})
+    get_filename_component(ABS_PATH ${PROTO_FILE} ABSOLUTE)
+    get_filename_component(BASE_NAME ${PROTO_FILE} NAME_WE)
+    list(APPEND PROTO_SRCS ${OUTPUT_DIR}/protos/${BASE_NAME}.pb.cc)
+    list(APPEND PROTO_HDRS ${OUTPUT_DIR}/protos/${BASE_NAME}.pb.h)
+
+    add_custom_command(
+        OUTPUT "${OUTPUT_DIR}/protos/${BASE_NAME}.pb.cc"
+               "${OUTPUT_DIR}/protos/${BASE_NAME}.pb.h"
+        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
+        ARGS -I ${OPENAIRCN_DIR} -I ${PROTO_PATH}/prometheus
+        --cpp_out=${OUTPUT_DIR} ${ABS_PATH}
+        DEPENDS ${ABS_PATH} ${PROTOBUF_PROTOC_EXECUTABLE}
+        COMMENT "Running C++ protobuf compiler on ${PROTO_FILE}"
+        VERBATIM )
+endforeach()
+
+# build gRPC c++ bindings
+foreach(PROTO_FILE ${GRPC_PROTO_FILES})
+    get_filename_component(ABS_PATH ${PROTO_FILE} ABSOLUTE)
+    get_filename_component(BASE_NAME ${PROTO_FILE} NAME_WE)
+
+    list(APPEND PROTO_SRCS ${OUTPUT_DIR}/protos/${BASE_NAME}.grpc.pb.cc)
+    list(APPEND PROTO_HDRS ${OUTPUT_DIR}/protos/${BASE_NAME}.grpc.pb.h)
+
+    add_custom_command(
+        OUTPUT "${OUTPUT_DIR}/protos/${BASE_NAME}.grpc.pb.cc"
+               "${OUTPUT_DIR}/protos/${BASE_NAME}.grpc.pb.h"
+        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
+        ARGS -I ${OPENAIRCN_DIR} -I ${PROTO_PATH}/prometheus
+        --grpc_out=${CMAKE_CURRENT_BINARY_DIR} --plugin=protoc-gen-grpc=/usr/local/bin/grpc_cpp_plugin ${ABS_PATH}
+        DEPENDS ${ABS_PATH} ${PROTOBUF_PROTOC_EXECUTABLE}
+        COMMENT "Running C++ grpc compiler on ${PROTO_FILE}"
+        VERBATIM )
+endforeach()
+
+
 
 include_directories("${OUTPUT_DIR}")
 
