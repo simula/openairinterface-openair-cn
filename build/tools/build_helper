@@ -523,8 +523,9 @@ install_prometheus_cpp_from_source() {
     $SUDO rm -rf /tmp/prometheus-cpp
     $SUDO git clone https://github.com/jupp0r/prometheus-cpp 
     cd /tmp/prometheus-cpp
+    $SUDO git checkout origin/feature/public-headers
     $SUDO git submodule update --init
-    $CMAKE .  
+    $CMAKE -DCMAKE_INSTALL_PREFIX=/usr/local .
     echo "Compiling prometheus-cpp"
     make -j`nproc`
     $SUDO make install
