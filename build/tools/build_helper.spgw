@@ -207,7 +207,8 @@ check_install_spgw_software() {
     [[ $? -ne 0 ]] && return $?
     echo "Install ovs"
     install_ovs_from_source $1
+    [[ $? -ne 0 ]] && return $?
   fi
-  return $?
+  return 0
 }
 
