@@ -37,6 +37,6 @@ target_link_libraries (spgw
       BSTR CN_UTILS GTPV1U GTPV2C HASHTABLE 
       SGW S11_SGW UDP_SERVER ${MSC_LIB} ITTI  3GPP_TYPES
       -Wl,--end-group
-      pthread m rt ${LFDS} ${CONFIG_LIBRARIES}
+      pthread m rt ${LFDS} ${CONFIG_LIBRARIES} asan
       )
 

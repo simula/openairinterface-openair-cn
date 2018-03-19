@@ -9,7 +9,6 @@ include_directories(${SRC_TOP_DIR}/sgw)
 include_directories(${SRC_TOP_DIR}/utils)
 include_directories(${SRC_TOP_DIR}/utils/bstr)
 include_directories(${SRC_TOP_DIR}/utils/hashtable)
-include_directories(${SRC_TOP_DIR}/service303)
 
 # Nas message headers are all pulled in.
 include_directories("${SRC_TOP_DIR}/nas")

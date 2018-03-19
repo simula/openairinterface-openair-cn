@@ -49,7 +49,6 @@ include_directories("${SRC_TOP_DIR}/nas/esm/msg")
 include_directories("${SRC_TOP_DIR}/nas/api/network")
 include_directories("${SRC_TOP_DIR}/nas/api/mme")
 include_directories("${SRC_TOP_DIR}/mme_app")
-include_directories(${SRC_TOP_DIR}/service303)
 
 if (MESSAGE_CHART_GENERATOR)
   add_library(MSC
