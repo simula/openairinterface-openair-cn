@@ -55,8 +55,6 @@ include_directories(${OPENSSL_INCLUDE_DIRS})
 pkg_search_module(CRYPTO libcrypto REQUIRED)
 include_directories(${CRYPTO_INCLUDE_DIRS})
 
-pkg_search_module(GTPNL libgtpnl REQUIRED)
-
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/gtpv1-u ${CMAKE_CURRENT_BINARY_DIR}/gtpv1-u)
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/mme_app ${CMAKE_CURRENT_BINARY_DIR}/mme_app)
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/nas ${CMAKE_CURRENT_BINARY_DIR}/nas)

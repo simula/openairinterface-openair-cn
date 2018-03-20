@@ -62,6 +62,7 @@ check_install_mme_software() {
       automake \
       bison \
       build-essential \
+      check \
       cmake \
       doxygen \
       flex \
@@ -73,6 +74,7 @@ check_install_mme_software() {
       autoconf \
       automake \
       bison \
+      check \
       $CMAKE \
       doxygen \
       flex \
@@ -123,7 +125,6 @@ check_install_mme_software() {
       libxml2-devel \
       mscgen \
       openssl \
-      check \
       check-devel \
       python \
       nettle-devel \
