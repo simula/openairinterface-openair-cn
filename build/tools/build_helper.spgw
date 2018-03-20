@@ -118,6 +118,7 @@ check_install_spgw_software() {
       libidn2-0-dev \
       libidn11-dev \
       libpthread-stubs0-dev \
+      libssl-dev \
       libtool \
       libxml2 \
       libxml2-dev \
