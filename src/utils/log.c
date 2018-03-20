@@ -263,10 +263,10 @@ void log_set_config(const log_config_t * const config)
     g_oai_log.is_ansi_codes = config->color;
 
     if (config->output) {
-      g_oai_log.log_fd = NULL;
+      // default is STDOUT
+      g_oai_log.log_fd = stdout;
       if (1 == biseqcstrcaseless(config->output, LOG_CONFIG_STRING_OUTPUT_CONSOLE)) {
         setvbuf(stdout, NULL, _IONBF, 0);
-        g_oai_log.log_fd = stdout;
       } else {
         // if seems to be a file path
         if (('.' == bchar(config->output,0)) || ('/' == bchar(config->output,0))) {
@@ -876,7 +876,7 @@ log_message (
     if (g_oai_log.is_output_fd_buffered) {
       shared_log_item(new_item_p);
     } else {
-      fprintf(g_oai_log.log_fd, "%s", bdata(new_item_p->bstr));
+      fprintf((g_oai_log.log_fd)?g_oai_log.log_fd:stdout, "%s", bdata(new_item_p->bstr));
       shared_log_reuse_item(new_item_p);
     }
   }
