@@ -208,7 +208,7 @@ int sgw_init (spgw_config_t *spgw_config_pP)
 
   sgw_app.sgw_ip_address_S5_S8_up.s_addr      = spgw_config_pP->sgw_config.ipv4.S5_S8_up.s_addr;
 
-#if ENABLE_SDF_MARKING
+#if ENABLE_LIBGTPNL
   if (spgw_config_pP->pgw_config.pcef.enabled) {
     if (RETURNerror == pgw_pcef_emulation_init (&spgw_config_pP->pgw_config)) {
       return RETURNerror;

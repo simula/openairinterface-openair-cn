@@ -26,10 +26,10 @@ include_directories("${SRC_TOP_DIR}/nas/api/network")
 include_directories("${SRC_TOP_DIR}/nas/api/mme")
 include_directories("${SRC_TOP_DIR}/mme_app")
 
-if(ENABLE_LIBGTPNL)
+if(ENABLE_LIBGTPNL OR ENABLE_LIBGTPNL_OVS)
 pkg_search_module(GTPNL libgtpnl REQUIRED)
 include_directories(${GTPNL_INCLUDE_DIRS})
-endif(ENABLE_LIBGTPNL)
+endif(ENABLE_LIBGTPNL OR ENABLE_LIBGTPNL_OVS)
 
 
 set (GTPV1U_SRC
@@ -38,12 +38,16 @@ set (GTPV1U_SRC
     )
 
 if(ENABLE_LIBGTPNL)
+list(APPEND GTPV1U_SRC gtp_tunnel_libgtpnl_marking_bearer.c)
+endif(ENABLE_LIBGTPNL)
+
+if(ENABLE_LIBGTPNL_OVS)
 list(APPEND GTPV1U_SRC gtp_tunnel_libgtpnl.c)
 endif(ENABLE_LIBGTPNL)
 
 add_library(GTPV1U ${GTPV1U_SRC})
 
-if(ENABLE_LIBGTPNL)
+if(ENABLE_LIBGTPNL OR ENABLE_LIBGTPNL_OVS)
 target_link_libraries(GTPV1U ${GTPNL_LIBRARIES})
-endif(ENABLE_LIBGTPNL)
+endif(ENABLE_LIBGTPNL OR ENABLE_LIBGTPNL_OVS)
 

@@ -62,7 +62,6 @@ extern "C" {
 
 #define PGW_CONFIG_STRING_PCEF                                  "PCEF"
 #define PGW_CONFIG_STRING_PCEF_ENABLED                          "PCEF_ENABLED"
-#define PGW_CONFIG_STRING_TRAFFIC_SHAPPING_ENABLED              "TRAFFIC_SHAPPING_ENABLED"
 #define PGW_CONFIG_STRING_TCP_ECN_ENABLED                       "TCP_ECN_ENABLED"
 #define PGW_CONFIG_STRING_AUTOMATIC_PUSH_DEDICATED_BEARER_PCC_RULE  "AUTOMATIC_PUSH_DEDICATED_BEARER_PCC_RULE"
 #define PGW_CONFIG_STRING_DEFAULT_BEARER_STATIC_PCC_RULE        "DEFAULT_BEARER_STATIC_PCC_RULE"
@@ -123,7 +122,6 @@ typedef struct pgw_config_s {
 
   struct {
     bool      enabled;
-    bool      traffic_shaping_enabled;
     bool      tcp_ecn_enabled;           // test for CoDel qdisc
     sdf_id_t  default_bearer_sdf_identifier;
     sdf_id_t  automatic_push_dedicated_bearer_sdf_identifier;

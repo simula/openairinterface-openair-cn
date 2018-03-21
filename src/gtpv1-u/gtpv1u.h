@@ -77,7 +77,12 @@ struct gtp_tunnel_ops {
   int  (*init)(struct in_addr *ue_net, uint32_t mask, int mtu, int *fd0, int *fd1u);
   int  (*uninit)(void);
   int  (*reset)(void);
+#if ENABLE_LIBGTPNL
+  int  (*add_tunnel)(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei, uint8_t bearer_id);
+#endif
+#if ENABLE_LIBGTPNL_OVS
   int  (*add_tunnel)(struct in_addr ue, struct in_addr enb, uint32_t i_tei, uint32_t o_tei, imsi_t imsi);
+#endif
   int  (*del_tunnel)(struct in_addr ue, uint32_t i_tei, uint32_t o_tei);
 };
 

@@ -198,11 +198,25 @@ check_install_spgw_software() {
   install_liblfds7.1.0_from_source $1
   [[ $? -ne 0 ]] && return $?
     
-  if [ -z ${ENABLE_OPENFLOW+x} ]; then 
+  if [ ! -z ${ENABLE_LIBGTPNL+x} ]; then 
     echo "Install libgtpnl"
     install_libgtpnl_from_source $1
     [[ $? -ne 0 ]] && return $?
-  else
+    install_gtp_kernel_module $1
+  fi
+  if [ ! -z ${ENABLE_LIBGTPNL_OVS+x} ]; then 
+    echo_error "TODO LIBGTPNL_OVS"
+    return 1
+    echo "Install libgtpnl-ovs"
+    install_libgtpnl_ovs_from_source $1
+    [[ $? -ne 0 ]] && return $?
+    echo "Install ovs"
+    install_ovs_from_source $1
+    [[ $? -ne 0 ]] && return $?
+  fi
+  if [ ! -z ${ENABLE_OPENFLOW+x} ]; then
+    echo_error "TODO OPENFLOW"
+    return 1
     echo "Install libfluid"
     install_libfluid_from_source $1
     [[ $? -ne 0 ]] && return $?

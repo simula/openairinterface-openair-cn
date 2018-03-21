@@ -647,12 +647,25 @@ sgw_handle_sgi_endpoint_updated (
       struct in_addr ue = {.s_addr = 0};
       ue.s_addr = eps_bearer_ctxt_p->paa.ipv4_address.s_addr;
 
+#if ENABLE_LIBGTPNL
+      rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u, resp_pP->eps_bearer_id);
+#elif ENABLE_LIBGTPNL_OVS
       imsi_t imsi = new_bearer_ctxt_info_p->sgw_eps_bearer_context_information.imsi;
       rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u, imsi);
+#endif
+
       if (rv < 0) {
         OAILOG_ERROR (LOG_SPGW_APP, "ERROR in setting up TUNNEL err=%d\n", rv);
       }
 
+#if ENABLE_LIBGTPNL
+      bstring marking_command = bformat(
+            "iptables -A POSTROUTING -t mangle --out-interface gtp0 --dest %"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8"/32 -m mark --mark 0x%04X -j MARK --set-mark %d",
+            NIPADDR(eps_bearer_ctxt_p->paa.ipv4_address.s_addr), SDF_ID_NGBR_DEFAULT, eps_bearer_ctxt_p->eps_bearer_id);
+      async_system_command (TASK_SPGW_APP, false, bdata(marking_command));
+      bdestroy_wrapper(&marking_command);
+      AssertFatal((TRAFFIC_FLOW_TEMPLATE_NB_PACKET_FILTERS_MAX > eps_bearer_ctxt_p->num_sdf), "Too much flows aggregated in this Bearer (should not happen => see MME)");
+#endif
       // may be removed
       if (TRAFFIC_FLOW_TEMPLATE_NB_PACKET_FILTERS_MAX > eps_bearer_ctxt_p->num_sdf) {
         int i = 0;
@@ -911,7 +924,7 @@ sgw_handle_delete_session_request (
                   eps_bearer_ctxt_p->enb_teid_S1u, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up);
             }
 
-#if ENABLE_SDF_MARKING
+#if ENABLE_LIBGTPNL
             for (int sdfx = 0; sdfx < eps_bearer_ctxt_p->num_sdf; sdfx++) {
               if (eps_bearer_ctxt_p->sdf_id[sdfx]) {
                 bstring marking_command = bformat(
@@ -935,7 +948,7 @@ sgw_handle_delete_session_request (
             OAILOG_ERROR (LOG_SPGW_APP, "ERROR in deleting TUNNEL " TEID_FMT " (eNB) <-> (SGW) " TEID_FMT "\n",
                 eps_bearer_ctxt_p->enb_teid_S1u, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up);
           }
-#if ENABLE_SDF_MARKING
+#if ENABLE_LIBGTPNL
           for (int sdfx = 0; sdfx < eps_bearer_ctxt_p->num_sdf; sdfx++) {
             if (eps_bearer_ctxt_p->sdf_id[sdfx]) {
               bstring marking_command = bformat(
@@ -1210,8 +1223,12 @@ sgw_handle_create_bearer_response (
                   ue.s_addr = eps_bearer_ctxt_p->paa.ipv4_address.s_addr;
 
                   if (spgw_config.pgw_config.use_gtp_kernel_module) {
+#if ENABLE_LIBGTPNL
+                    rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u, eps_bearer_ctxt_p->eps_bearer_id);
+#elif ENABLE_LIBGTPNL_OVS
                     imsi_t imsi = ctx_p->sgw_eps_bearer_context_information.imsi;
                     rv = gtp_tunnel_ops->add_tunnel(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u, imsi);
+#endif
                     if (rv < 0) {
                       OAILOG_ERROR (LOG_SPGW_APP, "ERROR in setting up TUNNEL err=%d\n", rv);
                     }
@@ -1221,7 +1238,7 @@ sgw_handle_create_bearer_response (
                           eps_bearer_ctxt_p->eps_bearer_id, eps_bearer_ctxt_p->enb_teid_S1u, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up);
                     } else {
 
-#if ENABLE_SDF_MARKING
+#if ENABLE_LIBGTPNL
                       bstring marking_command = bformat(
                           "iptables -A POSTROUTING -t mangle --out-interface gtp0 --dest %"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8"/32 -m mark --mark 0x%04X -j MARK --set-mark %d",
                           NIPADDR(eps_bearer_ctxt_p->paa.ipv4_address.s_addr), pgw_ni_cbr_proc->sdf_id, eps_bearer_ctxt_p->eps_bearer_id);
