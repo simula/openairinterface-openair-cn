@@ -286,10 +286,8 @@ ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/test ${CMAKE_CURRENT_BINA
 
 add_definitions("-DPACKAGE_NAME=\"SPGW\"")
 
-set(ASN1RELDIR r10.5)
 include_directories(${SRC_TOP_DIR}/oai_sgw/common)
 include_directories(${SRC_TOP_DIR}/oai_sgw/common/itti)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 include_directories(${SRC_TOP_DIR}/oai_sgw/common/message_utils)
 include_directories(${SRC_TOP_DIR}/gtpv1-u)
 include_directories(${SRC_TOP_DIR}/sgw)

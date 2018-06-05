@@ -35,7 +35,6 @@
 #include "s1ap_common.h"
 #include "s1ap_eNB.h"
 #include "s1ap_mme.h"
-#include "s1ap_ies_defs.h"
 
 #include "s1ap_eNB_encoder.h"
 #include "s1ap_eNB_decoder.h"
@@ -167,18 +166,18 @@ recv_callback (
   uint8_t * buffer,
   uint32_t length)
 {
-  s1ap_message                            message;
+  S1AP_S1AP_PDU_t                         pdu;
   uint8_t                                *buffer2;
   uint32_t                                len;
   int                                     j;
 
-  if (s1ap_eNB_decode_pdu (&message, buffer, length) < 0) {
+  if (s1ap_eNB_decode_pdu (&pdu, buffer, length) < 0) {
     fprintf (stderr, "s1ap_eNB_decode_pdu returned status < 0\n");
     free (buffer);
     return -1;
   }
 
-  if (message.procedureCode == ProcedureCode_id_S1Setup && message.direction == S1AP_PDU_PR_successfulOutcome) {
+  if (pdu.choice.successfulOutcome.procedureCode == S1AP_ProcedureCode_id_S1Setup && pdu.present == S1AP_S1AP_PDU_PR_successfulOutcome) {
     for (j = 0; j < nb_ue; j++) {
       s1ap_test_generate_initial_ue_message (j, &buffer2, &len);
 
@@ -190,7 +189,7 @@ recv_callback (
 
       free (buffer2);
     }
-  } else if (message.procedureCode == ProcedureCode_id_InitialContextSetup && message.direction == S1AP_PDU_PR_initiatingMessage) {
+  } else if (pdu.choice.successfulOutcome.procedureCode == S1AP_ProcedureCode_id_InitialContextSetup && pdu.present == S1AP_S1AP_PDU_PR_initiatingMessage) {
     fprintf (stdout, "Received InitialContextSetup request\n");
     s1ap_test_generate_initial_setup_resp (message.msg.initialContextSetupRequestIEs.eNB_UE_S1AP_ID, message.msg.initialContextSetupRequestIEs.mme_ue_s1ap_id, 0x5, 0x1, &buffer2, &len);
 

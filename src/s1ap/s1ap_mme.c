@@ -57,7 +57,7 @@
 #include "s1ap_mme_itti_messaging.h"
 #include "dynamic_memory_check.h"
 #include "mme_config.h"
-
+#include "mme_app_statistics.h"
 
 #if S1AP_DEBUG_LIST
 #  define eNB_LIST_OUT(x, args...) OAILOG_DEBUG (LOG_S1AP, "[eNB]%*s"x"\n", 4*indent, "", ##args)
@@ -113,7 +113,7 @@ s1ap_mme_thread (
 
   while (1) {
     MessageDef                             *received_message_p = NULL;
-    MessagesIds                             message_id = MESSAGES_ID_MAX;
+
     /*
      * Trying to fetch a message from the message queue.
      * * * * If the queue is empty, this function will block till a
@@ -190,21 +190,27 @@ s1ap_mme_thread (
          * New message received from SCTP layer.
          * Decode and handle it.
          */
-        s1ap_message                            message = {0};
-
+        S1AP_S1AP_PDU_t                             pdu = {0};
+        int msglen, offset = 0;
         /*
          * Invoke S1AP message decoder
          */
-        if (s1ap_mme_decode_pdu (&message, SCTP_DATA_IND (received_message_p).payload, &message_id) < 0) {
-          // TODO: Notify eNB of failure with right cause
-          OAILOG_ERROR (LOG_S1AP, "Failed to decode new buffer\n");
-        } else {
-          s1ap_mme_handle_message (SCTP_DATA_IND (received_message_p).assoc_id, SCTP_DATA_IND (received_message_p).stream, &message);
-        }
+        do {
+          memset(&pdu, 0, sizeof(pdu));
 
-        if (message_id != MESSAGES_ID_MAX) {
-          s1ap_free_mme_decode_pdu(&message, message_id);
-        }
+          if ((msglen = s1ap_mme_decode_pdu (&pdu, SCTP_DATA_IND (received_message_p).payload, offset)) < 0) {
+            // TODO: Notify eNB of failure with right cause
+            OAILOG_ERROR (LOG_S1AP, "Failed to decode new buffer\n");
+            break;
+          } else {
+            s1ap_mme_handle_message (SCTP_DATA_IND (received_message_p).assoc_id,
+                                     SCTP_DATA_IND (received_message_p).stream, &pdu);
+
+            ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_S1AP_PDU, &pdu);
+          }
+          offset += msglen + SCTP_DATA_CHUNK_HEADER_SIZE;
+
+        } while (offset < blength(SCTP_DATA_IND (received_message_p).payload));
 
         /*
          * Free received PDU array
@@ -264,7 +270,6 @@ s1ap_mme_thread (
       break;
 
       case TIMER_HAS_EXPIRED:{
-        ue_description_t                       *ue_ref_p = NULL;
         if (received_message_p->ittiMsg.timer_has_expired.arg != NULL) {
           ue_description_t* ue_ref_p = (ue_description_t *)(received_message_p->ittiMsg.timer_has_expired.arg);
           if (!ue_ref_p) {
@@ -329,7 +334,7 @@ s1ap_mme_init(void)
   OAILOG_DEBUG (LOG_S1AP, "Initializing S1AP interface\n");
 
   if (get_asn1c_environment_version () < ASN1_MINIMUM_VERSION) {
-    OAILOG_ERROR (LOG_S1AP, "ASN1C version %d fount, expecting at least %d\n", get_asn1c_environment_version (), ASN1_MINIMUM_VERSION);
+    OAILOG_ERROR (LOG_S1AP, "ASN1C version %d found, expecting at least %d\n", get_asn1c_environment_version (), ASN1_MINIMUM_VERSION);
     return RETURNerror;
   } else {
     OAILOG_DEBUG (LOG_S1AP, "ASN1C version %d\n", get_asn1c_environment_version ());
@@ -514,7 +519,6 @@ s1ap_is_enb_ue_s1ap_id_in_list_per_enb (
   const enb_ue_s1ap_id_t enb_ue_s1ap_id,
   const uint32_t  enb_id)
 {
-  ue_description_t                       *ue_ref = NULL;
   enb_description_t                      *enb_ref = NULL;
   enb_ref = s1ap_is_enb_id_in_list(enb_id);
   if(enb_ref == NULL){
@@ -612,7 +616,7 @@ void s1ap_notified_new_ue_mme_s1ap_id_association (
 {
   enb_description_t   *enb_ref =  s1ap_is_enb_assoc_id_in_list (sctp_assoc_id);
 
-  ue_description_t * ue_ref_test = NULL;
+  //ue_description_t * ue_ref_test = NULL;
 
   if (enb_ref) {
     ue_description_t   *ue_ref = s1ap_is_ue_enb_id_in_list (enb_ref,enb_ue_s1ap_id);
@@ -622,11 +626,11 @@ void s1ap_notified_new_ue_mme_s1ap_id_association (
       OAILOG_DEBUG(LOG_S1AP, "Associated  sctp_assoc_id %d, enb_ue_s1ap_id " ENB_UE_S1AP_ID_FMT ", mme_ue_s1ap_id " MME_UE_S1AP_ID_FMT ":%s \n",
           sctp_assoc_id, enb_ue_s1ap_id, mme_ue_s1ap_id, hashtable_rc_code2string(h_rc));
 
-      ue_ref_test = s1ap_is_ue_mme_id_in_list (mme_ue_s1ap_id);
+      //ue_ref_test = s1ap_is_ue_mme_id_in_list (mme_ue_s1ap_id);
       return;
     }
     OAILOG_DEBUG(LOG_S1AP, "Could not find  ue  with enb_ue_s1ap_id " ENB_UE_S1AP_ID_FMT "\n", enb_ue_s1ap_id);
-    ue_ref_test = s1ap_is_ue_mme_id_in_list (mme_ue_s1ap_id);
+    //ue_ref_test = s1ap_is_ue_mme_id_in_list (mme_ue_s1ap_id);
     return;
   }
   OAILOG_DEBUG(LOG_S1AP, "Could not find  eNB with sctp_assoc_id %d \n", sctp_assoc_id);
@@ -770,11 +774,11 @@ s1ap_remove_enb (
 //    return false;
 //  }
 //
-//  const S1ap_E_RABToBeSetupListHOReqIEs_t * const e_RABToBeSetupListHOReq_p = (const S1ap_E_RABToBeSetupListHOReqIEs_t *)parameterP_bearer_list;
+//  const S1AP_E_RABToBeSetupListHOReqIEs_t * const e_RABToBeSetupListHOReq_p = (const S1AP_E_RABToBeSetupListHOReqIEs_t *)parameterP_bearer_list;
 //  if (e_RABToBeSetupListHOReq_p == NULL) {
 //    return false;
 //  }
-//  S1ap_E_RABToBeSetupItemHOReq_t          e_RABToBeSetupHO = {0}; // yes, alloc on stack
+//  S1AP_E_RABToBeSetupItemHOReq_t          e_RABToBeSetupHO = {0}; // yes, alloc on stack
 //
 //  if(s1ap_generate_bearer_context_to_setup(bearer_ctxt_p, &e_RABToBeSetupHO) != RETURNok){
 //    OAILOG_ERROR(LOG_S1AP, "Error adding bearer context with ebi %d to list of bearers to setup.\n", bearer_ctxt_p->ebi);

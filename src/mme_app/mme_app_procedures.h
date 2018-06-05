@@ -100,7 +100,7 @@ typedef struct mme_app_s10_proc_mme_handover_s {
   uint8_t                       next_processed_pdn_connection;
 
   /** Target Information to store on the source side. */
-//  S1ap_ENB_ID_PR                target_enb_type;
+//  S1AP_ENB_ID_PR                target_enb_type;
 
   tai_t                         target_tai;
   bool                          ho_command_sent;

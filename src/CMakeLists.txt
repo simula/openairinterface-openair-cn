@@ -26,6 +26,14 @@ cmake_minimum_required (VERSION 3.0.2)
 project (OpenAirInterface)
 
 ###########################################
+function(make_version version_value)
+  math(EXPR result "0")
+  foreach (arg ${ARGN})
+    math(EXPR result "${result} * 16 + ${arg}")
+  endforeach()
+  set(${version_value} "${result}" PARENT_SCOPE)
+endfunction()
+###########################################
 # macros to define options as there is numerous options in oai
 ################################################
 macro(add_option name val helpstr)
@@ -134,7 +142,7 @@ set(CMAKE_C_FLAGS
   "${CMAKE_C_FLAGS} ${C_FLAGS_PROCESSOR} -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat -fPIC ")
 # add autoTOOLS definitions that were maybe used!
 set(CMAKE_C_FLAGS
-  "${CMAKE_C_FLAGS} -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_FCNTL_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_SYS_TIME_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_STRERROR=1 -DHAVE_SOCKET=1 -DHAVE_MEMSET=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_STDLIB_H=1 -DHAVE_MALLOC=1 -DHAVE_LIBSCTP"
+  "${CMAKE_C_FLAGS} -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_FCNTL_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_SYS_TIME_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_STRERROR=1 -DHAVE_SOCKET=1 -DHAVE_MEMSET=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_STDLIB_H=1 -DHAVE_MALLOC=1 -DHAVE_LIBSCTP -DASN_DISABLE_OER_SUPPORT -D'MAKE_VERSION(a,b,c)=((a)*256+(b)*16+c)'"
 )
 # set a flag for changes in the source code
 # these changes are related to hardcoded path to include .h files
@@ -268,17 +276,3 @@ if ("${LFDS}" STREQUAL "LFDS-NOTFOUND")
   message(FATAL_ERROR "LIB LFDS not found, please install it" )
 endif()
 
-################################################################
-# Add sub modules
-################################################################
-
-#ADD_SUBDIRECTORY(../common)
-
-ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/common ${CMAKE_CURRENT_BINARY_DIR}/common)
-ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/gtpv2-c ${CMAKE_CURRENT_BINARY_DIR}/gtpv2-c)
-ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/s11 ${CMAKE_CURRENT_BINARY_DIR}/s11)
-ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/udp ${CMAKE_CURRENT_BINARY_DIR}/udp)
-ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/utils ${CMAKE_CURRENT_BINARY_DIR}/utils)
-
-ENABLE_TESTING()
-ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/test ${CMAKE_CURRENT_BINARY_DIR}/test)

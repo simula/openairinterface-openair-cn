@@ -37,6 +37,10 @@
 #define UPLINK_NAS_TRANSPORT_MAXIMUM_LENGTH ( \
     NAS_MESSAGE_CONTAINER_MAXIMUM_LENGTH )
 
+typedef enum uplink_nas_transport_iei_tag {
+// release 10.15.0
+  UPLINK_NAS_TRANSPORT_ADDITIONAL_INFORMATION_IEI  = 0x65, /* 0x65 =     */
+} uplink_nas_transport_iei;
 
 /*
  * Message name: Uplink NAS Transport

@@ -1,10 +1,9 @@
 # gtpv1u_sgw_defs.h is inculded from sgw.h and hence is retained in this
 # directory as in in OAI.
-set(ASN1RELDIR r10.5)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${SRC_TOP_DIR}/common)
 include_directories(${SRC_TOP_DIR}/common/itti)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
+include_directories(${SRC_TOP_DIR}/s1ap/messages/asn1/${S1AP_RELEASE})
 include_directories(${SRC_TOP_DIR}/utils)
 include_directories(${SRC_TOP_DIR}/utils/bstr)
 include_directories(${SRC_TOP_DIR}/utils/hashtable)

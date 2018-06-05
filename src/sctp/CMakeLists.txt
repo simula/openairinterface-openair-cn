@@ -1,8 +1,7 @@
 
-set(ASN1RELDIR r10.5)
 include_directories(${SRC_TOP_DIR}/common)
 include_directories(${SRC_TOP_DIR}/common/itti)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
+include_directories(${SRC_TOP_DIR}/s1ap/messages/asn1/${S1AP_RELEASE}/GENERATED_S1AP)
 include_directories(${SRC_TOP_DIR}/utils)
 include_directories(${SRC_TOP_DIR}/utils/bstr)
 include_directories(${SRC_TOP_DIR}/utils/hashtable)
@@ -22,7 +21,6 @@ include_directories("${SRC_TOP_DIR}/nas/api/network")
 include_directories("${SRC_TOP_DIR}/nas/api/mme")
 include_directories(${SRC_TOP_DIR}/mme)
 include_directories("${SRC_TOP_DIR}/mme_app")
-include_directories("${SRC_TOP_DIR}/s1ap/messages/asn1/${ASN1RELDIR}")
 include_directories("${SRC_TOP_DIR}/s1ap")
 include_directories(${SRC_TOP_DIR}/sgw)
 

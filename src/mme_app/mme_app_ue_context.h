@@ -117,7 +117,7 @@ struct mme_app_timer_t {
 typedef struct fteid_set_s {
   fteid_t *s1u_fteid;
   fteid_t *s5_fteid;
-};
+} fteid_set_t;
 
 /** @struct bearer_context_t
  *  @brief Parameters that should be kept for an eps bearer.
@@ -306,7 +306,7 @@ typedef struct ue_context_s {
   ecm_state_t             ecm_state;                // ECM state ECM-IDLE, ECM-CONNECTED.
                                                     // not set/read
 
-//  S1ap_Cause_t            s1_ue_context_release_cause;
+//  S1AP_Cause_t            s1_ue_context_release_cause;
   // todo: enum s1cause
   enum s1cause            s1_ue_context_release_cause;
 
@@ -450,7 +450,6 @@ typedef struct ue_context_s {
    * Take the bearer contexts from here and put them into the PDN context.
    */
   // todo: check if they are necessary!
-  #define MAX_APN_PER_UE    5 /**< Maximum number of PDN sesssions per UE. */
   RB_HEAD(PdnContexts, pdn_context_s) pdn_contexts;
 
   apn_config_profile_t   apn_config_profile;                  // set by S6A UPDATE LOCATION ANSWER
@@ -640,6 +639,8 @@ void mme_app_dump_ue_contexts(const mme_ue_context_t * const mme_ue_context);
 int mme_app_registration_complete(const mme_ue_s1ap_id_t mme_ue_s1ap_id);
 
 void mme_app_handle_s1ap_ue_context_release_req(const itti_s1ap_ue_context_release_req_t * const s1ap_ue_context_release_req);
+
+void mme_app_handle_enb_reset_req (const itti_s1ap_enb_initiated_reset_req_t * const enb_reset_req);
 
 //bearer_context_t* mme_app_get_bearer_context(ue_context_t  * const ue_context, const ebi_t ebi);
 

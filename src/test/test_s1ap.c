@@ -163,17 +163,17 @@ doit (
   //     asn_debug = 1;
 
   for (i = 0; i < sizeof (s1ap_test) / sizeof (s1ap_test_t); i++) {
-    struct s1ap_message_s                   message;
+    S1AP_S1AP_PDU_t                         pdu;
     uint8_t                                *buffer;
     uint32_t                                length;
 
-    memset (&message, 0, sizeof (struct s1ap_message_s));
+    memset (&pdu, 0, sizeof (pdu));
 
     if (s1ap_test[i].originating == ENB) {
       /*
        * eNB originated procedure -> USE MME decoder
        */
-      if (s1ap_mme_decode_pdu (&message, s1ap_test[i].buffer, s1ap_test[i].buf_len) < 0) {
+      if (s1ap_mme_decode_pdu (&pdu, s1ap_test[i].buffer, s1ap_test[i].buf_len) < 0) {
         fail ("Failed to decode %s\n", s1ap_test[i].procedure_name);
       } else {
         success ("Decoded %s correctly\n", s1ap_test[i].procedure_name);
@@ -182,7 +182,7 @@ doit (
       /*
        * MME originated procedure -> USE eNB decoder
        */
-      if (s1ap_eNB_decode_pdu (&message, s1ap_test[i].buffer, s1ap_test[i].buf_len) < 0) {
+      if (s1ap_eNB_decode_pdu (&pdu, s1ap_test[i].buffer, s1ap_test[i].buf_len) < 0) {
         fail ("Failed to decode %s\n", s1ap_test[i].procedure_name);
       } else {
         success ("Decoded %s correctly\n", s1ap_test[i].procedure_name);
@@ -193,7 +193,7 @@ doit (
       /*
        * eNB originated procedure -> USE eNB encoder
        */
-      if (s1ap_eNB_encode_pdu (&message, &buffer, &length) < 0) {
+      if (s1ap_eNB_encode_pdu (&pdu, &buffer, &length) < 0) {
         fail ("Failed to decode %s\n", s1ap_test[i].procedure_name);
       } else {
         success ("Encoded %s correctly\n", s1ap_test[i].procedure_name);
@@ -202,7 +202,7 @@ doit (
       /*
        * MME originated procedure -> USE mme encoder
        */
-      if (s1ap_mme_encode_pdu (&message, &buffer, &length) < 0) {
+      if (s1ap_mme_encode_pdu (&pdu, &buffer, &length) < 0) {
         fail ("Failed to encode %s\n", s1ap_test[i].procedure_name);
       } else {
         success ("Encoded %s correctly\n", s1ap_test[i].procedure_name);

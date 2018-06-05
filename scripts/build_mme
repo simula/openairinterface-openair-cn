@@ -197,6 +197,7 @@ function main()
       echo "Cleaning MME: generated configuration files, obj files, mme executable"
     fi
     rm -Rf $OPENAIRCN_DIR/build/mme/build  2>&1
+    rm -Rf $OPENAIRCN_DIR/src/s1ap/messages/asn1/r*/GENERATED_S1AP  2>&1
     mkdir -m 777 -p -v build
   fi
 

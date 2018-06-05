@@ -164,7 +164,7 @@ typedef struct itti_s1ap_ue_context_release_req_s {
   mme_ue_s1ap_id_t  mme_ue_s1ap_id;
   enb_ue_s1ap_id_t  enb_ue_s1ap_id:24;
   uint32_t          enb_id;
-  S1ap_Cause_t      cause;             // Should translate this S1ap_Cause_t type
+  S1AP_Cause_t      cause;             // Should translate this S1AP_Cause_t type
 } itti_s1ap_ue_context_release_req_t;
 
 typedef struct itti_s1ap_ue_context_release_command_s {
@@ -313,7 +313,7 @@ typedef struct itti_s1ap_handover_required_s {
   uint8_t                 target_enb_type;
 
   /** Cause. */
-  S1ap_Cause_PR           f_cause_type;
+  S1AP_Cause_PR           f_cause_type;
   long                    f_cause_value;
 
   /** Source-To-Target Transparent Container. */
@@ -423,6 +423,15 @@ typedef struct itti_s1ap_handover_cancel_acknowledge_s {
   sctp_assoc_id_t         assoc_id;
 } itti_s1ap_handover_cancel_acknowledge_t;
 
+typedef struct bearer_status_transfer_item_s {
+  ebi_t e_rab_id;
+  uint32_t uL_COUNT_hFN;
+  uint32_t uL_COUNT_pDCP_SN;
+  uint32_t dL_COUNT_hFN;
+  uint32_t dL_COUNT_pDCP_SN;
+  bstring  receiveStatusofULPDCPSDUs;
+} bearer_status_transfer_item_t;
+
 /** S1AP ENB/MME Status Transfer. */
 typedef struct itti_s1ap_status_transfer_s {
   mme_ue_s1ap_id_t        mme_ue_s1ap_id;
@@ -430,7 +439,9 @@ typedef struct itti_s1ap_status_transfer_s {
   /** enb_id to find the correct UE_Reference. */
   uint32_t                enb_id;
   /** F-Container. */
-  bstring                 bearerStatusTransferList_buffer; /**< Target-ToSource Transparent Container. */
+  uint8_t num_items;
+  bearer_status_transfer_item_t bearer_status_transfer_item[BEARERS_PER_UE];
+  //bstring                 bearerStatusTransferList_buffer; /**< Target-ToSource Transparent Container. */
 
 } itti_s1ap_status_transfer_t;
 

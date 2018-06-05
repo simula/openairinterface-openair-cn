@@ -307,7 +307,7 @@ mme_app_handle_mme_s10_handover_completion_timer_expiry (mme_app_s10_proc_mme_ha
   if(!ue_context->local_mme_teid_s10){
     mme_app_send_s10_forward_relocation_response_err(s10_proc_mme_handover->remote_mme_teid.teid,
         s10_proc_mme_handover->remote_mme_teid.ipv4_address,
-        s10_proc_mme_handover->forward_relocation_trxn, REQUEST_REJECTED);
+        (void*)s10_proc_mme_handover->forward_relocation_trxn, REQUEST_REJECTED);
   }
   /** Delete the procedure. */
   mme_app_delete_s10_procedure_mme_handover(ue_context);

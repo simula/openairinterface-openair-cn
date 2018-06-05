@@ -1,4 +1,3 @@
-set(ASN1RELDIR r10.5)
 set(GTPV2C_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/nwgtpv2c-0.11/src)
 set(GTPV2C_IE_FORMATTER_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/gtpv2c_ie_formatter/src)
 add_library(GTPV2C
@@ -31,7 +30,7 @@ include_directories(${SRC_TOP_DIR}/mme)
 
 include_directories(${SRC_TOP_DIR}/nas/util)
 
-include_directories("${SRC_TOP_DIR}/s1ap/messages/asn1/${ASN1RELDIR}")
+include_directories(${SRC_TOP_DIR}/s1ap/messages/asn1/${S1AP_RELEASE}/GENERATED_S1AP)
 include_directories("${SRC_TOP_DIR}/s1ap")
 include_directories("${SRC_TOP_DIR}/s11")
 

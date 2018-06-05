@@ -36,6 +36,10 @@
 #define TRACKING_AREA_UPDATE_REJECT_MAXIMUM_LENGTH ( \
     EMM_CAUSE_MAXIMUM_LENGTH )
 
+typedef enum tracking_area_update_reject_iei_tag {
+// release 10.15.0
+  TRACKING_AREA_UPDATE_REJECT_T3346_VALUE_IEI  = 0x5F, /* 0x5F =     */
+} tracking_area_update_reject_iei;
 
 /*
  * Message name: Tracking area update reject

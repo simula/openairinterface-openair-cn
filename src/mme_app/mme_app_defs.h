@@ -85,6 +85,10 @@ int mme_app_handle_s1ap_ue_capabilities_ind  (const itti_s1ap_ue_cap_ind_t * con
 
 void mme_app_handle_s1ap_ue_context_release_complete (const itti_s1ap_ue_context_release_complete_t * const s1ap_ue_context_release_complete);
 
+void mme_ue_context_update_ue_sig_connection_state (mme_ue_context_t * const mme_ue_context_p, struct ue_context_s *ue_context, ecm_state_t new_ecm_state);
+
+mme_ue_s1ap_id_t mme_app_ctx_get_new_ue_id(void);
+
 void mme_app_itti_ue_context_release (    mme_ue_s1ap_id_t mme_ue_s1ap_id, enb_ue_s1ap_id_t enb_ue_s1ap_id, enum s1cause cause, uint32_t target_enb_id);
 
 void mme_app_itti_notify_request(const imsi64_t imsi, const plmn_t * handovered_plmn, const bool mobility_completion);
@@ -104,6 +108,8 @@ void mme_app_handle_conn_est_cnf             (itti_nas_conn_est_cnf_t * const na
 void mme_app_handle_initial_ue_message       (itti_s1ap_initial_ue_message_t * const conn_est_ind_pP);
 
 int mme_app_handle_create_sess_resp          (itti_s11_create_session_response_t * const create_sess_resp_pP); //not const because we need to free internal stucts
+
+int mme_app_handle_modify_bearer_resp (const itti_s11_modify_bearer_response_t * const modify_bearer_resp_pP);
 
 void mme_app_handle_nas_erab_setup_req (itti_nas_erab_setup_req_t * const itti_nas_erab_setup_req);
 

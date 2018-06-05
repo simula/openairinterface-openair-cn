@@ -79,14 +79,13 @@ void mme_app_itti_notify_request(const imsi64_t imsi,
     const plmn_t * handovered_plmn, const bool mobility_completion){
   OAILOG_FUNC_IN(LOG_MME_APP);
   MessageDef                             *message_p   = NULL;
-  int                                     rc = RETURNok;
   emm_data_context_t                     *emm_context = NULL;
   s6a_notify_req_t                       *s6a_nr_req  = NULL;
 
   message_p = itti_alloc_new_message(TASK_MME_APP, S6A_NOTIFY_REQ);
 
   if (message_p == NULL) {
-    OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
+    OAILOG_FUNC_OUT (LOG_MME_APP);
   }
 
   s6a_nr_req = &message_p->ittiMsg.s6a_notify_req;
@@ -94,7 +93,7 @@ void mme_app_itti_notify_request(const imsi64_t imsi,
   /** Recheck that the UE context is found by the IMSI. */
   if ((emm_context = emm_data_context_get_by_imsi(&_emm_data, imsi)) == NULL) {
     OAILOG_ERROR (LOG_MME_APP, "That's embarrassing as we don't know this IMSI " IMSI_64_FMT ". \n", imsi);
-    OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
+    OAILOG_FUNC_OUT (LOG_MME_APP);
   }
 
   IMSI_TO_STRING(&emm_context->_imsi, s6a_nr_req->imsi, IMSI_BCD_DIGITS_MAX+1);
@@ -113,8 +112,8 @@ void mme_app_itti_notify_request(const imsi64_t imsi,
       NULL,0,
       "0 S6A_NOTIFY_REQ ue id "MME_UE_S1AP_ID_FMT" ", ue_id);
 
-  rc = itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
-  OAILOG_FUNC_RETURN (LOG_MME_APP, rc);
+  itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
+  OAILOG_FUNC_OUT (LOG_MME_APP);
 }
 
 //------------------------------------------------------------------------------
@@ -176,7 +175,7 @@ int mme_app_send_s11_release_access_bearers_req (struct ue_context_s *const ue_c
 
 
   MSC_LOG_TX_MESSAGE (MSC_MMEAPP_MME, MSC_S11_MME, NULL, 0, "0 S11_RELEASE_ACCESS_BEARERS_REQUEST teid %u", release_access_bearers_request_p->teid);
-  rc = itti_send_msg_to_task (TASK_S11, INSTANCE_DEFAULT, message_p);
+  itti_send_msg_to_task (TASK_S11, INSTANCE_DEFAULT, message_p);
   OAILOG_FUNC_RETURN (LOG_MME_APP, rc);
 }
 
@@ -185,12 +184,9 @@ int
 mme_app_send_s11_create_session_req (
   struct ue_context_s *const ue_context, const imsi_t * const imsi_p, pdn_context_t * pdn_context, tai_t * serving_tai, const bool is_from_s10_tau)
 {
-  uint8_t                                 i = 0;
-
   /*
    * Keep the identifier to the default APN
    */
-  context_identifier_t                    context_identifier = 0;
   MessageDef                             *message_p = NULL;
   itti_s11_create_session_request_t      *session_request_p = NULL;
   int                                     rc = RETURNok;
@@ -351,11 +347,9 @@ int
 mme_app_send_s11_modify_bearer_req(
   struct ue_context_s *const ue_context, pdn_context_t * pdn_context)
 {
-  uint8_t                                 i = 0;
   /*
    * Keep the identifier to the default APN
    */
-  context_identifier_t                    context_identifier = 0;
   MessageDef                             *message_p = NULL;
   itti_s11_modify_bearer_request_t       *s11_modify_bearer_request = NULL;
   int                                     rc = RETURNok;
@@ -593,7 +587,6 @@ mme_app_send_s11_create_bearer_rsp (
   /*
    * Keep the identifier to the default APN.
    */
-  context_identifier_t                    context_identifier = 0;
   MessageDef                             *message_p = NULL;
   bearer_context_t                       *bc_success = NULL;
   int                                     rc = RETURNok;
@@ -620,13 +613,13 @@ mme_app_send_s11_create_bearer_rsp (
     bc_success = mme_app_get_session_bearer_context(pdn_ctx, bcs_tbc->bearer_contexts[num_bc].eps_bearer_id);
     if(bc_success){
       OAILOG_DEBUG (LOG_MME_APP, "Bearer with ebi %d successfully established for ueId " MME_UE_S1AP_ID_FMT ". Current CBResp cause value %d. \n",
-          ue_context->mme_ue_s1ap_id, s11_create_bearer_response->cause);
+          bcs_tbc->bearer_contexts[num_bc].eps_bearer_id, ue_context->mme_ue_s1ap_id, s11_create_bearer_response->cause.cause_value);
       if(s11_create_bearer_response->cause.cause_value == REQUEST_REJECTED)
         s11_create_bearer_response->cause.cause_value= REQUEST_ACCEPTED_PARTIALLY;
       if(!s11_create_bearer_response->cause.cause_value)
         s11_create_bearer_response->cause.cause_value = REQUEST_ACCEPTED;
       OAILOG_DEBUG (LOG_MME_APP, "Bearer with ebi %d successfully established for ueId " MME_UE_S1AP_ID_FMT ". New CBResp cause value %d. \n",
-             ue_context->mme_ue_s1ap_id, s11_create_bearer_response->cause.cause_value);
+          bcs_tbc->bearer_contexts[num_bc].eps_bearer_id, ue_context->mme_ue_s1ap_id, s11_create_bearer_response->cause.cause_value);
 
       /** The error case is at least PARTIALLY ACCEPTED. */
       s11_create_bearer_response->bearer_contexts.bearer_contexts[num_bc].eps_bearer_id     = bcs_tbc->bearer_contexts[num_bc].eps_bearer_id;
@@ -640,13 +633,13 @@ mme_app_send_s11_create_bearer_rsp (
       s11_create_bearer_response->bearer_contexts.num_bearer_context++;
     }else{
       OAILOG_WARNING (LOG_MME_APP, "Bearer with ebi %d could not be established for ueId " MME_UE_S1AP_ID_FMT ". Current CBResp cause value %d. \n",
-            ue_context->mme_ue_s1ap_id, s11_create_bearer_response->cause);
+          bcs_tbc->bearer_contexts[num_bc].eps_bearer_id, ue_context->mme_ue_s1ap_id, s11_create_bearer_response->cause.cause_value);
         if(s11_create_bearer_response->cause.cause_value == REQUEST_ACCEPTED)
           s11_create_bearer_response->cause.cause_value = REQUEST_ACCEPTED_PARTIALLY;
         if(!s11_create_bearer_response->cause.cause_value)
           s11_create_bearer_response->cause.cause_value = REQUEST_REJECTED;
         OAILOG_DEBUG (LOG_MME_APP, "Bearer with ebi %d could not be established for ueId " MME_UE_S1AP_ID_FMT ". New CBResp cause value %d. \n",
-               ue_context->mme_ue_s1ap_id, s11_create_bearer_response->cause.cause_value);
+            bcs_tbc->bearer_contexts[num_bc].eps_bearer_id, ue_context->mme_ue_s1ap_id, s11_create_bearer_response->cause.cause_value);
 
         s11_create_bearer_response->bearer_contexts.bearer_contexts[num_bc].eps_bearer_id     = 0;
         s11_create_bearer_response->bearer_contexts.bearer_contexts[num_bc].cause.cause_value = REQUEST_REJECTED;
@@ -731,7 +724,6 @@ mme_app_send_s11_delete_bearer_rsp (
 void mme_app_itti_nas_context_response(ue_context_t * ue_context, nas_s10_context_t * s10_context_val){
 
   MessageDef                             *message_p = NULL;
-  int                                     rc = RETURNok;
 
   OAILOG_FUNC_IN (LOG_MME_APP);
   DevAssert (ue_context);
@@ -772,8 +764,8 @@ void mme_app_itti_nas_context_response(ue_context_t * ue_context, nas_s10_contex
       bearer_id,
       current_bearer_p->qci,
       current_bearer_p->priority_level);
-  rc = itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
-  OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
+  itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
+  OAILOG_FUNC_OUT (LOG_MME_APP);
 }
 
 // todo: supporting currently a single bearer
@@ -783,7 +775,6 @@ void mme_app_itti_nas_pdn_connectivity_response(ue_context_t * ue_context,
     bearer_context_t * bc){
 
   MessageDef                             *message_p = NULL;
-  int                                     rc = RETURNok;
 
   OAILOG_FUNC_IN (LOG_MME_APP);
   DevAssert (ue_context);
@@ -824,15 +815,14 @@ void mme_app_itti_nas_pdn_connectivity_response(ue_context_t * ue_context,
       bc->qci,
       bc->priority_level);
 
-  rc = itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
-  OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
+  itti_send_msg_to_task (TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
+  OAILOG_FUNC_OUT (LOG_MME_APP);
 }
 
 //------------------------------------------------------------------------------
 void mme_app_itti_forward_relocation_response(ue_context_t *ue_context, mme_app_s10_proc_mme_handover_t *s10_handover_proc, bstring target_to_source_container){
 
   MessageDef                             *message_p = NULL;
-  int                                     rc = RETURNok;
 
   OAILOG_FUNC_IN (LOG_MME_APP);
   DevAssert (ue_context);
@@ -844,8 +834,8 @@ void mme_app_itti_forward_relocation_response(ue_context_t *ue_context, mme_app_
   itti_s10_forward_relocation_response_t *forward_relocation_response_p = &message_p->ittiMsg.s10_forward_relocation_response;
   memset ((void*)forward_relocation_response_p, 0, sizeof (itti_s10_forward_relocation_response_t));
 
-  /** Get the Handov
-  /** Set the target S10 TEID. */
+  // Get the Handov
+  // Set the target S10 TEID.
   forward_relocation_response_p->teid    = s10_handover_proc->remote_mme_teid.teid; /**< Only a single target-MME TEID can exist at a time. */
 
   /**
@@ -853,7 +843,7 @@ void mme_app_itti_forward_relocation_response(ue_context_t *ue_context, mme_app_
    * Currently only one MME is supported.
    */
   forward_relocation_response_p->peer_ip.s_addr = s10_handover_proc->remote_mme_teid.ipv4_address.s_addr; /**< todo: Check this is correct. */
-  forward_relocation_response_p->trxn    = s10_handover_proc->forward_relocation_trxn;
+  forward_relocation_response_p->trxn    = (void*)s10_handover_proc->forward_relocation_trxn;
   /** Set the cause. */
   forward_relocation_response_p->cause.cause_value = REQUEST_ACCEPTED;
   /** Set all bearers. */

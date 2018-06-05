@@ -38,6 +38,11 @@
     EMM_CAUSE_MAXIMUM_LENGTH + \
     GPRS_TIMER_IE_MAX_LENGTH )
 
+typedef enum service_reject_iei_tag {
+// release 10.15.0
+  SERVICE_REJECT_T3346_VALUE_IEI            = 0x5F, /* 0x5F =     */
+  SERVICE_REJECT_T3402_VALUE_IEI            = 0x16, /* 0x16 =     */
+} service_reject_iei;
 
 /*
  * Message name: Service reject

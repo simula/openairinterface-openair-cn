@@ -85,6 +85,21 @@ typedef enum attach_accept_iei_tag {
   ATTACH_ACCEPT_EMERGENCY_NUMBER_LIST_IEI         = MM_EMERGENCY_NUMBER_LIST_IEI,
   ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_IEI   = 0x64, /* 0x64 = 100 */
   ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_IEI      = 0xF0, /* 0xF0 = 240 */
+
+// release 10.15.0
+  ATTACH_ACCEPT_T3412_EXTENDED_VALUE_IEI          = 0x5E, /* 0x5E =     */
+// release 12.13.0
+  ATTACH_ACCEPT_T3324_VALUE_IEI                   = 0x6A, /* 0x6A =     */
+// release 14.7.0
+  ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_IEI       = 0x6E, /* 0x6E =     */
+  ATTACH_ACCEPT_DCN_ID_IEI                        = 0x65, /* 0x65 =     */
+  ATTACH_ACCEPT_SMS_SERVICES_STATUS_IEI           = 0xE0, /* 0xE0 =     */
+  ATTACH_ACCEPT_NON_3GPP_NW_PROVIDED_POLICIES_IEI = 0xD0, /* 0xD0 =     */
+  ATTACH_ACCEPT_T3448_VALUE_IEI                   = 0x6E, /* 0x6B =     */
+  ATTACH_ACCEPT_NETWORK_POLICIES_IEI              = 0xC0, /* 0xC0 =     */
+// release 15.2.0
+  ATTACH_ACCEPT_T3447_VALUE_IEI                   = 0x6C, /* 0x6C =     */
+  ATTACH_ACCEPT_EXTENDED_EMERGENCY_NUMBER_LIST_IEI = 0x35, /* 0x35 =    */
 } attach_accept_iei;
 
 /*

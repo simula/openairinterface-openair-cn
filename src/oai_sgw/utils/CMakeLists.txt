@@ -22,10 +22,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/hashtable)
 # pulls in dynamic_memory_checker.h
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # log.h pulls in gcc_diag.h
-set(ASN1RELDIR r10.5)
 #include_directories(${SRC_TOP_DIR}/common)
 include_directories(${SRC_TOP_DIR}/oai_sgw/common)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
 
 
 ###############################################################################

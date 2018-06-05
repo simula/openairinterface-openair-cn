@@ -47,6 +47,11 @@
 
 typedef enum attach_reject_iei_tag {
   ATTACH_REJECT_ESM_MESSAGE_CONTAINER_IEI  = 0x78, /* 0x78 = 120 */
+// release 10.15.0
+  ATTACH_REJECT_T3346_VALUE_IEI            = 0x5F, /* 0x5F =     */
+  ATTACH_REJECT_T3402_VALUE_IEI            = 0x16, /* 0x16 =     */
+// release 12.13.0
+  ATTACH_REJECT_EXTENDED_EMM_CAUSE_IEI     = 0xA0, /* 0xA0 =     */
 } attach_reject_iei;
 
 /*

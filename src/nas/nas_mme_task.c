@@ -89,7 +89,7 @@ static void *nas_intertask_interface (void *args_p)
       break;
 
     case MME_APP_E_RAB_FAILURE:
-      nas_proc_e_rab_failure(&MME_APP_E_RAB_FAILURE (received_message_p));
+      nas_proc_e_rab_failure(MME_APP_E_RAB_FAILURE (received_message_p).mme_ue_s1ap_id, MME_APP_E_RAB_FAILURE (received_message_p).ebi);
       break;
 
     case NAS_DOWNLINK_DATA_CNF:{

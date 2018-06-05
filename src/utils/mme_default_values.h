@@ -57,6 +57,7 @@
 #define SCTP_OUT_STREAMS      (32)
 #define SCTP_IN_STREAMS       (32)
 #define SCTP_MAX_ATTEMPTS     (5)
+#define SCTP_DATA_CHUNK_HEADER_SIZE (16)
 
 /*******************************************************************************
  * MME global definitions

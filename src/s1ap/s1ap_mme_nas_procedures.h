@@ -30,6 +30,8 @@
 #define FILE_S1AP_MME_NAS_PROCEDURES_SEEN
 
 #include "common_defs.h"
+#include "bstrlib.h"
+#include "intertask_interface.h"
 
 /** \brief Handle an Initial UE message.
  * \param assocId lower layer assoc id (SCTP)
@@ -39,7 +41,7 @@
  **/
 int s1ap_mme_handle_initial_ue_message(const sctp_assoc_id_t assocId,
                                        const sctp_stream_id_t stream,
-                                       struct s1ap_message_s *message);
+                                       S1AP_S1AP_PDU_t *pdu);
 
 /** \brief Handle an Uplink NAS transport message.
  * Process the RRC transparent container and forward it to NAS entity.
@@ -50,7 +52,7 @@ int s1ap_mme_handle_initial_ue_message(const sctp_assoc_id_t assocId,
  **/
 int s1ap_mme_handle_uplink_nas_transport(const sctp_assoc_id_t assocId,
                                          const sctp_stream_id_t stream,
-                                         struct s1ap_message_s *message);
+                                         S1AP_S1AP_PDU_t *pdu);
 
 /** \brief Handle a NAS non delivery indication message from eNB
  * \param assocId lower layer assoc id (SCTP)
@@ -60,7 +62,7 @@ int s1ap_mme_handle_uplink_nas_transport(const sctp_assoc_id_t assocId,
  **/
 int s1ap_mme_handle_nas_non_delivery(const sctp_assoc_id_t assocId,
                                      const sctp_stream_id_t stream,
-                                     struct s1ap_message_s *message);
+                                     S1AP_S1AP_PDU_t *pdu);
 
 void s1ap_handle_conn_est_cnf(const itti_mme_app_connection_establishment_cnf_t * const conn_est_cnf_p);
 
@@ -87,7 +89,7 @@ int                              s1ap_handover_preparation_failure (
     const sctp_assoc_id_t assoc_id,
     const mme_ue_s1ap_id_t mme_ue_s1ap_id,
     const enb_ue_s1ap_id_t enb_ue_s1ap_id,
-    const S1ap_Cause_PR cause_type);
+    const S1AP_Cause_PR cause_type);
 
 void
 s1ap_handle_handover_cancel_acknowledge (
@@ -97,7 +99,9 @@ int                              s1ap_path_switch_request_failure (
     const sctp_assoc_id_t assoc_id,
     const mme_ue_s1ap_id_t mme_ue_s1ap_id,
     const enb_ue_s1ap_id_t enb_ue_s1ap_id,
-    const S1ap_Cause_PR cause_type);
+    const S1AP_Cause_PR cause_type);
+
+void s1ap_handle_handover_request (const itti_s1ap_handover_request_t * const handover_request_pP);
 
 /** S1AP Handover Command. */
 void s1ap_handle_handover_command ( const itti_s1ap_handover_command_t * const handover_command_pP);

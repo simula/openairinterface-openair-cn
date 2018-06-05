@@ -172,7 +172,7 @@ check_install_mme_software() {
 
   $FD_INSTALL_FUNC $1
   ret=$?;[[ $ret -ne 0 ]] && return $ret
-  install_asn1c_from_source $1
+  install_asn1c_start_rel14_from_source $1
   ret=$?;[[ $ret -ne 0 ]] && return $ret
   install_liblfds7.1.0_from_source $1
   ret=$?;[[ $ret -ne 0 ]] && return $ret

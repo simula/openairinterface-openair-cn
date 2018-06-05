@@ -108,6 +108,14 @@ macro(add_list_string_option name val helpstr)
     add_definitions("-D${name}=\"${value}\"")
   endif()
 endmacro(add_list_string_option)
+
+function(make_version version_value)
+  math(EXPR result "0")
+  foreach (arg ${ARGN})
+    math(EXPR result "${result} * 16 + ${arg}")
+  endforeach()
+  set(${version_value} "${result}" PARENT_SCOPE)
+endfunction()
 ################################################################
 # Compilation flags
 ################################################################
@@ -141,7 +149,8 @@ set(CMAKE_C_FLAGS
   "${CMAKE_C_FLAGS} ${C_FLAGS_PROCESSOR} -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat -fPIC ")
 # add autoTOOLS definitions that were maybe used!
 set(CMAKE_C_FLAGS
-  "${CMAKE_C_FLAGS} -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_FCNTL_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_SYS_TIME_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_STRERROR=1 -DHAVE_SOCKET=1 -DHAVE_MEMSET=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_STDLIB_H=1 -DHAVE_MALLOC=1 -DHAVE_LIBSCTP"
+  "${CMAKE_C_FLAGS} -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_FCNTL_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_SYS_TIME_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_STRERROR=1 -DHAVE_SOCKET=1 -DHAVE_MEMSET=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_STDLIB_H=1 -DHAVE_MALLOC=1 -DHAVE_LIBSCTP -DASN_DISABLE_OER_SUPPORT -D'MAKE_VERSION(a,b,c)=((a)*256+(b)*16+c)'"
+
 )
 # set a flag for changes in the source code
 # these changes are related to hardcoded path to include .h files
@@ -303,40 +312,47 @@ set(asn1_generated_dir ${OPENAIRCN_BIN_DIR})
 # so we generate it at cmake time
 ###############################################################################
 
-add_list1_option(S1AP_VERSION R10 "S1AP Asn.1 grammar version" R8 R9 R10)
-
+add_list1_option(S1AP_RELEASE R14 "S1AP ASN.1 grammar version" R8 R9 R10 R12 R14 R15)
+if (${S1AP_RELEASE} STREQUAL "R8")
+  make_version(S1AP_VERSION 8 10 0)
+  set(S1AP_ASN_FILES "s1ap-8.10.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "R9")
+  make_version(S1AP_VERSION 9 10 0)
+  set(S1AP_ASN_FILES "s1ap-9.10.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "R10")
+  make_version(S1AP_VERSION 10 9 0)
+  set(S1AP_ASN_FILES "s1ap-10.9.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "R12")
+  make_version(S1AP_VERSION 12 7 0)
+  set(S1AP_ASN_FILES "s1ap-12.7.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "R14")
+  make_version(S1AP_VERSION 14 5 0)
+  set(S1AP_ASN_FILES "s1ap-14.5.0.asn1")
+else (${S1AP_RELEASE} STREQUAL "R15")
+  make_version(S1AP_VERSION 15 1 0)
+  set(S1AP_ASN_FILES "s1ap-15.1.0.asn1")
+endif(${S1AP_RELEASE} STREQUAL "R8")
+add_definitions(-DS1AP_VERSION=${S1AP_VERSION})
 set(S1AP_DIR ${OPENAIRCN_DIR}/src/s1ap)
-set(ASN1RELDIR r10.5)
+set(S1AP_ASN_DIR ${S1AP_DIR}/messages/asn1/${S1AP_RELEASE})
+set(S1AP_C_DIR ${asn1_generated_dir}/S1AP_${S1AP_RELEASE})
+message("calling ASN1C_PREFIX=S1AP_ asn1c -pdu=all -fcompound-names -fno-include-deps -gen-PER -no-gen-OER -no-gen-example -D ${S1AP_C_DIR} ${S1AP_ASN_DIR}/${S1AP_ASN_FILES}")
+execute_process(COMMAND mkdir -p ${S1AP_C_DIR}
+                COMMAND env "ASN1C_PREFIX=S1AP_" asn1c -pdu=all -fcompound-names -fno-include-deps -gen-PER -no-gen-OER -no-gen-example -D ${S1AP_C_DIR} ${S1AP_ASN_DIR}/${S1AP_ASN_FILES}
+                RESULT_VARIABLE ret)
+if (NOT ${ret} STREQUAL 0)
+  message(FATAL_ERROR "${ret}: error")
+endif (NOT ${ret} STREQUAL 0)
 
-set(S1AP_ASN_DIR ${S1AP_DIR}/messages/asn1/${ASN1RELDIR})
-set(S1AP_ASN_FILES
-  ${S1AP_ASN_DIR}/S1AP-CommonDataTypes.asn
-  ${S1AP_ASN_DIR}/S1AP-Constants.asn
-  ${S1AP_ASN_DIR}/S1AP-IEs.asn
-  ${S1AP_ASN_DIR}/S1AP-PDU.asn
-  )
-set(S1AP_C_DIR ${asn1_generated_dir}/${ASN1RELDIR})
-
-execute_process(COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES})
 file(GLOB S1AP_source ${S1AP_C_DIR}/*.c)
 
-set(S1AP_OAI_generated
-  ${S1AP_C_DIR}/s1ap_decoder.c
-  ${S1AP_C_DIR}/s1ap_encoder.c
-  ${S1AP_C_DIR}/s1ap_xer_print.c
-  ${S1AP_C_DIR}/s1ap_ies_defs.h
-  )
-file(GLOB s1ap_h ${S1AP_C_DIR}/*.h)
-set(s1ap_h ${s1ap_h} )
-
 add_custom_command (
-  OUTPUT ${S1AP_OAI_generated}
-  COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES}
-  COMMAND python ${S1AP_DIR}/messages/asn1/asn1tostruct.py -f${S1AP_ASN_DIR}/S1AP-PDU-Contents.asn -o${S1AP_C_DIR}
-  DEPENDS ${S1AP_ASN_FILES}
-  )
+  OUTPUT ${S1AP_C_DIR}/S1AP_asn_constant.h
+  COMMAND mkdir -p ${S1AP_C_DIR}
+  COMMAND env "ASN1C_PREFIX=S1AP_" asn1c -pdu=all -fcompound-names -fno-include-deps -gen-PER -no-gen-OER -no-gen-example -D ${S1AP_C_DIR} ${S1AP_ASN_DIR}/${S1AP_ASN_FILES}
+  DEPENDS ${S1AP_ASN_DIR}/${S1AP_ASN_FILES}
+)
 add_library(S1AP_LIB
-  ${S1AP_OAI_generated}
   ${S1AP_source}
   ${S1AP_DIR}/s1ap_common.c
   )
@@ -346,7 +362,6 @@ include_directories ("${S1AP_DIR}")
 
 
 add_library(S1AP_EPC
-  ${S1AP_C_DIR}/s1ap_ies_defs.h
   ${S1AP_DIR}/s1ap_mme_encoder.c
   ${S1AP_DIR}/s1ap_mme_decoder.c
   ${S1AP_DIR}/s1ap_mme_handlers.c

@@ -376,8 +376,6 @@ s10_mme_init (
   nw_gtpv2c_udp_entity_t                  udp;
   nw_gtpv2c_timer_mgr_entity_t            tmrMgr;
   nw_gtpv2c_log_mgr_entity_t              logMgr;
-  struct in_addr                          addr;
-  char                                   *s10_address_str = NULL;
 
   OAILOG_DEBUG (LOG_S10, "Initializing S10 interface\n");
 

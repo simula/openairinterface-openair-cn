@@ -135,7 +135,7 @@ void mme_app_get_session_bearer_context_from_all(ue_context_t * const ue_context
 }
 
 //------------------------------------------------------------------------------
-void mme_app_register_bearer_context(ue_context_t * const ue_context, ebi_t ebi, const pdn_context_t *pdn_context, bearer_context_t ** bc_pp)
+int mme_app_register_bearer_context(ue_context_t * const ue_context, ebi_t ebi, const pdn_context_t *pdn_context, bearer_context_t ** bc_pp)
 {
   OAILOG_FUNC_IN (LOG_MME_APP);
 
@@ -149,7 +149,7 @@ void mme_app_register_bearer_context(ue_context_t * const ue_context, ebi_t ebi,
   pBearerCtx = RB_FIND(BearerPool, &ue_context->bearer_pool, &bc_key);
   if(!pBearerCtx){
     OAILOG_ERROR(LOG_MME_APP,  "Could not find a free bearer context with ebi %d for ue_id " MME_UE_S1AP_ID_FMT"! \n", ebi, ue_context->mme_ue_s1ap_id);
-    OAILOG_FUNC_RETURN (LOG_MME_APP, NULL);
+    OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
   }
   bearer_context_t * pBearerCtx_1 = RB_REMOVE(BearerPool, &ue_context->bearer_pool, pBearerCtx);
   DevAssert(pBearerCtx_1);
@@ -161,7 +161,8 @@ void mme_app_register_bearer_context(ue_context_t * const ue_context, ebi_t ebi,
   /** Insert the bearer context. */
   /** This should not happen with locks. */
   bearer_context_t *pbc_test_1 = NULL;
-  pbc_test_1 = RB_INSERT (SessionBearers, &pdn_context->session_bearers, pBearerCtx);
+  // cast for disabling const
+  pbc_test_1 = RB_INSERT (SessionBearers, (struct SessionBearers*)&pdn_context->session_bearers, pBearerCtx);
   DevAssert(!pbc_test_1); /**< Collision Check. */
 
   /** Register the values of the newly registered bearer context. Values might be empty. */
@@ -172,7 +173,7 @@ void mme_app_register_bearer_context(ue_context_t * const ue_context, ebi_t ebi,
   OAILOG_INFO (LOG_MME_APP, "Successfully set bearer context with ebi %d for PDN id %u and for ue id " MME_UE_S1AP_ID_FMT "\n",
       pBearerCtx->ebi, pdn_context->context_identifier, ue_context->mme_ue_s1ap_id);
   *bc_pp = pBearerCtx;
-  OAILOG_FUNC_OUT(LOG_MME_APP);
+  OAILOG_FUNC_RETURN(LOG_MME_APP, RETURNok);
 }
 
 //------------------------------------------------------------------------------

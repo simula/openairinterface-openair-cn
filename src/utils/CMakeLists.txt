@@ -1,4 +1,3 @@
-set(ASN1RELDIR r10.5)
 
 ###############################################################################
 # Utilities Library
@@ -24,9 +23,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/hashtable)
 # pulls in dynamic_memory_checker.h
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # log.h pulls in gcc_diag.h
-set(ASN1RELDIR r10.5)
 include_directories(${SRC_TOP_DIR}/common)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
+include_directories(${SRC_TOP_DIR}/s1ap/messages/asn1/${S1AP_RELEASE}/GENERATED_S1AP)
 
 
 ###############################################################################
@@ -53,7 +51,6 @@ include_directories("${SRC_TOP_DIR}/nas/api/mme")
 include_directories("${SRC_TOP_DIR}/mme")
 include_directories("${SRC_TOP_DIR}/mme_app")
 include_directories("${SRC_TOP_DIR}/sgw")
-include_directories("${SRC_TOP_DIR}/s1ap/messages/asn1/${ASN1RELDIR}")
 include_directories("${SRC_TOP_DIR}/s1ap")
 
 if (MESSAGE_CHART_GENERATOR)

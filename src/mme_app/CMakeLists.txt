@@ -10,12 +10,10 @@ include_directories(${OPENSSL_INCLUDE_DIRS})
 pkg_search_module(CRYPTO libcrypto REQUIRED)
 include_directories(${CRYPTO_INCLUDE_DIRS})
 
-
-set(ASN1RELDIR r10.5)
 include_directories(${SRC_TOP_DIR}/common)
 include_directories(${SRC_TOP_DIR}/common/itti)
 include_directories(${SRC_TOP_DIR}/common/message_utils)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
+include_directories(${SRC_TOP_DIR}/s1ap/messages/asn1/${S1AP_RELEASE}/GENERATED_S1AP)
 include_directories(${SRC_TOP_DIR}/secu)
 include_directories(${SRC_TOP_DIR}/sgw)
 include_directories(${SRC_TOP_DIR}/s1ap)

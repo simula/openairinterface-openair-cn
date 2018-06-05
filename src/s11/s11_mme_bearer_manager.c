@@ -616,7 +616,6 @@ s11_mme_handle_downlink_data_notification(
     nw_gtpv2c_stack_handle_t * stack_p,
     nw_gtpv2c_ulp_api_t * pUlpApi)
 {
-  nw_rc_t                                 rc = NW_OK;
   itti_s11_downlink_data_notification_t  *notif_p;
   MessageDef                             *message_p;
 

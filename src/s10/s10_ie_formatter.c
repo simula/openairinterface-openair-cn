@@ -546,12 +546,12 @@ s10_mm_ue_context_ie_get (
     p_ieValue++;
     /** NAS Count. */
     mm_ue_context->nas_dl_count.overflow  = (*((uint16_t*)(p_ieValue))); // todo: only getting the last part or all of it?
-    p_ieValue = ((uint16_t *)p_ieValue) + 1; /**< Move by 2. */
+    p_ieValue = (uint8_t *)(((uint16_t *)p_ieValue) + 1); /**< Move by 2. */
     mm_ue_context->nas_dl_count.seq_num = (*p_ieValue); // todo: only getting the last part or all of it?
     p_ieValue++;
 
     mm_ue_context->nas_ul_count.overflow  = (*((uint16_t*)(p_ieValue)));
-    p_ieValue = ((uint16_t *)p_ieValue) + 1; /**< Move by 2. */
+    p_ieValue = (uint8_t *)(((uint16_t *)p_ieValue) + 1); /**< Move by 2. */
     mm_ue_context->nas_ul_count.seq_num = (*p_ieValue);
     p_ieValue++;
 
@@ -571,7 +571,7 @@ s10_mm_ue_context_ie_get (
     }
     if(drx_present){
       // todo: get drx
-      p_ieValue = ((uint16_t *)p_ieValue) + 1; /**< Move by 2. */
+      p_ieValue = (uint8_t *)(((uint16_t *)p_ieValue) + 1); /**< Move by 2. */
     }
 
     /** Get the Next Hop value. */
@@ -588,17 +588,17 @@ s10_mm_ue_context_ie_get (
     /** Get the Subscribed UE_AMBR. */
     if(ue_ambr_subscribed_present){
       mm_ue_context->ul_subscribed_ue_ambr = (*((uint32_t*)(p_ieValue)));
-      p_ieValue = ((uint32_t *)p_ieValue) + 1; /**< Move by 4. */
+      p_ieValue = (uint8_t *)(((uint32_t *)p_ieValue) + 1); /**< Move by 4. */
       mm_ue_context->dl_subscribed_ue_ambr = (*((uint32_t*)(p_ieValue)));
-      p_ieValue = ((uint32_t *)p_ieValue) + 1; /**< Move by 4. */
+      p_ieValue = (uint8_t *)(((uint32_t *)p_ieValue) + 1); /**< Move by 4. */
     }
 
     /** Get the Used UE_AMBR. */
     if(ue_ambr_used_present){
       mm_ue_context->ul_used_ue_ambr = (*((uint32_t*)(p_ieValue)));
-      p_ieValue = ((uint32_t *)p_ieValue) + 1; /**< Move by 4. */
+      p_ieValue = (uint8_t *)(((uint32_t *)p_ieValue) + 1); /**< Move by 4. */
       mm_ue_context->dl_used_ue_ambr = (*((uint32_t*)(p_ieValue)));
-      p_ieValue = ((uint32_t *)p_ieValue) + 1; /**< Move by 4. */
+      p_ieValue = (uint8_t *)(((uint32_t *)p_ieValue) + 1); /**< Move by 4. */
     }
 
     /** Get the UE Network Capability. */
@@ -929,7 +929,7 @@ s10_bearer_context_to_create_ie_set (
    */
   rc = nwGtpv2cMsgGroupedIeStart (*msg, NW_GTPV2C_IE_BEARER_CONTEXT, NW_GTPV2C_IE_INSTANCE_ZERO);
   DevAssert (NW_OK == rc);
-  bearer_context_to_be_created_t  *bc_tbc = &bearer_contexts->bearer_contexts[0];
+  const bearer_context_to_be_created_t  *bc_tbc = &bearer_contexts->bearer_contexts[0];
 
   /** Set the EBI. */
   s10_ebi_ie_set (msg, bc_tbc->eps_bearer_id);
@@ -1391,7 +1391,7 @@ s10_apn_ie_set (
   apn_length = blength (apn_str);
   value = calloc (apn_length + 1, sizeof (uint8_t));
   last_size = &value[0];
-  apn = apn_str->data;
+  apn = (char*)apn_str->data;
 
   while (apn[offset]) {
     /*

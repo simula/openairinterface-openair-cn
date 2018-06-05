@@ -1,4 +1,3 @@
-add_list1_option(S1AP_VERSION R10 "S1AP Asn.1 grammar version" R8 R9 R10)
 add_definitions(-DASN1_MINIMUM_VERSION=924)
 
 # Common headers
@@ -37,54 +36,69 @@ include_directories("${SRC_TOP_DIR}/sgw")
 # (so creating new asn.1 objects instead of modifying the object attributes)
 # New C code source file, cmake must be re-run (instead of re-running make only)
 ###############################################################################
-
-set(ASN1RELDIR r10.5)
 set(S1AP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(asn1_generated_dir ${CMAKE_CURRENT_BINARY_DIR})
-set(asn1c_call "${CMAKE_CURRENT_SOURCE_DIR}/generate_asn1")
+if (${S1AP_RELEASE} STREQUAL "r8")
+  make_version(S1AP_VERSION 8 10 0)
+  set(S1AP_ASN_FILES "s1ap-8.10.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "r9")
+  make_version(S1AP_VERSION 9 10 0)
+  set(S1AP_ASN_FILES "s1ap-9.10.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "r10")
+  make_version(S1AP_VERSION 10 9 0)
+  set(S1AP_ASN_FILES "s1ap-10.9.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "r11")
+  make_version(S1AP_VERSION 11 8 0)
+  set(S1AP_ASN_FILES "s1ap-11.8.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "r12")
+  make_version(S1AP_VERSION 12 7 0)
+  set(S1AP_ASN_FILES "s1ap-12.7.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "r13")
+  make_version(S1AP_VERSION 13 6 0)
+  set(S1AP_ASN_FILES "s1ap-13.6.0.asn1")
+elseif (${S1AP_RELEASE} STREQUAL "r14")
+  make_version(S1AP_VERSION 14 5 0)
+  set(S1AP_ASN_FILES "s1ap-14.5.0.asn1")
+else (${S1AP_RELEASE} STREQUAL "r15")
+  make_version(S1AP_VERSION 15 1 0)
+  set(S1AP_ASN_FILES "s1ap-15.1.0.asn1")
+endif(${S1AP_RELEASE} STREQUAL "r8")
+add_definitions(-DS1AP_VERSION=${S1AP_VERSION})
+set(S1AP_ASN_DIR ${S1AP_DIR}/messages/asn1/${S1AP_RELEASE})
+# Set generated files in this folder to let IDE access generated code without configuring CMAKE_CURRENT_BINARY_DIR/... as a source code folder
+#set(asn1_generated_dir ${CMAKE_CURRENT_BINARY_DIR})
+#set(S1AP_C_DIR ${asn1_generated_dir}/GENERATED_S1AP_${S1AP_RELEASE})
+set(asn1_generated_dir ${S1AP_ASN_DIR})
+set(S1AP_C_DIR ${asn1_generated_dir}/GENERATED_S1AP)
 
-set(S1AP_ASN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/messages/asn1/${ASN1RELDIR})
-set(S1AP_ASN_FILES
-    ${S1AP_ASN_DIR}/S1AP-CommonDataTypes.asn
-    ${S1AP_ASN_DIR}/S1AP-Constants.asn
-    ${S1AP_ASN_DIR}/S1AP-IEs.asn
-    ${S1AP_ASN_DIR}/S1AP-PDU.asn
-    )
-set(S1AP_C_DIR ${asn1_generated_dir}/${ASN1RELDIR})
+if(EXISTS "${S1AP_C_DIR}/S1AP_asn_constant.h")
+   MESSAGE("${S1AP_C_DIR}/S1AP_asn_constant.h exists, not regenerate all S1aP IEs from ASN1 definitions")
+else()
+  message("calling ASN1C_PREFIX=S1AP_ asn1c -pdu=all -fcompound-names -fno-include-deps -gen-PER -no-gen-OER -no-gen-example -D ${S1AP_C_DIR} ${S1AP_ASN_DIR}/${S1AP_ASN_FILES}")
+  execute_process(COMMAND mkdir -p ${S1AP_C_DIR}
+                COMMAND env "ASN1C_PREFIX=S1AP_" asn1c -pdu=all -fcompound-names -fno-include-deps -gen-PER -no-gen-OER -no-gen-example -D ${S1AP_C_DIR} ${S1AP_ASN_DIR}/${S1AP_ASN_FILES}
+                RESULT_VARIABLE ret)
+  if (NOT ${ret} STREQUAL 0)
+    message(FATAL_ERROR "${ret}: error")
+  endif (NOT ${ret} STREQUAL 0)
+endif()
 
-include_directories("${S1AP_C_DIR}")
-include_directories("${S1AP_DIR}")
-
-execute_process(COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES})
 file(GLOB S1AP_source ${S1AP_C_DIR}/*.c)
-
-set(S1AP_OAI_generated
-    ${S1AP_C_DIR}/s1ap_decoder.c
-    ${S1AP_C_DIR}/s1ap_encoder.c
-    ${S1AP_C_DIR}/s1ap_xer_print.c
-    ${S1AP_C_DIR}/s1ap_ies_defs.h
-    )
 
 file(GLOB s1ap_h ${S1AP_C_DIR}/*.h)
 set(s1ap_h ${s1ap_h})
 
-add_custom_command(
-    OUTPUT ${S1AP_OAI_generated}
-    COMMAND ${asn1c_call} ${S1AP_C_DIR} ${S1AP_ASN_FILES}
-    COMMAND python ${S1AP_DIR}/messages/asn1/asn1tostruct.py -f${S1AP_ASN_DIR}/S1AP-PDU-Contents.asn -o${S1AP_C_DIR}
-    DEPENDS ${S1AP_ASN_FILES}
-)
 
 add_library(S1AP_LIB
-    ${S1AP_OAI_generated}
-    ${S1AP_source}
-    s1ap_common.c
-    )
+  ${S1AP_source}
+  ${S1AP_DIR}/s1ap_common.c
+  )
+
+include_directories ("${S1AP_C_DIR}")
+include_directories ("${S1AP_DIR}")
 
 if(${MOBILITY_REPO})
   include_directories ("${MOBILITY_REPO_SRC}/src/s1ap/")
   add_library(S1AP_EPC
-    ${S1AP_C_DIR}/s1ap_ies_defs.h
     ${MOBILITY_REPO_SRC}/src/s1ap/s1ap_mobility_handover_signaling_handler.c
     ${S1AP_DIR}/s1ap_mme_encoder.c
     ${S1AP_DIR}/s1ap_mme_decoder.c
@@ -97,7 +111,6 @@ if(${MOBILITY_REPO})
     )
 else (${MOBILITY_REPO})
   add_library(S1AP_EPC
-    ${S1AP_C_DIR}/s1ap_ies_defs.h
     ${S1AP_DIR}/s1ap_mme_encoder.c
     ${S1AP_DIR}/s1ap_mme_decoder.c
     ${S1AP_DIR}/s1ap_mme_handlers.c

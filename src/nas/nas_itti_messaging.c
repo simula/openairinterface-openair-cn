@@ -348,7 +348,7 @@ void nas_itti_ctx_req(
   itti_nas_context_req_t                 *nas_context_req_p = NULL;
 
   message_p = itti_alloc_new_message (TASK_NAS_MME, NAS_CONTEXT_REQ);
-  nas_context_req_p = &message_p->ittiMsg.s10_context_request;
+  nas_context_req_p = &message_p->ittiMsg.nas_context_req;
   memset(nas_context_req_p, 0, sizeof(itti_nas_context_req_t));
 
   /** We may not have an IMSI at all. */

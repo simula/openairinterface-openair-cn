@@ -45,18 +45,11 @@ s6a_clr_cb (
 {
   struct msg                             *ans,
                                          *qry;
-  struct avp                             *avp_p,
-                                         *origin_host,
-                                         *origin_realm;
+  struct avp                             *avp_p;
   struct avp                             *failed_avp = NULL;
-  struct avp_hdr                         *origin_host_hdr,
-                                         *origin_realm_hdr;
   struct avp_hdr                         *hdr_p;
-  union avp_value                         value;
-  int                                     ret = 0;
   int                                     result_code = ER_DIAMETER_SUCCESS;
   int                                     experimental = 0;
-  uint32_t                                clr_flags = 0;
 
   if (msg == NULL) {
     return EINVAL;

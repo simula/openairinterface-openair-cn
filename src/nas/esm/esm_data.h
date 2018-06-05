@@ -161,23 +161,6 @@ typedef struct esm_pdn_s {
   esm_pt_state_e pt_state; // procedure transaction state
 } esm_pdn_t;  /**< Stored in MME_APP PDN Context (not in the ESM layer). */
 
-//typedef struct esm_pdn_s {
-//  bstring apn;    /* Access Point Name currently in used      */
-//  int type;       /* Address PDN type (IPv4, IPv6, IPv4v6)    */
-//#define ESM_DATA_IPV4_ADDRESS_SIZE  4
-//#define ESM_DATA_IPV6_ADDRESS_SIZE  8
-//#define ESM_DATA_IP_ADDRESS_SIZE    (ESM_DATA_IPV4_ADDRESS_SIZE + \
-//                                     ESM_DATA_IPV6_ADDRESS_SIZE)
-//  /* IPv4 PDN address and/or IPv6 prefix      */
-//  char ip_addr[ESM_DATA_IP_ADDRESS_SIZE+1];
-//  int addr_realloc;   /* Indicates whether the UE is allowed to subsequently
-//             * request another PDN connectivity to the same APN
-//             * using an address PDN type (IPv4 or IPv6) other
-//             * than the one already activated       */
-//#define ESM_DATA_EPS_BEARER_MAX 4
-//  esm_bearer_t *bearer[ESM_DATA_EPS_BEARER_MAX];
-//} esm_pdn_t;
-
 
 struct esm_proc_data_s;
 

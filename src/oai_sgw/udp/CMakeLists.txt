@@ -1,7 +1,6 @@
-set(ASN1RELDIR r10.5)
 include_directories(${SRC_TOP_DIR}/oai_sgw/common)
 include_directories(${SRC_TOP_DIR}/oai_sgw/common/itti)
-include_directories(${CMAKE_BINARY_DIR}/s1ap/${ASN1RELDIR})
+include_directories(${CMAKE_BINARY_DIR}/s1ap/S1AP_${S1AP_RELEASE})
 include_directories(${SRC_TOP_DIR}/oai_sgw/utils)
 include_directories(${SRC_TOP_DIR}/oai_sgw/utils/bstr)
 include_directories(${SRC_TOP_DIR}/oai_sgw/utils/hashtable)

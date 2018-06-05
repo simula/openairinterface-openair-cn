@@ -40,6 +40,7 @@
 #include "mme_app_defs.h"
 #include "assertions.h"
 #include "common_defs.h"
+#include "dynamic_memory_check.h"
 
 int
 mme_app_handle_s1ap_ue_capabilities_ind (

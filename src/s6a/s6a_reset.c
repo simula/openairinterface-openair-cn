@@ -45,21 +45,13 @@ s6a_rr_cb (
 {
   struct msg                             *ans,
                                          *qry;
-  struct avp                             *avp_p,
-                                         *origin_host,
-                                         *origin_realm;
+  struct avp                             *avp_p;
   struct avp                             *failed_avp = NULL;
-  struct avp_hdr                         *origin_host_hdr,
-                                         *origin_realm_hdr;
   struct avp_hdr                         *hdr_p;
-  union avp_value                         value;
-  int                                     ret = 0;
   int                                     result_code = ER_DIAMETER_SUCCESS;
   int                                     experimental = 0;
-  uint32_t                                clr_flags = 0;
-
   MessageDef                             *message_p = NULL;
-  s6a_reset_req_t                       *s6a_reset_req_p = NULL;
+  s6a_reset_req_t                        *s6a_reset_req_p = NULL;
 
   message_p = itti_alloc_new_message (TASK_S6A, S6A_RESET_REQ);
   s6a_reset_req_p = &message_p->ittiMsg.s6a_reset_req;
