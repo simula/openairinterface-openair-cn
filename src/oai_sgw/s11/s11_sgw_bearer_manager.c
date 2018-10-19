@@ -193,6 +193,9 @@ s11_sgw_handle_modify_bearer_response (
    */
   rc = nwGtpv2cMsgSetTeid (ulp_req.hMsg, response_p->teid);
   DevAssert (NW_OK == rc);
+  for (int e=0; e < response_p->bearer_contexts_modified.num_bearer_context; e++) {
+    gtpv2c_bearer_context_modified_ie_set(&(ulp_req.hMsg), &response_p->bearer_contexts_modified.bearer_contexts[e]);
+  }
   cause = response_p->cause;
   gtpv2c_cause_ie_set (&(ulp_req.hMsg), &cause);
   rc = nwGtpv2cProcessUlpReq (*stack_p, &ulp_req);

@@ -857,6 +857,92 @@ gtpv2c_bearer_context_to_be_modified_within_modify_bearer_request_ie_get (
 }
 
 //------------------------------------------------------------------------------
+int
+gtpv2c_bearer_context_modified_ie_set (
+  nw_gtpv2c_msg_handle_t * msg,
+  const bearer_context_modified_t * bearer_context)
+{
+  nw_rc_t                                   rc;
+
+  DevAssert (msg );
+  DevAssert (bearer_context );
+  /*
+   * Start section for grouped IE: bearer context to create
+   */
+  rc = nwGtpv2cMsgGroupedIeStart (*msg, NW_GTPV2C_IE_BEARER_CONTEXT, NW_GTPV2C_IE_INSTANCE_ZERO);
+  DevAssert (NW_OK == rc);
+  gtpv2c_ebi_ie_set (msg, bearer_context->eps_bearer_id);
+  rc = gtpv2c_cause_ie_set (msg, &bearer_context->cause);
+  gtpv2c_fteid_ie_set(msg, &bearer_context->s1u_sgw_fteid, 0);
+  /*
+   * End section for grouped IE: bearer context to create
+   */
+  rc = nwGtpv2cMsgGroupedIeEnd (*msg);
+  DevAssert (NW_OK == rc);
+  return RETURNok;
+}
+
+//------------------------------------------------------------------------------
+nw_rc_t
+gtpv2c_bearer_context_modified_ie_get (
+  uint8_t ieType,
+  uint16_t ieLength,
+  uint8_t ieInstance,
+  uint8_t * ieValue,
+  void *arg)
+{
+  bearer_contexts_modified_t              *bearer_contexts = (bearer_contexts_modified_t *) arg;
+  DevAssert (bearer_contexts);
+  DevAssert (0 <= bearer_contexts->num_bearer_context);
+  DevAssert (MSG_MODIFY_BEARER_REQUEST_MAX_BEARER_CONTEXTS >= bearer_contexts->num_bearer_context);
+  bearer_context_modified_t               *bearer_context = &bearer_contexts->bearer_contexts[bearer_contexts->num_bearer_context];
+  uint8_t                                 read = 0;
+  nw_rc_t                                   rc;
+
+  while (ieLength > read) {
+    nw_gtpv2c_ie_tlv_t                         *ie_p;
+
+    ie_p = (nw_gtpv2c_ie_tlv_t *) & ieValue[read];
+
+    switch (ie_p->t) {
+    case NW_GTPV2C_IE_EBI:
+      rc = gtpv2c_ebi_ie_get (ie_p->t, ntohs (ie_p->l), ie_p->i, &ieValue[read + sizeof (nw_gtpv2c_ie_tlv_t)], &bearer_context->eps_bearer_id);
+      DevAssert (NW_OK == rc);
+      break;
+
+//    case NW_GTPV2C_IE_FTEID:
+//      rc = gtpv2c_fteid_ie_get (ie_p->t, ntohs (ie_p->l), ie_p->i, &ieValue[read + sizeof (nw_gtpv2c_ie_tlv_t)], &bearer_context->s1u_sgw_fteid);
+//      break;
+    case NW_GTPV2C_IE_FTEID:
+      switch (ie_p->i) {
+      case 0:
+        rc = gtpv2c_fteid_ie_get (ie_p->t, ntohs (ie_p->l), ie_p->i, &ieValue[read + sizeof (nw_gtpv2c_ie_tlv_t)], &bearer_context->s1u_sgw_fteid);
+        break;
+      default:
+        OAILOG_ERROR (LOG_S11, "Received unexpected IE %u instance %u\n", ie_p->t, ie_p->i);
+        return NW_GTPV2C_IE_INCORRECT;
+
+      }
+      DevAssert (NW_OK == rc);
+      break;
+
+    case NW_GTPV2C_IE_CAUSE:
+      rc = gtpv2c_cause_ie_get (ie_p->t, ntohs (ie_p->l), ie_p->i, &ieValue[read + sizeof (nw_gtpv2c_ie_tlv_t)], &bearer_context->cause);
+      break;
+
+    default:
+      OAILOG_ERROR (LOG_S11, "Received unexpected IE %u\n", ie_p->t);
+      return NW_GTPV2C_IE_INCORRECT;
+    }
+
+    read += (ntohs (ie_p->l) + sizeof (nw_gtpv2c_ie_tlv_t));
+  }
+  bearer_contexts->num_bearer_context += 1;
+  return NW_OK;
+}
+
+
+//------------------------------------------------------------------------------
 nw_rc_t
 gtpv2c_bearer_context_created_ie_get (
   uint8_t ieType,
