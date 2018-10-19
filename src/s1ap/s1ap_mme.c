@@ -469,6 +469,20 @@ bool s1ap_enb_compare_by_enb_id_cb (__attribute__((unused)) const hash_key_t key
   return false;
 }
 //------------------------------------------------------------------------------
+bool s1ap_enb_compare_by_enb_id_28_cb (__attribute__((unused)) const hash_key_t keyP,
+                                    void * const elementP,
+                                    void * parameterP, void **resultP)
+{
+  const uint32_t                  * const enb_id_p = (const uint32_t*const)parameterP;
+  enb_description_t                      *enb_ref  = (enb_description_t*)elementP;
+  OAILOG_DEBUG (LOG_S1AP, "s1ap_enb_compare_by_enb_id_28_cb %d/%d %x/%x\n", *enb_id_p, enb_ref->enb_id_28, *enb_id_p, enb_ref->enb_id_28);
+  if ( *enb_id_p == enb_ref->enb_id_28 ) {
+    *resultP = elementP;
+    return true;
+  }
+  return false;
+}
+//------------------------------------------------------------------------------
 enb_description_t                      *
 s1ap_is_enb_id_in_list (
   const uint32_t enb_id)
@@ -476,6 +490,17 @@ s1ap_is_enb_id_in_list (
   enb_description_t                      *enb_ref = NULL;
   uint32_t                               *enb_id_p  = (uint32_t*)&enb_id;
   hashtable_ts_apply_callback_on_elements((hash_table_ts_t * const)&g_s1ap_enb_coll, s1ap_enb_compare_by_enb_id_cb, (void *)enb_id_p, (void**)&enb_ref);
+  return enb_ref;
+}
+
+//------------------------------------------------------------------------------
+enb_description_t*
+s1ap_is_enb_id_28_in_list (
+  const uint32_t enb_id_28)
+{
+  enb_description_t                      *enb_ref = NULL;
+  uint32_t                               *enb_id_p  = (uint32_t*)&enb_id_28;
+  hashtable_ts_apply_callback_on_elements((hash_table_ts_t * const)&g_s1ap_enb_coll, s1ap_enb_compare_by_enb_id_28_cb, (void *)enb_id_p, (void**)&enb_ref);
   return enb_ref;
 }
 
@@ -521,6 +546,20 @@ s1ap_is_enb_ue_s1ap_id_in_list_per_enb (
 {
   enb_description_t                      *enb_ref = NULL;
   enb_ref = s1ap_is_enb_id_in_list(enb_id);
+  if(enb_ref == NULL){
+    return NULL;
+  }
+  /** Continue to search. */
+  return s1ap_is_ue_enb_id_in_list(enb_ref, enb_ue_s1ap_id);
+}
+//------------------------------------------------------------------------------
+ue_description_t                       *
+s1ap_is_enb_ue_s1ap_id_in_list_per_enb_28 (
+  const enb_ue_s1ap_id_t enb_ue_s1ap_id,
+  const uint32_t  enb_id)
+{
+  enb_description_t                      *enb_ref = NULL;
+  enb_ref = s1ap_is_enb_id_28_in_list(enb_id);
   if(enb_ref == NULL){
     return NULL;
   }

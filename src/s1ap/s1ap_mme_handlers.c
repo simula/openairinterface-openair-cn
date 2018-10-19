@@ -284,6 +284,7 @@ s1ap_mme_handle_s1_setup_request (
     S1AP_S1SetupRequestIEs_t               *ie_enb_name = NULL;
     enb_description_t                      *enb_association = NULL;
     uint32_t                                enb_id = 0;
+    uint32_t                                enb_id_28 = 0;
     char                                   *enb_name = NULL;
     int                                     ta_ret = 0;
     uint16_t                                max_enb_connected = 0;
@@ -321,11 +322,13 @@ s1ap_mme_handle_s1_setup_request (
        // Home eNB ID = 28 bits
       uint8_t *enb_id_buf = ie->value.choice.Global_ENB_ID.eNB_ID.choice.homeENB_ID.buf;
 
-      if (ie->value.choice.Global_ENB_ID.eNB_ID.choice.macroENB_ID.size != 28) {
-      //TODO: handle case were size != 28 -> notify ? reject ?
+      if (ie->value.choice.Global_ENB_ID.eNB_ID.choice.homeENB_ID.size != 28) {
+        //TODO: handle case were size != 28 -> notify ? reject ?
+        OAILOG_DEBUG (LOG_S1AP, "S1-Setup-Request homeENB_ID.size %u (should be 28)\n", ie->value.choice.Global_ENB_ID.eNB_ID.choice.macroENB_ID.size);
       }
 
       enb_id = (enb_id_buf[0] << 20) + (enb_id_buf[1] << 12) + (enb_id_buf[2] << 4) + ((enb_id_buf[3] & 0xf0) >> 4);
+      enb_id_28 = enb_id;
       OAILOG_MESSAGE_ADD (context, "home eNB id: %07x", enb_id);
     } else {
       // Macro eNB = 20 bits
@@ -333,9 +336,11 @@ s1ap_mme_handle_s1_setup_request (
 
       if (ie->value.choice.Global_ENB_ID.eNB_ID.choice.macroENB_ID.size != 20) {
         //TODO: handle case were size != 20 -> notify ? reject ?
-      }
+        OAILOG_DEBUG (LOG_S1AP, "S1-Setup-Request macroENB_ID.size %u (should be 20)\n", ie->value.choice.Global_ENB_ID.eNB_ID.choice.macroENB_ID.size);
+     }
 
       enb_id = (enb_id_buf[0] << 12) + (enb_id_buf[1] << 4) + ((enb_id_buf[2] & 0xf0) >> 4);
+      enb_id_28 = enb_id << 4;
       OAILOG_MESSAGE_ADD (context, "macro eNB id: %05x", enb_id);
     }
     OAILOG_MESSAGE_FINISH(context);
@@ -388,7 +393,9 @@ s1ap_mme_handle_s1_setup_request (
         OAILOG_FUNC_RETURN (LOG_S1AP, RETURNerror);
       } else {
         enb_association->s1_state = S1AP_RESETING;
+        OAILOG_DEBUG (LOG_S1AP, "Adding eNB id %u to the list of served eNBs\n", enb_id);
         enb_association->enb_id = enb_id;
+        enb_association->enb_id_28 = enb_id_28;
 
         S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_S1SetupRequestIEs_t, ie, container,
                              S1AP_ProtocolIE_ID_id_DefaultPagingDRX, true);
@@ -998,9 +1005,10 @@ s1ap_handle_ue_context_release_command (
   enb_description_t                      *enb_ref_p = NULL;
   MessageDef                             *message_p = NULL;
   int                                     rc = RETURNok;
+  OAILOG_FUNC_IN (LOG_S1AP);
 
   /** Get the eNB reference. */
-  enb_ref_p = s1ap_is_enb_id_in_list(ue_context_release_command_pP->enb_id);
+  enb_ref_p = s1ap_is_enb_id_28_in_list(ue_context_release_command_pP->enb_id);
 
   if(!enb_ref_p){
     OAILOG_DEBUG (LOG_S1AP, "No enbRef could be found for enb_id %d for releasing the context of ueId " MME_UE_S1AP_ID_FMT " and enbUeS1apId " ENB_UE_S1AP_ID_FMT ". \n",
@@ -1008,8 +1016,7 @@ s1ap_handle_ue_context_release_command (
     OAILOG_FUNC_RETURN (LOG_S1AP, RETURNerror);
   }
 
-  OAILOG_FUNC_IN (LOG_S1AP);
-  if ((ue_ref_p = s1ap_is_enb_ue_s1ap_id_in_list_per_enb (ue_context_release_command_pP->enb_ue_s1ap_id, ue_context_release_command_pP->enb_id)) == NULL) {
+  if ((ue_ref_p = s1ap_is_enb_ue_s1ap_id_in_list_per_enb_28 (ue_context_release_command_pP->enb_ue_s1ap_id, ue_context_release_command_pP->enb_id)) == NULL) {
     OAILOG_DEBUG (LOG_S1AP, "No UE reference could be found for mme_ue_s1ap_id " MME_UE_S1AP_ID_FMT " and enbUeS1apId " ENB_UE_S1AP_ID_FMT ". \n",
                   ue_context_release_command_pP->mme_ue_s1ap_id, ue_context_release_command_pP->enb_ue_s1ap_id);
     MSC_LOG_EVENT (MSC_S1AP_MME, "0 UE_CONTEXT_RELEASE_COMMAND with mme_ue_s1ap_id only for non existing UE_REFERENCE for mme_ue_s1ap_id " MME_UE_S1AP_ID_FMT " ", ue_context_release_command_pP->mme_ue_s1ap_id);

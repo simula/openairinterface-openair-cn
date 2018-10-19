@@ -110,6 +110,7 @@ typedef struct enb_description_s {
   /*@{*/
   char     enb_name[150];      ///< Printable eNB Name
   uint32_t enb_id;             ///< Unique eNB ID
+  uint32_t enb_id_28;             ///< Unique eNB ID compatible with EUTRAN-ECI
   uint8_t  default_paging_drx; ///< Default paging DRX interval for eNB
   /*@}*/
 
@@ -147,6 +148,12 @@ void s1ap_mme_exit (void);
  **/
 enb_description_t* s1ap_is_enb_id_in_list(const uint32_t enb_id);
 
+/** \brief Look for given eNB id in the list
+ * \param enb_id extracted from UE EURAN-CGI The unique eNB id to search in list
+ * @returns NULL if no eNB matchs the eNB id, or reference to the eNB element in list if matches
+ **/
+enb_description_t* s1ap_is_enb_id_28_in_list (const uint32_t enb_id_28);
+
 /** \brief Look for given eNB SCTP assoc id in the list
  * \param enb_id The unique sctp assoc id to search in list
  * @returns NULL if no eNB matchs the sctp assoc id, or reference to the eNB element in list if matches
@@ -172,6 +179,7 @@ ue_description_t* s1ap_is_s11_sgw_teid_in_list(const s11_teid_t teid);
  * @returns NULL if no UE matchs the ue_enb_id, or reference to the ue element in list if matches
  **/
 ue_description_t* s1ap_is_enb_ue_s1ap_id_in_list_per_enb ( const enb_ue_s1ap_id_t enb_ue_s1ap_id, const uint32_t  enb_id);
+ue_description_t* s1ap_is_enb_ue_s1ap_id_in_list_per_enb_28 ( const enb_ue_s1ap_id_t enb_ue_s1ap_id, const uint32_t  enb_id);
 
 /** \brief associate mainly 2(3) identifiers in S1AP layer: {mme_ue_s1ap_id_t, sctp_assoc_id (,enb_ue_s1ap_id)}
  **/
