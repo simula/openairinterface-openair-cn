@@ -1,4 +1,4 @@
-add_definitions(-DASN1_MINIMUM_VERSION=924)
+add_definitions(-DASN1_MINIMUM_VERSION=923)
 
 # Common headers
 include_directories("${SRC_TOP_DIR}/common")
