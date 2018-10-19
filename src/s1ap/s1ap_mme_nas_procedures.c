@@ -884,6 +884,9 @@ s1ap_handle_conn_est_cnf (
       e_RABToBeSetup->nAS_PDU = (S1AP_NAS_PDU_t *)calloc(1, sizeof(S1AP_NAS_PDU_t));
       e_RABToBeSetup->nAS_PDU->size = blength(conn_est_cnf_pP->nas_pdu[item]); // todo: slen?
       e_RABToBeSetup->nAS_PDU->buf  = conn_est_cnf_pP->nas_pdu[item]->data;
+      conn_est_cnf_pP->nas_pdu[item]->data = NULL; // else double free
+      //or  e_RABToBeSetup->nAS_PDU->buf = calloc (blength(conn_est_cnf_pP->nas_pdu[item], sizeof (uint8_t));
+
     }
 
     e_RABToBeSetup->e_RABlevelQoSParameters.allocationRetentionPriority.priorityLevel = conn_est_cnf_pP->e_rab_level_qos_priority_level[item];
