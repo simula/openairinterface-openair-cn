@@ -20,6 +20,7 @@
 
 void RestHandler::onRequest(const Pistache::Http::Request& request, Pistache::Http::ResponseWriter response)
 {
+   i = 0;
    std::cout << request.resource() << std::endl;
    std::cout << request.method() << std::endl;
    std::cout << request.body() << std::endl;
