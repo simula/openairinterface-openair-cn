@@ -68,7 +68,6 @@ static void spgw_config_display (spgw_config_t * config_p);
 //------------------------------------------------------------------------------
 static void spgw_config_init (spgw_config_t * config_pP)
 {
-  j = 0;
   sgw_config_init (&config_pP->sgw_config);
   pgw_config_init (&config_pP->pgw_config);
 }
