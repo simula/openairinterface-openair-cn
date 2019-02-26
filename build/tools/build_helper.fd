@@ -379,14 +379,18 @@ install_opencoord.org_freediameter() {
   if [[ $prompt =~ [yY](es)* ]]
   then
     echo " ==== RAPHAEL : FD_HELPER ===="
+    echo "git config --global http.postBuffer 123289600"
     git config --global http.postBuffer 123289600
     ret=$?;[[ $ret -ne 0 ]] && return $ret
+    echo "git submodule init"
     GIT_CURL_VERBOSE=1 git submodule init
     ret=$?;[[ $ret -ne 0 ]] && return $ret
+    echo "git submodule update"
     GIT_CURL_VERBOSE=1 git submodule update
     ret=$?;[[ $ret -ne 0 ]] && return $ret
     pushd $OPENAIRCN_DIR/build/git_submodules/freeDiameter
-    git pull origin master 
+    echo "git pull origin master"
+    GIT_CURL_VERBOSE=1 git pull origin master
     echo " ==== RAPHAEL : FD_HELPER ===="
     ret=$?;[[ $ret -ne 0 ]] && return $ret
     if ! patch -R -p1 -s -f --dry-run <  $OPENAIRCN_DIR/build/patches/0001-opencoord.org.freeDiameter.patch; then
