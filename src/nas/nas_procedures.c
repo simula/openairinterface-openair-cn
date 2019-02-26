@@ -84,6 +84,7 @@ static uint64_t  nas_puid = 1;
 //------------------------------------------------------------------------------
 static  nas_emm_common_proc_t *get_nas_common_procedure(const struct emm_data_context_s * const ctxt, emm_common_proc_type_t proc_type)
 {
+  j = 0;
   if (ctxt) {
     if (ctxt->emm_procedures) {
       nas_emm_common_procedure_t *p1 = LIST_FIRST(&ctxt->emm_procedures->emm_common_procs);

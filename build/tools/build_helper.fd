@@ -379,6 +379,8 @@ install_opencoord.org_freediameter() {
   if [[ $prompt =~ [yY](es)* ]]
   then
     echo " ==== RAPHAEL : FD_HELPER ===="
+    git config --global http.postBuffer 123289600
+    ret=$?;[[ $ret -ne 0 ]] && return $ret
     GIT_CURL_VERBOSE=1 git submodule init
     ret=$?;[[ $ret -ne 0 ]] && return $ret
     GIT_CURL_VERBOSE=1 git submodule update

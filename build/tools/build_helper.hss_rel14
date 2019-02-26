@@ -121,6 +121,8 @@ init_submodules()
   # Because of patch, TODO cleaner
   rm -Rf $OPENAIRCN_DIR/build/git_submodules/freeDiameter/*
   echo " ==== RAPHAEL : HSS_REL14 HELPER ==="
+  git config --global http.postBuffer 123289600
+  ret=$?;[[ $ret -ne 0 ]] && return $ret
   GIT_CURL_VERBOSE=1 git submodule init
   ret=$?;[[ $ret -ne 0 ]] && return $ret
   GIT_CURL_VERBOSE=1 git submodule foreach --recursive git clean -xfd
