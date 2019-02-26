@@ -120,16 +120,18 @@ init_submodules()
 {
   # Because of patch, TODO cleaner
   rm -Rf $OPENAIRCN_DIR/build/git_submodules/freeDiameter/*
-  git submodule init
+  echo " ==== RAPHAEL : HSS_REL14 HELPER ==="
+  GIT_CURL_VERBOSE=1 git submodule init
   ret=$?;[[ $ret -ne 0 ]] && return $ret
-  git submodule foreach --recursive git clean -xfd
+  GIT_CURL_VERBOSE=1 git submodule foreach --recursive git clean -xfd
   ret=$?;[[ $ret -ne 0 ]] && return $ret
-  git submodule foreach --recursive git reset --hard
+  GIT_CURL_VERBOSE=1 git submodule foreach --recursive git reset --hard
   ret=$?;[[ $ret -ne 0 ]] && return $ret
-  git submodule update
+  GIT_CURL_VERBOSE=1 git submodule update
   ret=$?;[[ $ret -ne 0 ]] && return $ret
-  git submodule foreach git pull origin master
+  GIT_CURL_VERBOSE=1 git submodule foreach git pull origin master
   ret=$?;[[ $ret -ne 0 ]] && return $ret
+  echo " ==== RAPHAEL : HSS_REL14 HELPER ==="
 
   set_openair_env
   dir=$OPENAIRCN_DIR/build/hss_rel14
