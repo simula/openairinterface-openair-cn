@@ -231,6 +231,14 @@ esm_msg_decode (
     decode_result = decode_esm_status (&msg->esm_status, buffer, len);
     break;
 
+  case REMOTE_UE_REPORT:
+      decode_result = decode_esm_status(&msg->remote_ue_report, buffer, len);
+      break;
+
+  case REMOTE_UE_REPORT_RESPONSE:
+         decode_result = decode_esm_status(&msg->remote_ue_report_response, buffer, len);
+         break;
+
   default:
     OAILOG_ERROR (LOG_NAS_ESM, "ESM-MSG   - Unexpected message type: 0x%x\n", msg->header.message_type);
     decode_result = TLV_WRONG_MESSAGE_TYPE;
@@ -373,6 +381,14 @@ esm_msg_encode (
   case ESM_STATUS:
     encode_result = encode_esm_status (&msg->esm_status, buffer, len);
     break;
+
+  case REMOTE_UE_REPORT:
+      encode_result = encode_esm_status(&msg->remote_ue_report, buffer, len);
+          break;
+
+  case REMOTE_UE_REPORT_RESPONSE:
+        encode_result = encode_esm_status(&msg->remote_ue_report_response, buffer, len);
+            break;
 
   default:
     OAILOG_ERROR (LOG_NAS_ESM, "ESM-MSG   - Unexpected message type: 0x%x\n", msg->header.message_type);

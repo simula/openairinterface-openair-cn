@@ -346,7 +346,8 @@ static int encode_imsi_eps_mobile_identity (imsi_eps_mobile_identity_t * imsi, u
           }
           encoded++;
           if (imsi->num_digits > 11) {
-            if (imsi->oddeven != EPS_MOBILE_IDENTITY_EVEN) {
+
+     if (imsi->oddeven != EPS_MOBILE_IDENTITY_EVEN) {
               *(buffer + encoded) = 0x00 | (imsi->identity_digit13 << 4) | imsi->identity_digit12;
             } else {
               *(buffer + encoded) = 0xf0 | imsi->identity_digit12;

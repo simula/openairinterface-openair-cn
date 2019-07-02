@@ -488,6 +488,12 @@ s1ap_generate_s1_setup_response (
   ie->value.choice.RelativeMMECapacity = mme_config.relative_capacity;
   ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
 
+  ie = (S1AP_S1SetupResponseIEs_t *)calloc(1, sizeof(S1AP_S1SetupResponseIEs_t));
+  ie->id = S1AP_ProtocolIE_ID_id_MMERelaySupportIndicator;
+  ie->criticality = S1AP_Criticality_ignore;
+  ie->value.present = S1AP_S1SetupResponseIEs__value_PR_MMERelaySupportIndicator,
+  ie->value.choice.MMERelaySupportIndicator = mme_config.mme_relay_support_indicator;
+  ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
 
   ie = (S1AP_S1SetupResponseIEs_t *)calloc(1, sizeof(S1AP_S1SetupResponseIEs_t));
   ie->id = S1AP_ProtocolIE_ID_id_ServedGUMMEIs;

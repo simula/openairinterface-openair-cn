@@ -165,18 +165,21 @@ typedef struct mme_config_s {
 
   uint8_t relative_capacity;
 
+
   uint32_t mme_statistic_timer;
   uint32_t mme_mobility_completion_timer;
   uint32_t mme_s10_handover_completion_timer;
 
   uint8_t unauthenticated_imsi_supported;
   uint8_t dummy_handover_forwarding_enabled;
+  uint32_t mme_relay_support_indicator;
 
   struct {
     uint8_t ims_voice_over_ps_session_in_s1;
     uint8_t emergency_bearer_services_in_s1_mode;
     uint8_t location_services_via_epc;
     uint8_t extended_service_request;
+
   } eps_network_feature_support;
 
   struct {

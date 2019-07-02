@@ -93,7 +93,11 @@ typedef struct ue_description_s {
   /* Timer for procedure outcome issued by MME that should be answered */
   long outcome_response_timer_id;
 
+  // ProSe UE-to-Network Relaying IE in ProSe Authorized
+  long prose_ue_to_network_relaying;
+
   // UE Context Release procedure guard timer
+
   struct s1ap_timer_t       s1ap_ue_context_rel_timer;
   // Handover/TAU completion timer (TS 23.401)
   struct s1ap_timer_t       s1ap_handover_completion_timer; // todo: not TXXXX value found for this.

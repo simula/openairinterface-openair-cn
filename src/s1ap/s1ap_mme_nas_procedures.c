@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <3gpp_23.003.h>
 
 #include "bstrlib.h"
 
@@ -75,7 +76,7 @@ s1ap_mme_handle_initial_ue_message (
   S1AP_S1AP_PDU_t *pdu)
 {
   S1AP_InitialUEMessage_t                *container;
-  S1AP_InitialUEMessage_IEs_t            *ie = NULL, *ie_e_tmsi, *ie_csg_id, *ie_gummei, *ie_cause;
+  S1AP_InitialUEMessage_IEs_t            *ie = NULL, *ie_e_tmsi, *ie_csg_id, *ie_gummei, *ie_cause, *ie_relaynode;
 
   ue_description_t                       *ue_ref = NULL;
   enb_description_t                      *eNB_ref = NULL;
@@ -112,6 +113,7 @@ s1ap_mme_handle_initial_ue_message (
     s_tmsi_t                                s_tmsi = {.mme_code = 0, .m_tmsi = INVALID_M_TMSI};
     ecgi_t                                  ecgi = {.plmn = {0}, .cell_identity = {0}};
     csg_id_t                                csg_id = 0;
+    relaynode_t								relaynode = 0;
 
     /*
      * This UE eNB Id has currently no known s1 association.
@@ -187,6 +189,14 @@ s1ap_mme_handle_initial_ue_message (
       OCTET_STRING_TO_MME_GID(&ie_gummei->value.choice.GUMMEI.mME_Group_ID, gummei.mme_gid);
       OCTET_STRING_TO_MME_CODE(&ie_gummei->value.choice.GUMMEI.mME_Code, gummei.mme_code);
     }
+
+   S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_InitialUEMessage_IEs_t, ie_relaynode, container,
+    							S1AP_ProtocolIE_ID_id_RelayNode_Indicator, false);
+    memset(&relaynode, 0, sizeof(relaynode));
+    if (ie_relaynode) {
+        relaynode = BIT_STRING_to_uint32(&ie_relaynode->value.choice.RelayNode_Indicator);
+       }
+
     /*
      * We received the first NAS transport message: initial UE message.
      * * * * Send a NAS ESTAeNBBLISH IND to NAS layer
@@ -210,7 +220,7 @@ s1ap_mme_handle_initial_ue_message (
         ie_gummei ? &gummei:NULL,
         NULL, // CELL ACCESS MODE
         NULL, // GW Transport Layer Address
-        NULL  //Relay Node Indicator
+		ie_relaynode ? &relaynode:NULL  //Relay Node Indicator
         );
   }else {
     OAILOG_ERROR (LOG_S1AP, "S1AP:Initial UE Message- Duplicate ENB_UE_S1AP_ID. Ignoring the message, eNBUeS1APId:" ENB_UE_S1AP_ID_FMT "\n", enb_ue_s1ap_id);
@@ -849,6 +859,21 @@ s1ap_handle_conn_est_cnf (
   ie->value.choice.ENB_UE_S1AP_ID = ue_ref->enb_ue_s1ap_id;
   ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
 
+  /* ProSe authorised */
+  S1AP_ProSeUEtoNetworkRelaying_t relaying = ue_ref->prose_ue_to_network_relaying;
+  S1AP_ProSeAuthorized_t s1ap_proseauthorized;
+  //memset(0);
+  s1ap_proseauthorized.iE_Extensions = &relaying;
+  calloc(1, sizeof(relaying));
+
+    ie = (S1AP_InitialContextSetupRequestIEs_t *)calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ie->id = S1AP_ProtocolIE_ID_id_ProSeAuthorized;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_InitialContextSetupRequestIEs__value_PR_ProSeAuthorized;
+    ie->value.choice.ProSeAuthorized = s1ap_proseauthorized;
+    ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
+
+
   /*
    * uEaggregateMaximumBitrateDL and uEaggregateMaximumBitrateUL expressed in term of bits/sec
    */
@@ -1058,7 +1083,7 @@ s1ap_handle_path_switch_req_ack(
   pathSwitchRequestAcknowledge_p = &message.msg.s1ap_PathSwitchRequestAcknowledgeIEs;
   pathSwitchRequestAcknowledge_p->mme_ue_s1ap_id = (unsigned long)ue_ref->mme_ue_s1ap_id;
   pathSwitchRequestAcknowledge_p->eNB_UE_S1AP_ID = (unsigned long)ue_ref->enb_ue_s1ap_id;
-
+  //pathSwitchRequestAcknowledge_p->ProSeAuthorized = s1ap_proseauthorized;
   /* Set the GTP-TEID. This is the S1-U S-GW TEID. */
 //  hash_table_ts_t * bearer_contexts_p = (hash_table_ts_t*)path_switch_req_ack_pP->bearer_ctx_to_be_switched_list.bearer_ctxs;
 //  bearer_context_t * bearer_context_p = NULL;

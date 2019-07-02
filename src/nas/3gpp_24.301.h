@@ -110,7 +110,8 @@
 # define ESM_INFORMATION_REQUEST                              0b11011001 /* 217 = 0xd9 */
 # define ESM_INFORMATION_RESPONSE                             0b11011010 /* 218 = 0xda */
 # define ESM_STATUS                                           0b11101000 /* 232 = 0xe8 */
-
+# define REMOTE_UE_REPORT							   		  0b11101001 /* 233 = 0xe9 */
+# define REMOTE_UE_REPORT_RESPONSE					   		  0b11101010 /* 234 = 0xea */
 //------------------------------------------------------------------------------
 // 9.9 OTHER INFORMATION ELEMENTS
 //------------------------------------------------------------------------------
@@ -168,10 +169,11 @@ typedef struct ue_network_capability_s {
 #define UE_NETWORK_CAPABILITY_UIA7  0b00000001
   uint8_t  uia:7;
   /* Bits 8 to 6 of octet 7 are spare and shall be coded as zero */
-  uint8_t  spare:3;
-  /* eNodeB-based access class control for CSFB capability */
 #define UE_NETWORK_CAPABILITY_CSFB  1
   uint8_t  csfb:1;
+  /* eNodeB-based access class control for CSFB capability */
+#define UE_NETWORK_CAPABILITY_CSFB  1
+  uint8_t  ash:1;
   /* LTE Positioning Protocol capability */
 #define UE_NETWORK_CAPABILITY_LPP 1
   uint8_t  lpp:1;
