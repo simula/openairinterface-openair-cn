@@ -108,9 +108,7 @@ static const char                      *_esm_sap_primitive_str[] = {
   "ESM_EPS_BEARER_CONTEXT_MODIFY_REQ",
   "ESM_EPS_BEARER_CONTEXT_MODIFY_CNF",
   "ESM_EPS_BEARER_CONTEXT_MODIFY_REJ",
-
   "ESM_PDN_CONFIG_RES",
-
   "ESM_PDN_CONNECTIVITY_REQ",
   "ESM_PDN_CONNECTIVITY_CNF",
   "ESM_PDN_CONNECTIVITY_REJ",
@@ -122,6 +120,8 @@ static const char                      *_esm_sap_primitive_str[] = {
   "ESM_BEARER_RESOURCE_MODIFY_REQ",
   "ESM_BEARER_RESOURCE_MODIFY_REJ",
   "ESM_UNITDATA_IND",
+  "ESM_REMOTE_UE_REPORT",
+  "ESM_REMOTE_UE_REPORT_REQ",
 };
 
 
@@ -446,8 +446,7 @@ esm_sap_send (esm_sap_t * msg)
  **      Return:    RETURNok, RETURNerror                      **
  **                                                                        **
  ***************************************************************************/
-static int
-_esm_sap_recv (
+static int _esm_sap_recv (
   int msg_type,
   bool is_standalone,
   emm_data_context_t * emm_context,
@@ -608,6 +607,26 @@ _esm_sap_recv (
 
       break;
 
+    case REMOTE_UE_REPORT:
+	/*
+	 * Process Remote UE Report message
+	 * received from the UE
+	 */
+	esm_cause = esm_recv_remote_ue_report(emm_context, pti, ebi, &esm_msg.remote_ue_report);
+
+	if ((esm_cause == ESM_CAUSE_INVALID_PTI_VALUE) || (esm_cause == ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY)) {
+    /*
+    * 3GPP TS 24.301, section 7.3.1, case f
+    * * * * Ignore ESM message received with reserved PTI value
+    * * * * 3GPP TS 24.301, section 7.3.2, case f
+    * * * * Ignore ESM message received with reserved or assigned
+    * * * * value that does not match an existing EPS bearer context
+    */
+            is_discarded = true;
+          }
+          break;
+
+
     case ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
       /*
        * Process activate dedicated EPS bearer context accept message
@@ -659,7 +678,7 @@ _esm_sap_recv (
         /*
          * Process PDN connectivity request message received from the UE
          */
-        bool                                    is_pdn_connectivity = false;
+        bool                                   is_pdn_connectivity = false;
         pdn_context_t                          *new_pdn_context     = NULL;
         esm_cause = esm_recv_pdn_connectivity_request (emm_context, pti, ebi, &esm_msg.pdn_connectivity_request, &ebi, &is_pdn_connectivity, &new_pdn_context);
 

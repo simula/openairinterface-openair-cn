@@ -48,7 +48,7 @@ Description Defines functions executed at the ESM Service Access
 #include "PdnDisconnectRequest.h"
 #include "BearerResourceAllocationRequest.h"
 #include "BearerResourceModificationRequest.h"
-
+#include "RemoteUEReport.h"
 #include "ActivateDefaultEpsBearerContextAccept.h"
 #include "ActivateDefaultEpsBearerContextReject.h"
 #include "ActivateDedicatedEpsBearerContextAccept.h"
@@ -103,6 +103,15 @@ esm_cause_t esm_recv_pdn_disconnect_request(emm_data_context_t * emm_context, pr
 
 esm_cause_t esm_recv_information_response (emm_data_context_t * emm_context, proc_tid_t pti, ebi_t ebi,
                                     const esm_information_response_msg * msg);
+
+
+/*
+ * Remote UE Report message
+ * ----------------------------
+ */
+
+esm_cause_t esm_recv_remote_ue_report (emm_data_context_t * emm_context,  proc_tid_t pti,  ebi_t ebi,
+		                               const remote_ue_report_msg * msg);
 
 /*
  * Messages related to EPS bearer contexts

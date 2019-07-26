@@ -5,13 +5,13 @@
  *      Author: nepes
  */
 
+#ifndef SRC_NAS_ESM_MSG_REMOTEUEREPORT_H_
+#define SRC_NAS_ESM_MSG_REMOTEUEREPORT_H_
+
 #include "MessageType.h"
 #include "3gpp_24.007.h"
 #include "RemoteUEContext.h"
 #include "PKMFAddress.h"
-
-#ifndef SRC_NAS_ESM_MSG_REMOTEUEREPORT_H_
-#define SRC_NAS_ESM_MSG_REMOTEUEREPORT_H_
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define REMOTE_UE_REPORT_MINIMUM_LENGTH (3)

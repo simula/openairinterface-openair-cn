@@ -168,11 +168,17 @@ typedef struct ue_network_capability_s {
 #define UE_NETWORK_CAPABILITY_UIA6  0b00000010
 #define UE_NETWORK_CAPABILITY_UIA7  0b00000001
   uint8_t  uia:7;
-  /* Bits 8 to 6 of octet 7 are spare and shall be coded as zero */
+
+#define UE_NETWORK_CAPABILITY_PROSEDD  1
+  uint8_t  prosedd:1;
+#define UE_NETWORK_CAPABILITY_PROSE  1
+  uint8_t  prose:1;
+#define UE_NETWORK_CAPABILITY_H.245ASH  1
+  uint8_t  h245ash:1;
 #define UE_NETWORK_CAPABILITY_CSFB  1
   uint8_t  csfb:1;
   /* eNodeB-based access class control for CSFB capability */
-#define UE_NETWORK_CAPABILITY_CSFB  1
+#define UE_NETWORK_CAPABILITY_ASH  1
   uint8_t  ash:1;
   /* LTE Positioning Protocol capability */
 #define UE_NETWORK_CAPABILITY_LPP 1

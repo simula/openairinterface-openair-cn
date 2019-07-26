@@ -339,6 +339,17 @@ typedef struct imeisv_s {
 } imeisv_t;
 
 
+
+
+// -------------------------------------------------------------------------------
+// Relay Node Indicator
+// -------------------------------------------------------------------------------
+
+typedef uint32_t relaynode_t;
+
+//#define RELAYNODE_ABSENT 0
+//#define RELAYNODE_PRESENT 1
+
 // 7 Identification of Voice Group Call and Voice Broadcast Call Entities
 // 8 SCCP subsystem numbers
 
@@ -414,13 +425,7 @@ typedef struct ecgi_s {
 // 22 Addressing and identification for ANDSF
 // 23 Numbering, addressing and identification for the Relay Node OAM System
 
-// -------------------------------------------------------------------------------
-// 23.1 Relay Node Indicator
-// -------------------------------------------------------------------------------
 
-typedef uint32_t  relaynode_t;
-#define RELAYNODE_ABSENT 0
-#define RELAYNODE_PRESENT 1
 
 
 

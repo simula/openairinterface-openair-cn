@@ -108,6 +108,14 @@ int esm_proc_status(const bool is_standalone, emm_data_context_t * const emm_con
 
 /*
  * --------------------------------------------------------------------------
+ *          Remote UE Report procedure
+ * --------------------------------------------------------------------------
+ */
+
+int esm_proc_remote_ue_report (proc_tid_t pti, esm_cause_t *esm_cause, emm_data_context_t * emm_context, ebi_t ebi);
+
+/*
+ * --------------------------------------------------------------------------
  *          PDN connectivity procedure
  * --------------------------------------------------------------------------
  */

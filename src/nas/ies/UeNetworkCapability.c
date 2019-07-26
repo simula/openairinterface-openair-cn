@@ -1,4 +1,4 @@
-/*
+	/*
  * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,7 +71,9 @@ int decode_ue_network_capability (
       OAILOG_TRACE (LOG_NAS_EMM, "uenetworkcapability decoded UMTS\n");
 
       if (ielen > 4) {
-        uenetworkcapability->spare = (*(buffer + decoded) >> 5) & 0x7;
+   	    uenetworkcapability->prosedd = (*(buffer + decoded) >> 4) & 0x1;
+        uenetworkcapability->prose = (*(buffer + decoded) >> 5) & 0x1;
+        uenetworkcapability->h245ash = (*(buffer + decoded) >> 4) & 0x1;
         uenetworkcapability->csfb = (*(buffer + decoded) >> 4) & 0x1;
         uenetworkcapability->lpp = (*(buffer + decoded) >> 3) & 0x1;
         uenetworkcapability->lcs = (*(buffer + decoded) >> 2) & 0x1;
@@ -130,8 +132,10 @@ int encode_ue_network_capability (
   }
 
   if (uenetworkcapability->misc_present) {
-    *(buffer + encoded) =  ((uenetworkcapability->spare & 0x7) << 5) | // spare coded as zero
-        ((uenetworkcapability->csfb  & 0x1) << 4) |
+    *(buffer + encoded) =  ((uenetworkcapability->prosedd & 0x1) << 7) | // spare coded as zero
+    	((uenetworkcapability->prose  & 0x1) << 6) |
+		((uenetworkcapability->h245ash  & 0x1) << 5) |
+    	((uenetworkcapability->csfb  & 0x1) << 4) |
         ((uenetworkcapability->lpp   & 0x1) << 3) |
         ((uenetworkcapability->lcs   & 0x1) << 2) |
         ((uenetworkcapability->srvcc & 0x1) << 1) |

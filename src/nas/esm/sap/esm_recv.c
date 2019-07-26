@@ -437,6 +437,73 @@ esm_recv_pdn_connectivity_request (
   OAILOG_FUNC_RETURN (LOG_NAS_ESM, esm_cause);
 }
 
+
+/****************************************************************************
+ **                                                                        **
+ ** Name:    esm_recv_remote_ue_report()                       **
+ **                                                                        **
+ ** Description: Processes Remote UE Report message                **
+ **                                                                        **
+ ** Inputs:  ue_id:      UE local identifier                        **
+ **      pti:       Procedure transaction identity             **
+ **      ebi:       EPS bearer identity                        **
+ **      msg:       The received ESM message                   **
+ **      Others:    None                                       **
+ **                                                                        **
+ ** Outputs:     new_ebi:   New assigned EPS bearer identity           **
+ **      data:      PDN connection and EPS bearer context data **
+ **      Return:    ESM cause code whenever the processing of  **
+ **             the ESM message fails                      **
+ **      Others:    None                                       **
+ **                                                                        **
+ ***************************************************************************/
+esm_cause_t esm_recv_remote_ue_report (
+  emm_data_context_t * emm_context,
+  proc_tid_t pti,
+  ebi_t ebi,
+  const remote_ue_report_msg *msg
+  //pdn_cid_t               pdn_cid
+  )
+{
+	  OAILOG_FUNC_IN (LOG_NAS_ESM);
+	  esm_cause_t                               esm_cause = ESM_CAUSE_SUCCESS;
+	  mme_ue_s1ap_id_t                          ue_id = emm_context->ue_id;
+
+	  OAILOG_INFO(LOG_NAS_ESM, "ESM-SAP   - Received Remote UE Report message " "(ue_id=%d, pti=%d, ebi=%d)\n", ue_id, pti, ebi);
+	  /*
+	    * Procedure transaction identity checking
+	    */
+	   if ((pti == ESM_PT_UNASSIGNED) || esm_pt_is_reserved (pti)) {
+	     /*
+	      * 3GPP TS 24.301, section 7.3.1, case b
+	      * * * * Reserved or unassigned PTI value
+	      */
+	     OAILOG_WARNING (LOG_NAS_ESM, "ESM-SAP   - Invalid PTI value (pti=%d)\n", pti);
+	     OAILOG_FUNC_RETURN (LOG_NAS_ESM, ESM_CAUSE_INVALID_PTI_VALUE);
+	   }
+	   /*
+	    * EPS bearer identity checking
+	    */
+	   else if (ebi != ESM_EBI_UNASSIGNED) {
+	     /*
+	      * 3GPP TS 24.301, section 7.3.2, case b
+	      * * * * Reserved or assigned EPS bearer identity value (Transaction Related messages).
+	      */
+	     OAILOG_WARNING (LOG_NAS_ESM, "ESM-SAP   - Invalid EPS bearer identity (ebi=%d)\n", ebi);
+	     OAILOG_FUNC_RETURN (LOG_NAS_ESM, ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY);
+	   }
+
+	   //int rc = esm_proc_remote_ue_report( pti ,&esm_cause, emm_context, ebi);
+
+	     //if (rc != RETURNerror) {
+	       //esm_cause = ESM_CAUSE_SUCCESS;
+	    // }
+	     /*
+	      * Return the ESM cause value
+	      */
+	     OAILOG_FUNC_RETURN (LOG_NAS_ESM, esm_cause);
+	   }
+
 /****************************************************************************
  **                                                                        **
  ** Name:    esm_recv_pdn_disconnect_request()                         **

@@ -12,20 +12,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "ProtocolDiscriminator.h"
-#include "EpsBearerIdentity.h"
-#include "ProcedureTransactionIdentity.h"
-
-#ifndef OPENAIR3_NAS_COMMON_ESM_MSG_REMOTEUEREPORT_H_
-#define OPENAIR3_NAS_COMMON_ESM_MSG_REMOTEUEREPORT_H_
-
-
+#include "3gpp_24.007.h"
 
 typedef struct remote_ue_report_response_msg_tag {
   /* Mandatory fields */
-  ProtocolDiscriminator               protocoldiscriminator:4;
-  EpsBearerIdentity                   epsbeareridentity:4;
-  ProcedureTransactionIdentity        proceduretransactionidentity;
+	eps_protocol_discriminator_t               protocoldiscriminator:4;
+	ebi_t                   				   epsbeareridentity:4;
+	pti_t	                                   proceduretransactionidentity;
   /* Optional fields */
   //PKMFAddress                    		pkmfaddress;
   //RemoteUEContext        				remoteuecontext;

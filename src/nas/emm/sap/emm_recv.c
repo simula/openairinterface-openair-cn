@@ -164,14 +164,14 @@ emm_recv_attach_request (
   /*
    * Message checking
    */
-  if (msg->uenetworkcapability.spare != 0b000) {
+ // if (msg->uenetworkcapability.spare != 0b000) {
     /*
      * Spare bits shall be coded as zero
      */
-    *emm_cause = EMM_CAUSE_PROTOCOL_ERROR;
-    REQUIREMENT_3GPP_24_301(R10_5_5_1_2_7_b__4);
-    OAILOG_WARNING (LOG_NAS_EMM, "EMMAS-SAP - [%08x] - Non zero spare bits is suspicious\n", ue_id);
-  }
+    //*emm_cause = EMM_CAUSE_PROTOCOL_ERROR;
+   // REQUIREMENT_3GPP_24_301(R10_5_5_1_2_7_b__4);
+   // OAILOG_WARNING (LOG_NAS_EMM, "EMMAS-SAP - [%08x] - Non zero spare bits is suspicious\n", ue_id);
+ // }
 
   /*
    * Handle message checking error
@@ -584,13 +584,13 @@ emm_recv_tracking_area_update_request (
   /*
    * Message checking
    */
-  if (msg->uenetworkcapability.spare != 0b000) {
+  //if (msg->uenetworkcapability.spare != 0b000) {
     /*
      * Spare bits shall be coded as zero
      */
-    *emm_cause = EMM_CAUSE_PROTOCOL_ERROR;
-    OAILOG_WARNING (LOG_NAS_EMM, "EMMAS-SAP - [%08x] - Non zero spare bits is suspicious\n", ue_id);
-  }
+   // *emm_cause = EMM_CAUSE_PROTOCOL_ERROR;
+   // OAILOG_WARNING (LOG_NAS_EMM, "EMMAS-SAP - [%08x] - Non zero spare bits is suspicious\n", ue_id);
+ // }
 
   /*
    * Handle message checking error

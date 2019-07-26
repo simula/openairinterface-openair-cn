@@ -37,7 +37,7 @@ int encode_result = 0;
 
 CHECK_PDU_POINTER_AND_LENGTH_ENCODER (buffer, REMOTE_UE_REPORT_MINIMUM_LENGTH, len);
 
-remoteuereport->pkmfaddress.pkmfipv4address = 0;
+remoteuereport->pkmfaddress.pkmfipv4address = 0; //setting pkmf address to 0
 if ((encode_result = encode_pkmf_address (&remoteuereport->pkmfaddress, 0, buffer + encoded, len - encoded)) < 0)    //Return in case of error
     return encode_result;
   else

@@ -417,6 +417,14 @@ typedef struct ecgi_s {
   eci_t    cell_identity;                                  /*!< \brief  The ECI shall be of fixed length of 28 bits */
 } ecgi_t;
 
+// -------------------------------------------------------------------------------
+// Relay Node Indicator
+// -------------------------------------------------------------------------------
+
+typedef uint32_t relaynode_t;
+
+//#define RELAYNODE_ABSENT 0
+//#define RELAYNODE_PRESENT 1
 
 // 20  Addressing and Identification for IMS Centralized Services
 // 21 Addressing and Identification for Dual Stack Mobile IPv6 (DSMIPv6)
