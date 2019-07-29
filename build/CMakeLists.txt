@@ -724,6 +724,7 @@ set(libnas_esm_msg_OBJS
   ${NAS_SRC}esm/msg/PdnConnectivityRequest.c
   ${NAS_SRC}esm/msg/PdnDisconnectReject.c
   ${NAS_SRC}esm/msg/PdnDisconnectRequest.c
+  ${NAS_SRC}esm/msg/RemoteUEReport.c
 )
 
 set(libnas_ies_OBJS
@@ -759,7 +760,10 @@ set(libnas_ies_OBJS
   ${NAS_SRC}ies/PagingIdentity.c
   ${NAS_SRC}ies/PdnAddress.c
   ${NAS_SRC}ies/PdnType.c
+  ${NAS_SRC}ies/PKMFAddress.c
   ${NAS_SRC}ies/RadioPriority.c
+  ${NAS_SRC}ies/RemoteUEContext.c
+  ${NAS_SRC}ies/RemoteUserID.c
   ${NAS_SRC}ies/SecurityHeaderType.c
   ${NAS_SRC}ies/ServiceType.c
   ${NAS_SRC}ies/ShortMac.c
@@ -824,6 +828,7 @@ set (libnas_mme_esm_OBJS
   ${NAS_SRC}esm/EsmStatusHdl.c
   ${NAS_SRC}esm/PdnConnectivity.c
   ${NAS_SRC}esm/PdnDisconnect.c
+  ${NAS_SRC}esm/RemoteUEReport.c
   )
 
 set(libnas_mme_esm_sap_OBJS
