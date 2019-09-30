@@ -612,6 +612,7 @@ static int _esm_sap_recv (
 	 * Process Remote UE Report message
 	 * received from the UE
 	 */
+	OAILOG_INFO (LOG_NAS_EMM, "ESM SAP REMOTE UE REPORT");
 	esm_cause = esm_recv_remote_ue_report(emm_context, pti, ebi, &esm_msg.remote_ue_report);
 
 	if ((esm_cause == ESM_CAUSE_INVALID_PTI_VALUE) || (esm_cause == ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY)) {

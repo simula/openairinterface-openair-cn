@@ -11,7 +11,7 @@
 #include "MessageType.h"
 #include "3gpp_24.007.h"
 #include "RemoteUEContext.h"
-#include "PKMFAddress.h"
+#include "PKMFAddress.h" 
 
 /* Minimum length macro. Formed by minimum length of each mandatory field */
 #define REMOTE_UE_REPORT_MINIMUM_LENGTH (3)
@@ -24,8 +24,9 @@ typedef struct remote_ue_report_msg_tag {
   eps_protocol_discriminator_t                           protocoldiscriminator:4;
   ebi_t                                                  epsbeareridentity:4;
   pti_t                                                  proceduretransactionidentity;
+  message_type_t                                         messagetype;
   /* Optional fields */
-  pkmf_address_t                   						 pkmfaddress;
+  pkmf_address_t                   						           pkmfaddress;
 } remote_ue_report_msg;
 
 int decode_remote_ue_report(remote_ue_report_msg *remoteuereport, uint8_t *buffer, uint32_t len);
