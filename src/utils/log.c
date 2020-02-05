@@ -905,7 +905,12 @@ log_message (
       if (g_oai_log.is_output_is_fd) {
         fprintf(g_oai_log.log_fd, "%s", bdata(new_item_p->bstr));
       } else {
-        syslog (new_item_p->u_app_log.log.log_level ,"%s", bdata(new_item_p->bstr));
+#if DAEMONIZE
+        syslog(new_item_p->u_app_log.log.log_level, "%s",
+	                 bdata(new_item_p->bstr));
+#else
+        fprintf(stdout, "%s", bdata(new_item_p->bstr));
+#endif
       }
       shared_log_reuse_item(new_item_p);
     }
