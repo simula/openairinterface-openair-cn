@@ -1371,7 +1371,7 @@ mme_config_parse_opt_line (
     }
   }
   //OAILOG_DEBUG (LOG_CONFIG, "Config file is %s\n", config_file);
-  OAILOG_DEBUG(LOG_CONFIG, "Config file is %s\n", config_pP->config_file);
+  OAILOG_DEBUG(LOG_CONFIG, "Config file is %s\n", config_pP->config_file->data);
   /*
    * Parse the configuration file using libconfig
    */
