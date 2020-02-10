@@ -2054,7 +2054,7 @@ void AIRProcessor::phase2() {
       free(sqn);
     } else {
       SqnU64Union eu;
-      SQN_TO_U64(sqn, eu);
+      SQN_TO_U64(m_sec.sqn, eu);
       std::cerr << "Could not resync " << m_uimsi << " HSS SQN " << eu.u64
                 << std::endl;
     }
