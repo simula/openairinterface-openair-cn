@@ -112,6 +112,48 @@ pipeline {
                 }
             }
         }
+        stage ('Start OAI HSS Container') {
+            steps {
+                script {
+                    myShCmd('docker run --name oai-hss-docker -d ubuntu:bionic /bin/bash -c "sleep infinity"', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker cp /etc/apt/apt.conf.d/01proxy oai-hss-docker:/etc/apt/apt.conf.d/', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker cp ./openair-cn.tar.bz2 oai-hss-docker:/home', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home && tar -xjf openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it oai-hss-docker /bin/bash -c "rm -f /home/openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it oai-hss-docker /bin/bash -c "ls /home"', new_host_flag, new_host_user, new_host)
+                }
+            }
+        }
+        stage ('Start OAI MME Container') {
+            steps {
+                script {
+                    myShCmd('docker run --name oai-mme-docker -d ubuntu:bionic /bin/bash -c "sleep infinity"', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker cp /etc/apt/apt.conf.d/01proxy oai-mme-docker:/etc/apt/apt.conf.d/', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker cp ./openair-cn.tar.bz2 oai-mme-docker:/home', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it oai-mme-docker /bin/bash -c "cd /home && tar -xjf openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it oai-mme-docker /bin/bash -c "rm -f /home/openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it oai-mme-docker /bin/bash -c "ls /home"', new_host_flag, new_host_user, new_host)
+                }
+            }
+        }
+        stage('Install libs & sw') {
+            parallel {
+                stage ('HSS SW') {
+                    script {
+                        myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get update && apt-get upgrade --yes" > hss_install.log', new_host_flag, new_host_user, new_host)
+                        myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get install --yes git psmisc" >> hss_install.log', new_host_flag, new_host_user, new_host)
+                        myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home/scripts && ./build_hss_rel14 --check-installed-software --force" >> hss_install.log', new_host_flag, new_host_user, new_host)
+                    }
+                }
+                stage ('MME SW') {
+                    script {
+                        myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get update && apt-get upgrade --yes" >> mme_install.log', new_host_flag, new_host_user, new_host)
+                        myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get install --yes git psmisc" >> mme_install.log', new_host_flag, new_host_user, new_host)
+                        myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home/scripts && ./build_mme --check-installed-software --force" >> hss_install.log', new_host_flag, new_host_user, new_host)
+                    }
+                }
+            }
+        }
     }
     post {
         success {
@@ -148,7 +190,7 @@ pipeline {
         }
         cleanup {
             script {
-                myShCmd('docker rm -f cassandra-docker', new_host_flag, new_host_user, new_host)
+                myShCmd('docker rm -f cassandra-docker oai-hss-docker oai-mme-docker', new_host_flag, new_host_user, new_host)
                 // Sending an email to the last committer. Maybe not the Pull Request's author.
                 def emailTo = getCommitterEmail()
                 emailext attachmentsPattern: '*results*.html',
