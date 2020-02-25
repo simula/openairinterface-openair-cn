@@ -116,11 +116,10 @@ pipeline {
             steps {
                 script {
                     myShCmd('docker run --name oai-hss-docker -d ubuntu:bionic /bin/bash -c "sleep infinity"', new_host_flag, new_host_user, new_host)
-                    myShCmd('docker cp /etc/apt/apt.conf.d/01proxy oai-hss-docker:/etc/apt/apt.conf.d/', new_host_flag, new_host_user, new_host)
+                    //myShCmd('docker cp /etc/apt/apt.conf.d/01proxy oai-hss-docker:/etc/apt/apt.conf.d/', new_host_flag, new_host_user, new_host)
                     myShCmd('docker cp ./openair-cn.tar.bz2 oai-hss-docker:/home', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home && tar -xjf openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it oai-hss-docker /bin/bash -c "rm -f /home/openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
-                    myShCmd('docker exec -it oai-hss-docker /bin/bash -c "ls /home"', new_host_flag, new_host_user, new_host)
                 }
             }
         }
@@ -128,11 +127,10 @@ pipeline {
             steps {
                 script {
                     myShCmd('docker run --name oai-mme-docker -d ubuntu:bionic /bin/bash -c "sleep infinity"', new_host_flag, new_host_user, new_host)
-                    myShCmd('docker cp /etc/apt/apt.conf.d/01proxy oai-mme-docker:/etc/apt/apt.conf.d/', new_host_flag, new_host_user, new_host)
+                    //myShCmd('docker cp /etc/apt/apt.conf.d/01proxy oai-mme-docker:/etc/apt/apt.conf.d/', new_host_flag, new_host_user, new_host)
                     myShCmd('docker cp ./openair-cn.tar.bz2 oai-mme-docker:/home', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it oai-mme-docker /bin/bash -c "cd /home && tar -xjf openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it oai-mme-docker /bin/bash -c "rm -f /home/openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
-                    myShCmd('docker exec -it oai-mme-docker /bin/bash -c "ls /home"', new_host_flag, new_host_user, new_host)
                 }
             }
         }
