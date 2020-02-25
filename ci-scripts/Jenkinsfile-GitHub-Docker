@@ -278,8 +278,8 @@ pipeline {
                   post {
                       always {
                           script {
-                              myShCmd('docker cp oai-hss-docker:/usr/local/etc/oai/*.conf .', new_host_flag, new_host_user, new_host)
-                              myShCmd('docker cp oai-hss-docker:/usr/local/etc/oai/freeDiameter/*.conf .', new_host_flag, new_host_user, new_host)
+                              //myShCmd('docker cp oai-hss-docker:/usr/local/etc/oai/*.conf .', new_host_flag, new_host_user, new_host)
+                              //myShCmd('docker cp oai-hss-docker:/usr/local/etc/oai/freeDiameter/*.conf .', new_host_flag, new_host_user, new_host)
                               copyFrom2ndServer('hss_config.log', new_host_flag, new_host_user, new_host)
                           }
                       }
