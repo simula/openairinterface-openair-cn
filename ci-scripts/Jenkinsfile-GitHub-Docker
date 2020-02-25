@@ -99,6 +99,19 @@ pipeline {
                 }
             }
         }
+        stage ('Start Cassandra') {
+            steps {
+                script {
+                    myShCmd('docker run --name cassandra-docker -d -e CASSANDRA_CLUSTER_NAME="OAI HSS Cluster" -e CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch cassandra:2.1', new_host_flag, new_host_user, new_host)
+                    sh "sleep 5"
+                    myShCmd('docker cp src/hss_rel14/db/oai_db.cql cassandra-docker:/home', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it cassandra-docker /bin/bash -c "nodetool status"', new_host_flag, new_host_user, new_host)
+                    sh "sleep 5"
+                    Cassandra_IP = myShRetCmd('docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" cassandra-docker', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it cassandra-docker /bin/bash -c "cqlsh --file /home/oai_db.cql ' + Cassandra_IP + '"', new_host_flag, new_host_user, new_host)
+                }
+            }
+        }
     }
     post {
         success {
@@ -135,6 +148,7 @@ pipeline {
         }
         cleanup {
             script {
+                myShCmd('docker rm -f cassandra-docker', new_host_flag, new_host_user, new_host)
                 // Sending an email to the last committer. Maybe not the Pull Request's author.
                 def emailTo = getCommitterEmail()
                 emailext attachmentsPattern: '*results*.html',
@@ -218,4 +232,22 @@ def copyTo2ndServer(filename, flag, user, host) {
             sh "ssh ${user}@${host} 'cd /tmp/CI-CN && tar -xjf ${filename}'"
         }
     }
+}
+
+def myShCmd(cmd, flag, user, host) {
+    if (flag) {
+        sh "ssh -t -t ${user}@${host} 'cd /tmp/CI-CN && ${cmd}'"
+    } else {
+        sh "${cmd}"
+    }
+}
+
+def myShRetCmd(cmd, flag, user, host) {
+    if (flag) {
+        ret = sh returnStdout: true, script: "ssh -t -t ${user}@${host} 'cd /tmp/CI-CN && ${cmd}'"
+    } else {
+        ret = sh returnStdout: true, script: "${cmd}"
+    }
+    ret = ret.trim()
+    return ret
 }
