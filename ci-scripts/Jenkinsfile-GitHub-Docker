@@ -34,6 +34,9 @@ def sendSocialMediaMessage(pipeChannel, pipeColor, pipeMessage) {
 // Location of the CN executor node 
 def cn_ci_host = params.Host_CN_CI_Server
 
+// for lock
+def cn_ci_resource = params.DockerContainers
+
 // Location of the 2nd CN executor
 def new_host_flag = false
 def new_host = ""
@@ -49,6 +52,7 @@ pipeline {
         disableConcurrentBuilds()
         timestamps()
         ansiColor('xterm')
+        lock(cn_ci_resource)
     }
 
     stages {
@@ -96,6 +100,7 @@ pipeline {
                     sh "tar -cjhf /tmp/openair-cn.tar.bz2 ."
                     sh "mv /tmp/openair-cn.tar.bz2 ."
                     copyTo2ndServer('openair-cn.tar.bz2', new_host_flag, new_host_user, new_host)
+                    sh "mkdir archives"
                 }
             }
         }
@@ -105,10 +110,23 @@ pipeline {
                     myShCmd('docker run --name cassandra-docker -d -e CASSANDRA_CLUSTER_NAME="OAI HSS Cluster" -e CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch cassandra:2.1', new_host_flag, new_host_user, new_host)
                     sh "sleep 5"
                     myShCmd('docker cp src/hss_rel14/db/oai_db.cql cassandra-docker:/home', new_host_flag, new_host_user, new_host)
-                    myShCmd('docker exec -it cassandra-docker /bin/bash -c "nodetool status"', new_host_flag, new_host_user, new_host)
+                    myShCmd('docker exec -it cassandra-docker /bin/bash -c "nodetool status" | tee cassandra_status.log', new_host_flag, new_host_user, new_host)
                     sh "sleep 5"
                     Cassandra_IP = myShRetCmd('docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" cassandra-docker', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it cassandra-docker /bin/bash -c "cqlsh --file /home/oai_db.cql ' + Cassandra_IP + '"', new_host_flag, new_host_user, new_host)
+                }
+            }
+            post {
+                always {
+                    script {
+                        copyFrom2ndServer('cassandra_status.log', new_host_flag, new_host_user, new_host)
+                    }
+                }
+                success {
+                    sh "echo 'CASSANDRA START: OK' >> archives/cassandra_status.log"
+                }
+                unsuccessful {
+                    sh "echo 'CASSANDRA START: KO' >> archives/cassandra_status.log"
                 }
             }
         }
@@ -116,11 +134,18 @@ pipeline {
             steps {
                 script {
                     myShCmd('docker run --name oai-hss-docker -d ubuntu:bionic /bin/bash -c "sleep infinity"', new_host_flag, new_host_user, new_host)
-                    //myShCmd('docker cp /etc/apt/apt.conf.d/01proxy oai-hss-docker:/etc/apt/apt.conf.d/', new_host_flag, new_host_user, new_host)
                     myShCmd('docker cp ./openair-cn.tar.bz2 oai-hss-docker:/home', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home && tar -xjf openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it oai-hss-docker /bin/bash -c "rm -f /home/openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
                     myShCmd('docker cp ~/.gitconfig oai-hss-docker:/root', new_host_flag, new_host_user, new_host)
+                }
+            }
+            post {
+                success {
+                    sh "echo 'OAI-HSS START: OK' > archives/oai-hss-docker-start.log"
+                }
+                unsuccessful {
+                    sh "echo 'OAI-HSS START: KO' > archives/oai-hss-docker-start.log"
                 }
             }
         }
@@ -128,11 +153,18 @@ pipeline {
             steps {
                 script {
                     myShCmd('docker run --name oai-mme-docker -d ubuntu:bionic /bin/bash -c "sleep infinity"', new_host_flag, new_host_user, new_host)
-                    //myShCmd('docker cp /etc/apt/apt.conf.d/01proxy oai-mme-docker:/etc/apt/apt.conf.d/', new_host_flag, new_host_user, new_host)
                     myShCmd('docker cp ./openair-cn.tar.bz2 oai-mme-docker:/home', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it oai-mme-docker /bin/bash -c "cd /home && tar -xjf openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
                     myShCmd('docker exec -it oai-mme-docker /bin/bash -c "rm -f /home/openair-cn.tar.bz2"', new_host_flag, new_host_user, new_host)
                     myShCmd('docker cp ~/.gitconfig oai-mme-docker:/root', new_host_flag, new_host_user, new_host)
+                }
+            }
+            post {
+                success {
+                    sh "echo 'OAI-MME START: OK' > archives/oai-mme-docker-start.log"
+                }
+                unsuccessful {
+                    sh "echo 'OAI-MME START: KO' > archives/oai-mme-docker-start.log"
                 }
             }
         }
@@ -146,6 +178,19 @@ pipeline {
                         myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home/scripts && ./build_hss_rel14 --check-installed-software --force" >> hss_install.log', new_host_flag, new_host_user, new_host)
                     }
                   }
+                  post {
+                      always {
+                          script {
+                              copyFrom2ndServer('hss_install.log', new_host_flag, new_host_user, new_host)
+                          }
+                      }
+                      success {
+                          sh "echo 'OAI-HSS SW INSTALL: OK' >> archives/hss_install.log"
+                      }
+                      unsuccessful {
+                          sh "echo 'OAI-HSS SW INSTALL: KO' >> archives/hss_install.log"
+                      }
+                  }
                 }
                 stage ('MME SW') {
                   steps {
@@ -154,6 +199,19 @@ pipeline {
                         myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get install --yes git psmisc" >> mme_install.log', new_host_flag, new_host_user, new_host)
                         myShCmd('docker exec -it oai-mme-docker /bin/bash -c "cd /home/scripts && ./build_mme --check-installed-software --force" >> mme_install.log', new_host_flag, new_host_user, new_host)
                     }
+                  }
+                  post {
+                      always {
+                          script {
+                              copyFrom2ndServer('mme_install.log', new_host_flag, new_host_user, new_host)
+                          }
+                      }
+                      success {
+                          sh "echo 'OAI-MME SW INSTALL: OK' >> archives/mme_install.log"
+                      }
+                      unsuccessful {
+                          sh "echo 'OAI-MME SW INSTALL: KO' >> archives/mme_install.log"
+                      }
                   }
                 }
             }
@@ -166,12 +224,40 @@ pipeline {
                         myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home/scripts && ./build_hss_rel14 --clean --build-type Release" > hss_build.log', new_host_flag, new_host_user, new_host)
                     }
                   }
+                  post {
+                      always {
+                          script {
+                              copyFrom2ndServer('hss_build.log', new_host_flag, new_host_user, new_host)
+                          }
+                      }
+                      success {
+                          sh "echo 'OAI-HSS BUILD: OK' >> archives/hss_build.log"
+                      }
+                      unsuccessful {
+                          sh "echo 'OAI-HSS BUILD: KO' >> archives/hss_build.log"
+                      }
+                  }
                 }
                 stage ('MME Build') {
                   steps {
                     script {
                         myShCmd('docker exec -it oai-mme-docker /bin/bash -c "cd /home/scripts && ./build_mme --clean --build-type Release" > mme_build.log', new_host_flag, new_host_user, new_host)
+                        myShCmd('docker cp oai-mme-docker:/home/build/log/mme.txt mme_compile.log ', new_host_flag, new_host_user, new_host)
                     }
+                  }
+                  post {
+                      always {
+                          script {
+                              copyFrom2ndServer('mme_build.log', new_host_flag, new_host_user, new_host)
+                              copyFrom2ndServer('mme_compile.log', new_host_flag, new_host_user, new_host)
+                          }
+                      }
+                      success {
+                          sh "echo 'OAI-MME BUILD: OK' >> archives/mme_build.log"
+                      }
+                      unsuccessful {
+                          sh "echo 'OAI-MME BUILD: KO' >> archives/mme_build.log"
+                      }
                   }
                 }
             }
@@ -212,7 +298,13 @@ pipeline {
         }
         cleanup {
             script {
+                // Killing all containers
                 myShCmd('docker rm -f cassandra-docker oai-hss-docker oai-mme-docker', new_host_flag, new_host_user, new_host)
+                // Zipping all archived log files
+                sh "zip -r -qq docker_logs.zip archives"
+                if (fileExists('docker_logs.zip')) {
+                    archiveArtifacts artifacts: 'docker_logs.zip'
+                }
                 // Sending an email to the last committer. Maybe not the Pull Request's author.
                 def emailTo = getCommitterEmail()
                 emailext attachmentsPattern: '*results*.html',
@@ -295,6 +387,14 @@ def copyTo2ndServer(filename, flag, user, host) {
         if ("openair-cn.tar.bz2".equals(filename)) {
             sh "ssh ${user}@${host} 'cd /tmp/CI-CN && tar -xjf ${filename}'"
         }
+    }
+}
+
+def copyFrom2ndServer(filename, flag, user, host) {
+    if (flag) {
+        sh "scp ${user}@${host}:/tmp/CI-CN ${filename}"
+    } else {
+        sh "mv ${filename} archives"
     }
 }
 
