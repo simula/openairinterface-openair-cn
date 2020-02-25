@@ -262,6 +262,38 @@ pipeline {
                 }
             }
         }
+        stage('Config Core Network Functions') {
+            parallel {
+                stage ('HSS Config') {
+                  steps {
+                    script {
+                        Cassandra_IP = myShRetCmd('docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" cassandra-docker', new_host_flag, new_host_user, new_host)
+                        sh "python3 ci-scripts/generateConfigFiles.py --kind=HSS --cassandra=${Cassandra_IP}"
+                        copyTo2ndServer('hss-cfg.sh', new_host_flag, new_host_user, new_host)
+                        myShCmd('docker cp ./hss-cfg.sh oai-hss-docker:/home/scripts', new_host_flag, new_host_user, new_host)
+                        myShCmd('docker exec -it oai-hss-docker /bin/bash -c "openssl rand -out /root/.rnd 128" > hss_config.log', new_host_flag, new_host_user, new_host)
+                        myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home/scripts && chmod 777 hss-cfg.sh && ./hss-cfg.sh" >> hss_config.log', new_host_flag, new_host_user, new_host)
+                    }
+                  }
+                  post {
+                      always {
+                          script {
+                              myShCmd('docker cp oai-hss-docker:/usr/local/etc/oai/*.conf .', new_host_flag, new_host_user, new_host)
+                              myShCmd('docker cp oai-hss-docker:/usr/local/etc/oai/freeDiameter/*.conf .', new_host_flag, new_host_user, new_host)
+                              copyFrom2ndServer('hss_config.log', new_host_flag, new_host_user, new_host)
+                          }
+                      }
+                      success {
+                          sh "echo 'OAI-HSS BUILD: OK' >> archives/hss_config.log"
+                      }
+                      unsuccessful {
+                          sh "echo 'OAI-HSS BUILD: KO' >> archives/hss_config.log"
+                      }
+                  }
+                }
+                }
+            }
+        }
     }
     post {
         success {
@@ -381,8 +413,10 @@ def updateGithubCommitStatus(build, jobMessage) {
 
 def copyTo2ndServer(filename, flag, user, host) {
     if (flag) {
-        sh "ssh ${user}@${host} 'rm -rf /tmp/CI-CN'"
-        sh "ssh ${user}@${host} 'mkdir -p /tmp/CI-CN'"
+        if ("openair-cn.tar.bz2".equals(filename)) {
+            sh "ssh ${user}@${host} 'rm -rf /tmp/CI-CN'"
+            sh "ssh ${user}@${host} 'mkdir -p /tmp/CI-CN'"
+        }
         sh "scp ${filename} ${user}@${host}:/tmp/CI-CN"
         if ("openair-cn.tar.bz2".equals(filename)) {
             sh "ssh ${user}@${host} 'cd /tmp/CI-CN && tar -xjf ${filename}'"
