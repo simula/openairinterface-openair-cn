@@ -392,7 +392,7 @@ def copyTo2ndServer(filename, flag, user, host) {
 
 def copyFrom2ndServer(filename, flag, user, host) {
     if (flag) {
-        sh "scp ${user}@${host}:/tmp/CI-CN ${filename}"
+        sh "scp ${user}@${host}:/tmp/CI-CN/${filename} archives"
     } else {
         sh "mv ${filename} archives"
     }
