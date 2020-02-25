@@ -34,6 +34,11 @@ def sendSocialMediaMessage(pipeChannel, pipeColor, pipeMessage) {
 // Location of the CN executor node 
 def cn_ci_host = params.Host_CN_CI_Server
 
+// Location of the 2nd CN executor
+def new_host_flag = false
+def new_host = ""
+def new_host_user = ""
+
 //-------------------------------------------------------------------------------
 // Pipeline start
 pipeline {
@@ -51,7 +56,19 @@ pipeline {
             steps {
                 script {
                     echo '\u2705 \u001B[32mVerify Parameters\u001B[0m'
-                    echo "Node       is ${NODE_NAME}"
+                    if (params.Host_CN_CI_2nd_Server_Flag != null) {
+                        new_host_flag = params.Host_CN_CI_2nd_Server_Flag
+                        if (new_host_flag) {
+                           new_host = params.Host_CN_CI_2nd_Server
+                           new_host_user = params.Host_CN_CI_2nd_Server_Login
+                           echo "1st Node   is ${NODE_NAME}"
+                           echo "2nd Node   is ${new_host}"
+                        } else {
+                           echo "Node       is ${NODE_NAME}"
+                        }
+                    } else {
+                        echo "Node       is ${NODE_NAME}"
+                    }
                     echo "Git URL    is ${GIT_URL}"
 
                     removeGitHubInfo()
@@ -60,6 +77,8 @@ pipeline {
                         echo "PR ID      is ${env.ghprbPullId}"
                         echo "PR LINK    is ${env.ghprbPullLink}"
                         echo "PR TITLE   is ${env.ghprbPullTitle}"
+                        sh "./scripts/doGitHubPullRequestTempMerge.sh --src-branch ${env.ghprbSourceBranch} --src-commit ${env.ghprbActualCommit} --target-branch ${env.ghprbTargetBranch} --target-commit ${GIT_COMMIT}"
+                        sh "sleep 10"
                     } else {
                         echo "======= THIS IS A PUSH EVENT ======"
                         echo "Git Branch is ${GIT_BRANCH}"
@@ -67,6 +86,16 @@ pipeline {
                         // Making a hard copy of the SHA-ONE
                         getCommitSha()
                     }
+                }
+            }
+        }
+        stage ('Prepare Source Code') {
+            steps {
+                script {
+                    sh "git clean -x -d -f > /dev/null 2>&1"
+                    sh "tar -cjhf /tmp/openair-cn.tar.bz2 ."
+                    sh "mv /tmp/openair-cn.tar.bz2 ."
+                    copyTo2ndServer('openair-cn.tar.bz2', new_host_flag, new_host_user, new_host)
                 }
             }
         }
@@ -180,3 +209,13 @@ def updateGithubCommitStatus(build, jobMessage) {
   ])
 }
 
+def copyTo2ndServer(filename, flag, user, host) {
+    if (flag) {
+        sh "ssh ${user}@${host} 'rm -rf /tmp/CI-CN'"
+        sh "ssh ${user}@${host} 'mkdir -p /tmp/CI-CN'"
+        sh "scp ${filename} ${user}@${host}:/tmp/CI-CN"
+        if ("openair-cn.tar.bz2".equals(filename)) {
+            sh "ssh ${user}@${host} 'cd /tmp/CI-CN && tar -xjf ${filename}'"
+        }
+    }
+}
