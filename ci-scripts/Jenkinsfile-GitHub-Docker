@@ -139,18 +139,22 @@ pipeline {
         stage('Install libs & sw') {
             parallel {
                 stage ('HSS SW') {
+                  steps {
                     script {
                         myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get update && apt-get upgrade --yes" > hss_install.log', new_host_flag, new_host_user, new_host)
                         myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get install --yes git psmisc" >> hss_install.log', new_host_flag, new_host_user, new_host)
                         myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home/scripts && ./build_hss_rel14 --check-installed-software --force" >> hss_install.log', new_host_flag, new_host_user, new_host)
                     }
+                  }
                 }
                 stage ('MME SW') {
+                  steps {
                     script {
                         myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get update && apt-get upgrade --yes" >> mme_install.log', new_host_flag, new_host_user, new_host)
                         myShCmd('docker exec -it oai-mme-docker /bin/bash -c "apt-get install --yes git psmisc" >> mme_install.log', new_host_flag, new_host_user, new_host)
                         myShCmd('docker exec -it oai-hss-docker /bin/bash -c "cd /home/scripts && ./build_mme --check-installed-software --force" >> hss_install.log', new_host_flag, new_host_user, new_host)
                     }
+                  }
                 }
             }
         }
