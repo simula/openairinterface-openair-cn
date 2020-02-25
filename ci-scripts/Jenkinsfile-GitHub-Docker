@@ -291,6 +291,10 @@ pipeline {
                       }
                   }
                 }
+                stage ('MME Config') {
+                  steps {
+                     echo "MME not done"
+                  }
                 }
             }
         }
