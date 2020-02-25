@@ -28,7 +28,7 @@ def GenerateHssConfigurer(cassandra_IP):
 	hssFile = open('./hss-cfg.sh', 'w')
 	hssFile.write('#!/bin/bash\n')
 	hssFile.write('\n')
-	hssFile.write('cd /home/openair-cn/scripts\n')
+	hssFile.write('cd /home/scripts\n')
 	hssFile.write('\n')
 	hssFile.write('Cassandra_Server_IP=\'' + cassandra_IP + '\'\n')
 	hssFile.write('PREFIX=\'/usr/local/etc/oai\'\n')
