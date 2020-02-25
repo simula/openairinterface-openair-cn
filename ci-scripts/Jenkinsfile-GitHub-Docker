@@ -1,0 +1,182 @@
+#!/bin/groovy
+/*
+ * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The OpenAirInterface Software Alliance licenses this file to You under
+ * the OAI Public License, Version 1.1  (the "License"); you may not use this file
+ * except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.openairinterface.org/?page_id=698
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *-------------------------------------------------------------------------------
+ * For more information about the OpenAirInterface (OAI) Software Alliance:
+ *      contact@openairinterface.org
+ */
+
+//-------------------------------------------------------------------------------
+// Abstraction function to send social media messages:
+// like on Slack or Mattermost
+def sendSocialMediaMessage(pipeChannel, pipeColor, pipeMessage) {
+    if (params.pipelineUsesSlack != null) {
+        if (params.pipelineUsesSlack) {
+            slackSend channel: pipeChannel, color: pipeColor, message: pipeMessage
+        }
+    }
+}
+
+// Location of the CN executor node 
+def cn_ci_host = params.Host_CN_CI_Server
+
+//-------------------------------------------------------------------------------
+// Pipeline start
+pipeline {
+    agent {
+        label cn_ci_host
+    }
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+        ansiColor('xterm')
+    }
+
+    stages {
+        stage ('Verify Parameters') {
+            steps {
+                script {
+                    echo '\u2705 \u001B[32mVerify Parameters\u001B[0m'
+                    echo "Node       is ${NODE_NAME}"
+                    echo "Git URL    is ${GIT_URL}"
+
+                    removeGitHubInfo()
+                    if (env.ghprbPullId != null) {
+                        echo "======= THIS IS A PULL REQUEST ======"
+                        echo "PR ID      is ${env.ghprbPullId}"
+                        echo "PR LINK    is ${env.ghprbPullLink}"
+                        echo "PR TITLE   is ${env.ghprbPullTitle}"
+                    } else {
+                        echo "======= THIS IS A PUSH EVENT ======"
+                        echo "Git Branch is ${GIT_BRANCH}"
+                        echo "Git Commit is ${GIT_COMMIT}"
+                        // Making a hard copy of the SHA-ONE
+                        getCommitSha()
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            script {
+                def message = "Build job #" + BUILD_ID + " completed"
+                updateGithubCommitStatus(currentBuild, message)
+                def socialMessage = "OAI " + JOB_NAME + " build (" + BUILD_ID + "): passed (" + BUILD_URL + ")"
+                sendSocialMediaMessage('ci-epc', 'good', socialMessage)
+            }
+        }
+        failure {
+            script {
+                def message = "Build job #" + BUILD_ID + " : One step of job failed"
+                updateGithubCommitStatus(currentBuild, message)
+                def socialMessage = "OAI " + JOB_NAME + " build (" + BUILD_ID + "): failed (" + BUILD_URL + ")"
+                sendSocialMediaMessage('ci-epc', 'danger', socialMessage)
+            }
+        }
+        unstable {
+            script {
+                def message = "Build job #" + BUILD_ID + " : One step of job is unstable"
+                updateGithubCommitStatus(currentBuild, message)
+                def socialMessage = "OAI " + JOB_NAME + " build (" + BUILD_ID + "): unstable (" + BUILD_URL + ")"
+                sendSocialMediaMessage('ci-epc', 'danger', socialMessage)
+            }
+        }
+        aborted {
+            script {
+                def message = "Build job #" + BUILD_ID + " aborted: pipeline script issue?"
+                updateGithubCommitStatus(currentBuild, message)
+                def socialMessage = "OAI " + JOB_NAME + " build (" + BUILD_ID + "): aborted (" + BUILD_URL + ")"
+                sendSocialMediaMessage('ci-epc', 'danger', socialMessage)
+            }
+        }
+        cleanup {
+            script {
+                // Sending an email to the last committer. Maybe not the Pull Request's author.
+                def emailTo = getCommitterEmail()
+                emailext attachmentsPattern: '*results*.html',
+                     body: '''Hi,
+Here are attached HTML report files for $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!
+
+Regards,
+OAI CI Team''',
+                     replyTo: 'no-reply@openairinterface.org',
+                     subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!',
+                     to: emailTo
+            }
+        }
+    }
+}
+
+// Removing all info -- do not know if git clean command removes them
+def removeGitHubInfo() {
+  if (fileExists('.git/remote-url')) {
+    sh "rm -f .git/remote-url"
+  }
+  if (fileExists('.git/current-commit')) {
+    sh "rm -f .git/current-commit"
+  }
+  if (fileExists('.git/commit-email')) {
+    sh "rm -f .git/commit-email"
+  }
+}
+
+// GitHub retrieve email of last committer
+def getCommitterEmail() {
+  if (!fileExists('.git/commit-email')) {
+      sh "git log -1 --pretty=format:\"%ce\" > .git/commit-email"
+      // Workaround for issue when merge to develop from the Pull Request GitHub webpage
+      // Click on merge button creates a commit with an email address in noreply@github.com
+      sh "if [ `egrep -c \"noreply@github.com\" .git/commit-email` -eq 1 ]; then echo \"raphael.defosseux@openairinterface.org\" > .git/commit-email; fi"
+  }
+  return readFile(".git/commit-email").trim()
+}
+
+// Github commit update functions
+def getRepoURL() {
+  if (!fileExists('.git/remote-url')) {
+      sh "git config --get remote.origin.url > .git/remote-url"
+  }
+  return readFile(".git/remote-url").trim()
+}
+
+def getCommitSha() {
+  if (!fileExists('.git/current-commit')) {
+    sh "git rev-parse HEAD > .git/current-commit"
+  }
+  return readFile(".git/current-commit").trim()
+}
+
+def updateGithubCommitStatus(build, jobMessage) {
+  // workaround https://issues.jenkins-ci.org/browse/JENKINS-38674
+  repoUrl = getRepoURL()
+  commitSha = getCommitSha()
+
+  step([
+    $class: 'GitHubCommitStatusSetter',
+    reposSource: [$class: "ManuallyEnteredRepositorySource", url: repoUrl],
+    commitShaSource: [$class: "ManuallyEnteredShaSource", sha: commitSha],
+    errorHandlers: [[$class: 'ShallowAnyErrorHandler']],
+    statusResultSource: [
+      $class: 'ConditionalStatusResultSource',
+      results: [
+        [$class: 'AnyBuildResult', state: build.currentResult, message: jobMessage]
+      ]
+    ]
+  ])
+}
+
