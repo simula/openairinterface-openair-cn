@@ -284,10 +284,10 @@ pipeline {
                           }
                       }
                       success {
-                          sh "echo 'OAI-HSS BUILD: OK' >> archives/hss_config.log"
+                          sh "echo 'OAI-HSS CONFIG: OK' >> archives/hss_config.log"
                       }
                       unsuccessful {
-                          sh "echo 'OAI-HSS BUILD: KO' >> archives/hss_config.log"
+                          sh "echo 'OAI-HSS CONFIG: KO' >> archives/hss_config.log"
                       }
                   }
                 }
