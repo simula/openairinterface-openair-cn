@@ -148,10 +148,10 @@ pipeline {
       }
       post {
         success {
-          sh "echo 'OAI-HSS START: OK' > archives/ci-oai-hss-start.log"
+          sh "echo 'OAI-HSS START: OK' > archives/oai-hss-docker-start.log"
         }
         unsuccessful {
-          sh "echo 'OAI-HSS START: KO' > archives/ci-oai-hss-start.log"
+          sh "echo 'OAI-HSS START: KO' > archives/oai-hss-docker-start.log"
         }
       }
     }
@@ -167,10 +167,10 @@ pipeline {
       }
       post {
         success {
-          sh "echo 'OAI-MME START: OK' > archives/ci-oai-mme-start.log"
+          sh "echo 'OAI-MME START: OK' > archives/oai-mme-docker-start.log"
         }
         unsuccessful {
-          sh "echo 'OAI-MME START: KO' > archives/ci-oai-mme-start.log"
+          sh "echo 'OAI-MME START: KO' > archives/oai-mme-docker-start.log"
         }
       }
     }
@@ -429,7 +429,7 @@ pipeline {
     cleanup {
       script {
         // Killing all containers
-        //myShCmd('docker rm -f ci-cassandra ci-oai-hss ci-oai-mme', new_host_flag, new_host_user, new_host)
+        myShCmd('docker rm -f ci-cassandra ci-oai-hss ci-oai-mme', new_host_flag, new_host_user, new_host)
         // Zipping all archived log files
         sh "zip -r -qq docker_logs.zip archives"
         if (fileExists('docker_logs.zip')) {
