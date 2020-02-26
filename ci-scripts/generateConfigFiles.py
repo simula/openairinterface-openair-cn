@@ -24,25 +24,30 @@ import os
 import re
 import sys
 
-def GenerateHssConfigurer(cassandra_IP):
+def GenerateHssConfigurer(cassandra_IP, hss_s6a_IP):
 	hssFile = open('./hss-cfg.sh', 'w')
 	hssFile.write('#!/bin/bash\n')
 	hssFile.write('\n')
 	hssFile.write('cd /home/scripts\n')
 	hssFile.write('\n')
+	# CASSANDRA ADDRESS SHOULD BE THE CASSANDRA CONTAINER default address
 	hssFile.write('Cassandra_Server_IP=\'' + cassandra_IP + '\'\n')
 	hssFile.write('PREFIX=\'/usr/local/etc/oai\'\n')
+	# The following variables could be later be passed as parameters
 	hssFile.write('MY_REALM=\'openairinterface.org\'\n')
 	hssFile.write('MY_APN=\'apn.oai.svc.cluster.local\'\n')
+	hssFile.write('MY_LTE_K=\'8baf473f2f8fd09487cccbd7097c6862\'\n')
+	hssFile.write('MY_OP_K=\'11111111111111111111111111111111\'\n')
 	hssFile.write('\n')
 	hssFile.write('rm -Rf $PREFIX\n')
 	hssFile.write('\n')
-	hssFile.write('mkdir $PREFIX\n')
+	hssFile.write('mkdir -p $PREFIX\n')
 	hssFile.write('mkdir $PREFIX/freeDiameter\n')
 	hssFile.write('mkdir $PREFIX/logs\n')
 	hssFile.write('\n')
 	hssFile.write('# provision users\n')
-	hssFile.write('./data_provisioning_users --apn $MY_APN --apn2 internet --key 8baf473f2f8fd09487cccbd7097c6862 --imsi-first 311480100001101 --msisdn-first 00000001 --mme-identity mme.$MY_REALM --no-of-users 10 --realm $MY_REALM --truncate True --verbose True --cassandra-cluster $Cassandra_Server_IP\n')
+	hssFile.write('./data_provisioning_users --apn $MY_APN --apn2 internet --key $MY_LTE_K --imsi-first 311480100001101 --msisdn-first 00000001 --mme-identity mme.$MY_REALM --no-of-users 10 --realm $MY_REALM --truncate True --verbose True --cassandra-cluster $Cassandra_Server_IP\n')
+	hssFile.write('# provision mme\n')
 	hssFile.write('./data_provisioning_mme --id 3 --mme-identity mme.$MY_REALM --realm $MY_REALM --ue-reachability 1 --truncate True  --verbose True -C $Cassandra_Server_IP\n')
 	hssFile.write('\n')
 	hssFile.write('cp ../etc/acl.conf ../etc/hss_rel14_fd.conf $PREFIX/freeDiameter\n')
@@ -54,10 +59,12 @@ def GenerateHssConfigurer(cassandra_IP):
 	hssFile.write('HSS_CONF[@REALM@]=$MY_REALM\n')
 	hssFile.write('HSS_CONF[@HSS_FQDN@]="hss.${HSS_CONF[@REALM@]}"\n')
 	hssFile.write('HSS_CONF[@cassandra_Server_IP@]=$Cassandra_Server_IP\n')
-	hssFile.write('HSS_CONF[@OP_KEY@]=\'11111111111111111111111111111111\'\n')
+	hssFile.write('HSS_CONF[@OP_KEY@]=$MY_OP_K\n')
 	hssFile.write('HSS_CONF[@ROAMING_ALLOWED@]=\'true\'\n')
 	hssFile.write('for K in "${!HSS_CONF[@]}"; do    egrep -lRZ "$K" $PREFIX | xargs -0 -l sed -i -e "s|$K|${HSS_CONF[$K]}|g"; done\n')
-	hssFile.write('sed -i -e "s/#ListenOn/ListenOn/g" $PREFIX/freeDiameter/hss_rel14_fd.conf\n')
+	# HSS S6A is for the moment the default OAI-HSS Container
+	# We could later dedicate a container new interface
+	hssFile.write('sed -i -e "s/#ListenOn.*$/ListenOn = "' + hss_s6a_IP + '";/g" $PREFIX/freeDiameter/hss_rel14_fd.conf\n')
 	hssFile.write('../src/hss_rel14/bin/make_certs.sh hss ${HSS_CONF[@REALM@]} $PREFIX\n')
 	hssFile.close()
 
@@ -74,6 +81,11 @@ def Usage():
 	print('---------------------------------------------------------------------------------------------------- HSS Options -----')
 	print('  --kind=HSS')
 	print('  --cassandra=[Cassandra IP server]')
+	print('  --hss_s6a=[HSS S6A Interface IP server]')
+	print('---------------------------------------------------------------------------------------------------- MME Options -----')
+	print('  --kind=MME')
+	print('  --hss_s6a=[HSS S6A Interface IP server]')
+	print('  --mme_s6a=[MME S6A Interface IP server]')
 
 argvs = sys.argv
 argc = len(argvs)
@@ -81,6 +93,8 @@ cwd = os.getcwd()
 
 kind = ''
 cassandra_IP = ''
+hss_s6a_IP = ''
+mme_s6a_IP = ''
 
 while len(argvs) > 1:
 	myArgv = argvs.pop(1)
@@ -93,6 +107,12 @@ while len(argvs) > 1:
 	elif re.match('^\-\-cassandra=(.+)$', myArgv, re.IGNORECASE):
 		matchReg = re.match('^\-\-cassandra=(.+)$', myArgv, re.IGNORECASE)
 		cassandra_IP = matchReg.group(1)
+	elif re.match('^\-\-hss_s6a=(.+)$', myArgv, re.IGNORECASE):
+		matchReg = re.match('^\-\-hss_s6a=(.+)$', myArgv, re.IGNORECASE)
+		hss_s6a_IP = matchReg.group(1)
+	elif re.match('^\-\-mme_s6a-(.+)$', myArgv, re.IGNORECASE):
+		matchReg = re.match('^\-\-mme_s6a=(.+)$', myArgv, re.IGNORECASE)
+		mme_s6a_IP = matchReg.group(1)
 	else:
 		Usage()
 		sys.exit('Invalid Parameter: ' + myArgv)
@@ -105,6 +125,9 @@ if kind == 'HSS':
 	if cassandra_IP == '':
 		Usage()
 		sys.exit('missing Cassandra IP address')
+	elif hss_s6a_IP == '':
+		Usage()
+		sys.exit('missing HSS S6A IP address')
 	else:
-		GenerateHssConfigurer(cassandra_IP)
+		GenerateHssConfigurer(cassandra_IP, hss_s6a_IP)
 		sys.exit(0)
