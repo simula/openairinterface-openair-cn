@@ -74,6 +74,7 @@ def GenerateMMEConfigurer(mme_s6a_IP, hss_s6a_IP):
 	mmeFile.write('\n')
 	mmeFile.write('cd /home/scripts\n')
 	mmeFile.write('\n')
+	mmeFile.write('INSTANCE=1\n')
 	mmeFile.write('PREFIX=\'/usr/local/etc/oai\'\n')
 	# The following variables could be later be passed as parameters
 	mmeFile.write('MY_REALM=\'openairinterface.org\'\n')
