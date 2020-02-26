@@ -364,6 +364,32 @@ pipeline {
         }
       }
     }
+    stage ('Start-Check-Stop OAI cNFs') {
+      steps {
+        script {
+          myShCmd('docker exec -d -w /home/scripts ci-oai-hss /bin/bash -c "nohup oai_hss -j /usr/local/etc/oai/hss_rel14.json --reloadkey true > hss_check_run.log 2>&1"', new_host_flag, new_host_user, new_host)
+          sh "sleep 2"
+          myShCmd('docker exec -d -w /home/scripts ci-oai-mme /bin/bash -c "nohup ./run_mme --config-file /usr/local/etc/oai/mme.conf --set-virt-if > mme_check_run.log 2>&1"', new_host_flag, new_host_user, new_host)
+          sh "sleep 20"
+          myShCmd('docker exec -it ci-oai-hss /bin/bash -c "killall oai_hss"', new_host_flag, new_host_user, new_host)
+          myShCmd('docker exec -it ci-oai-mme /bin/bash -c "killall mme"', new_host_flag, new_host_user, new_host)
+        }
+      }
+      post {
+        always {
+          myShCmd('docker cp ci-oai-hss:/home/scripts/hss_check_run.log archives"', new_host_flag, new_host_user, new_host)
+          myShCmd('docker cp ci-oai-mme:/home/scripts/mme_check_run.log archives"', new_host_flag, new_host_user, new_host)
+        }
+        success {
+          sh "echo 'OAI-HSS CHECK START/STOP: OK' > archives/hss_cnf_check_start.log"
+          sh "echo 'OAI-MME CHECK START/STOP: OK' > archives/mme_cnf_check_start.log"
+        }
+        unsuccessful {
+          sh "echo 'OAI-HSS CHECK START/STOP: KO' > archives/hss_cnf_check_start.log"
+          sh "echo 'OAI-MME CHECK START/STOP: KO' > archives/mme_cnf_check_start.log"
+        }
+      }
+    }
   }
   post {
     success {

@@ -44,6 +44,7 @@ def GenerateHssConfigurer(cassandra_IP, hss_s6a_IP):
 	hssFile.write('mkdir -p $PREFIX\n')
 	hssFile.write('mkdir $PREFIX/freeDiameter\n')
 	hssFile.write('mkdir $PREFIX/logs\n')
+	hssFile.write('mkdir -p logs\n')
 	hssFile.write('\n')
 	hssFile.write('# provision users\n')
 	hssFile.write('./data_provisioning_users --apn $MY_APN --apn2 internet --key $MY_LTE_K --imsi-first 311480100001101 --msisdn-first 00000001 --mme-identity mme.$MY_REALM --no-of-users 10 --realm $MY_REALM --truncate True --verbose True --cassandra-cluster $Cassandra_Server_IP\n')
@@ -64,7 +65,7 @@ def GenerateHssConfigurer(cassandra_IP, hss_s6a_IP):
 	hssFile.write('for K in "${!HSS_CONF[@]}"; do    egrep -lRZ "$K" $PREFIX | xargs -0 -l sed -i -e "s|$K|${HSS_CONF[$K]}|g"; done\n')
 	# HSS S6A is for the moment the default OAI-HSS Container
 	# We could later dedicate a container new interface
-	hssFile.write('sed -i -e "s/#ListenOn.*$/ListenOn = "' + hss_s6a_IP + '";/g" $PREFIX/freeDiameter/hss_rel14_fd.conf\n')
+	hssFile.write('sed -i -e \'s/#ListenOn.*$/ListenOn = "' + hss_s6a_IP + '";/g\' $PREFIX/freeDiameter/hss_rel14_fd.conf\n')
 	hssFile.write('../src/hss_rel14/bin/make_certs.sh hss ${HSS_CONF[@REALM@]} $PREFIX\n')
 	hssFile.close()
 
