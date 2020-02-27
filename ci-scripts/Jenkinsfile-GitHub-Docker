@@ -60,6 +60,10 @@ pipeline {
       steps {
         script {
           echo '\u2705 \u001B[32mVerify Parameters\u001B[0m'
+
+          JOB_TIMESTAMP = sh returnStdout: true, script: 'date --utc --rfc-3339=seconds | sed -e "s#+00:00##"'
+          JOB_TIMESTAMP = JOB_TIMESTAMP.trim()
+
           if (params.Host_CN_CI_2nd_Server_Flag != null) {
             new_host_flag = params.Host_CN_CI_2nd_Server_Flag
             if (new_host_flag) {
@@ -148,10 +152,10 @@ pipeline {
       }
       post {
         success {
-          sh "echo 'OAI-HSS START: OK' > archives/oai-hss-docker-start.log"
+          sh "echo 'OAI-HSS START: OK' > archives/hss-docker-start.log"
         }
         unsuccessful {
-          sh "echo 'OAI-HSS START: KO' > archives/oai-hss-docker-start.log"
+          sh "echo 'OAI-HSS START: KO' > archives/hss-docker-start.log"
         }
       }
     }
@@ -167,10 +171,10 @@ pipeline {
       }
       post {
         success {
-          sh "echo 'OAI-MME START: OK' > archives/oai-mme-docker-start.log"
+          sh "echo 'OAI-MME START: OK' > archives/mme-docker-start.log"
         }
         unsuccessful {
-          sh "echo 'OAI-MME START: KO' > archives/oai-mme-docker-start.log"
+          sh "echo 'OAI-MME START: KO' > archives/mme-docker-start.log"
         }
       }
     }
@@ -433,7 +437,19 @@ pipeline {
         // Zipping all archived log files
         sh "zip -r -qq docker_logs.zip archives"
         if (fileExists('docker_logs.zip')) {
-archiveArtifacts artifacts: 'docker_logs.zip'
+          archiveArtifacts artifacts: 'docker_logs.zip'
+        }
+        // Generating the HTML report
+        if (env.ghprbPullId != null) {
+          sh "python3 ci-scripts/generateHtmlReport.py --job_name=${JOB_NAME} --job_id=${BUILD_ID} --job_url=${BUILD_URL} --git_url=${GIT_URL} --git_src_branch=${env.ghprbSourceBranch} --git_src_commit=${env.ghprbActualCommit} --git_pull_request=True --git_target_branch=${env.ghprbTargetBranch} --git_target_commit=${GIT_COMMIT}"
+          sh "sed -i -e 's#TEMPLATE_PULL_REQUEST_LINK#${env.ghprbPullLink}#g' test_results_oai_cn.html"
+          sh "sed -i -e 's#TEMPLATE_PULL_REQUEST_TEMPLATE#${env.ghprbPullTitle}#' test_results_oai_cn.html"
+        } else {
+          sh "python3 ci-scripts/generateHtmlReport.py --job_name=${JOB_NAME} --job_id=${BUILD_ID} --job_url=${BUILD_URL} --git_url=${GIT_URL} --git_src_branch=${GIT_BRANCH} --git_src_commit=${GIT_COMMIT}"
+        }
+		sh "sed -i -e 's#TEMPLATE_TIME#${JOB_TIMESTAMP}#' test_results_oai_cn.html"
+        if (fileExists('test_results_oai_cn.html')) {
+          archiveArtifacts artifacts: 'test_results_oai_cn.html'
         }
         // Sending an email to the last committer. Maybe not the Pull Request's author.
         def emailTo = getCommitterEmail()

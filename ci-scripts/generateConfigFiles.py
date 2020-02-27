@@ -164,8 +164,10 @@ def GenerateMMEConfigurer(mme_s6a_IP, hss_s6a_IP):
 def Usage():
 	print('----------------------------------------------------------------------------------------------------------------------')
 	print('generateConfigFiles.py')
+	print('   Prepare a bash script to be run in the workspace where either HSS and/or MME are being built.')
+	print('   That bash script will copy configuration template files and adapt to your configuration.')
 	print('----------------------------------------------------------------------------------------------------------------------')
-	print('Usage: python3 main.py [options]')
+	print('Usage: python3 generateConfigFiles.py [options]')
 	print('  --help  Show this help.')
 	print('---------------------------------------------------------------------------------------------------- HSS Options -----')
 	print('  --kind=HSS')
