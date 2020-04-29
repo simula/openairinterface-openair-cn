@@ -333,33 +333,33 @@ int emm_proc_tracking_area_update_request (
     	 */
     	emm_sap_send (&emm_sap);
 
-        /** Set the new attach procedure into pending mode and continue with it after the completion of the duplicate removal. */
-        void *unused = NULL;
-        _emm_proc_create_procedure_tracking_area_update_request(new_emm_ue_context, ies, _emm_tau_retry_procedure);
-        nas_emm_tau_proc_t * tau_proc = get_nas_specific_procedure_tau(new_emm_ue_context);
-        nas_stop_T_retry_specific_procedure(new_emm_ue_context->ue_id, &tau_proc->emm_spec_proc.retry_timer, unused);
-        nas_start_T_retry_specific_procedure(new_emm_ue_context->ue_id, &tau_proc->emm_spec_proc.retry_timer, tau_proc->emm_spec_proc.retry_cb, (void*)new_emm_ue_context->ue_id);
-        /** Set the old mme_ue_s1ap id which will be checked. */
-        tau_proc->emm_spec_proc.old_ue_id = old_ue_id;
-        *duplicate_emm_ue_ctx_pP = NULL;
-        /*
-         * Nothing else to do with the current TAU procedure. Leave it on hold.
-         * Continue to handle the new TAU procedure.
-         */
-        /*
-         * Perform implicit detach on the old UE with cause of duplicate detection.
-         * Not continuing with the new TAU procedure until the old one has been successfully deallocated.
-         */
-        // todo: this probably will not work, we need to update the enb_ue_s1ap_id of the old UE context to continue to work with it!
-        //              unlock_ue_contexts(ue_context);
-        //             unlock_ue_contexts(imsi_ue_mm_ctx);
-        emm_init_context(new_emm_ue_context);
-        DevAssert(RETURNok == emm_data_context_add (&_emm_data, new_emm_ue_context));
-        OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNok);
+    	/** Set the new attach procedure into pending mode and continue with it after the completion of the duplicate removal. */
+    	_emm_proc_create_procedure_tracking_area_update_request(new_emm_ue_context, ies, _emm_tau_retry_procedure);
+    	nas_emm_tau_proc_t * tau_proc = get_nas_specific_procedure_tau(new_emm_ue_context);
+    	void *unused = NULL;
+    	nas_stop_T_retry_specific_procedure(ue_id, &tau_proc->emm_spec_proc.retry_timer, unused);
+    	nas_start_T_retry_specific_procedure(ue_id, &tau_proc->emm_spec_proc.retry_timer, tau_proc->emm_spec_proc.retry_cb);
+    	/** Set the old mme_ue_s1ap id which will be checked. */
+    	tau_proc->emm_spec_proc.old_ue_id = old_ue_id;
+    	*duplicate_emm_ue_ctx_pP = NULL;
+    	/*
+    	 * Nothing else to do with the current TAU procedure. Leave it on hold.
+    	 * Continue to handle the new TAU procedure.
+    	 */
+    	/*
+    	 * Perform implicit detach on the old UE with cause of duplicate detection.
+    	 * Not continuing with the new TAU procedure until the old one has been successfully deallocated.
+    	 */
+    	// todo: this probably will not work, we need to update the enb_ue_s1ap_id of the old UE context to continue to work with it!
+    	//              unlock_ue_contexts(ue_context);
+    	//             unlock_ue_contexts(imsi_ue_mm_ctx);
+    	emm_init_context(new_emm_ue_context);
+    	DevAssert(RETURNok == emm_data_context_add (&_emm_data, new_emm_ue_context));
+    	OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNok);
     } else{
-    	 new_emm_ue_context = (*duplicate_emm_ue_ctx_pP);
-    	 /** Unlink the new procedure. */
-    	 (*duplicate_emm_ue_ctx_pP) = NULL;
+    	new_emm_ue_context = (*duplicate_emm_ue_ctx_pP);
+    	/** Unlink the new procedure. */
+    	(*duplicate_emm_ue_ctx_pP) = NULL;
     }
   }
   /*
@@ -375,8 +375,8 @@ int emm_proc_tracking_area_update_request (
     /** Set the new tau procedure into pending mode and continue with it after the completion of the duplicate removal. */
     void *unused = NULL;
     nas_emm_tau_proc_t * tau_proc = get_nas_specific_procedure_tau(new_emm_ue_context);
-    nas_stop_T_retry_specific_procedure(new_emm_ue_context->ue_id, &tau_proc->emm_spec_proc.retry_timer, unused);
-    nas_start_T_retry_specific_procedure(new_emm_ue_context->ue_id, &tau_proc->emm_spec_proc.retry_timer, tau_proc->emm_spec_proc.retry_cb, (void*)new_emm_ue_context->ue_id);
+    nas_stop_T_retry_specific_procedure(ue_id, &tau_proc->emm_spec_proc.retry_timer, unused);
+    nas_start_T_retry_specific_procedure(ue_id, &tau_proc->emm_spec_proc.retry_timer, tau_proc->emm_spec_proc.retry_cb);
     /** Set the old mme_ue_s1ap id which will be checked. */
     tau_proc->emm_spec_proc.old_ue_id =(*duplicate_emm_ue_ctx_pP)->ue_id;
     /*
@@ -487,7 +487,7 @@ emm_proc_tracking_area_update_complete (
       /*
        * Upon receiving an ATTACH COMPLETE message, the MME shall stop timer T3450
        */
-      OAILOG_INFO (LOG_NAS_EMM, "EMM-PROC  - Stop timer T3450 (%d)\n", tau_proc->T3450.id);
+      OAILOG_INFO (LOG_NAS_EMM, "EMM-PROC  - Stop timer T3450 (%lx)\n", tau_proc->T3450.id);
 //      tau_proc->T3450.id = nas_timer_stop (tau_proc->T3450.id);
       void * unused = NULL;
       nas_stop_T3450(emm_context->ue_id, &tau_proc->T3450, unused);
@@ -897,11 +897,11 @@ static void _emm_tracking_area_update_t3450_handler (void *args)
   nas_emm_tau_proc_t    *tau_proc = get_nas_specific_procedure_tau(emm_context);
 
   if (tau_proc){
-
-  // Requirement MME24.301R10_5.5.3.2.7_c Abnormal cases on the network side - T3450 time-out
-  /*
-   * Increment the retransmission counter
-   */
+    // Requirement MME24.301R10_5.5.3.2.7_c Abnormal cases on the network side - T3450 time-out
+	/*
+	 * Increment the retransmission counter
+	 */
+    tau_proc->T3450.id = NAS_TIMER_INACTIVE_ID;
     tau_proc->retransmission_count += 1;
     OAILOG_WARNING (LOG_NAS_EMM, "EMM-PROC  - T3450 timer expired, retransmission counter = %d", tau_proc->retransmission_count);
     /*
@@ -1173,7 +1173,7 @@ static int _emm_send_tracking_area_update_accept(emm_data_context_t * const emm_
     emm_sap.u.emm_as.u.data.eps_id.guti = &emm_context->_guti;
   } else {
     OAILOG_INFO (LOG_NAS_EMM, "ue_id=" MME_UE_S1AP_ID_FMT " EMM-PROC  - UE with IMSI " IMSI_64_FMT " has already a valid GUTI " GUTI_FMT ". "
-        "Not including new GUTI in Tracking Area Update Accept message\n", emm_context->ue_id, emm_context->_imsi, GUTI_ARG(&emm_context->_guti));
+        "Not including new GUTI in Tracking Area Update Accept message\n", emm_context->ue_id, emm_context->_imsi64, GUTI_ARG(&emm_context->_guti));
     emm_sap.u.emm_as.u.data.new_guti  = NULL;
     emm_sap.u.emm_as.u.data.eps_id.guti = &emm_context->_guti;
   }
@@ -1770,6 +1770,14 @@ static int _emm_tau_retry_procedure(mme_ue_s1ap_id_t ue_id){
 	  }
   }
 
+  /** Invalidate the timer of the specific procedure. */
+  if(is_nas_specific_procedure_tau_running(emm_context)){
+	  nas_emm_tau_proc_t                     *tau_proc = get_nas_specific_procedure_tau(emm_context);
+	  /** No need to release the timer afterwards. */
+	  OAILOG_DEBUG(LOG_NAS_EMM, "Setting retry-timer (%lx) of TAU procedure of UE " MME_UE_S1AP_ID_FMT " to invalid.\n", tau_proc->emm_spec_proc.retry_timer.id, ue_id);
+	  /** Invalidate the retry timer and don't try to remove it. */
+	  tau_proc->emm_spec_proc.retry_timer.id = NAS_TIMER_INACTIVE_ID;
+  }
   rc = _emm_tracking_area_update_run_procedure(emm_context);
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
@@ -1788,7 +1796,7 @@ static int _emm_tracking_area_update_run_procedure(emm_data_context_t *emm_conte
   /** Retrieve the MME_APP UE context. */
   ue_context = mme_ue_context_exists_mme_ue_s1ap_id (&mme_app_desc.mme_ue_contexts, emm_context->ue_id);
   if(!ue_context){
-    OAILOG_INFO (LOG_NAS_EMM, "EMM-PROC  TAU - For ueId " MME_UE_S1AP_ID_FMT " no ue context exists (while running TAU procedure). Removing the EMM context without sending attach reject.. \n", emm_context->ue_id);
+    OAILOG_ERROR (LOG_NAS_EMM, "EMM-PROC  TAU - For ueId " MME_UE_S1AP_ID_FMT " no ue context exists (while running TAU procedure). Removing the EMM context without sending attach reject.. \n", emm_context->ue_id);
     // Release EMM context
     if(emm_context->is_dynamic) {
     	_clear_emm_ctxt(emm_context->ue_id);
@@ -1830,22 +1838,6 @@ static int _emm_tracking_area_update_run_procedure(emm_data_context_t *emm_conte
     //    emm_context->gea = (msg->msnetworkcapability.gea1 << 6)| msg->msnetworkcapability.egea;
     //    emm_context->gprs_present = true; /**< Todo: how to find this out? */
 
-    /** Not working with TAU_REQUEST number. */
-//    OAILOG_DEBUG(LOG_NAS_EMM, "EMM-PROC-  Num TAU_REQUESTs for UE with GUTI " GUTI_FMT " and ue_id " MME_UE_S1AP_ID_FMT " is: %d. \n", GUTI_ARG(&emm_context->_guti), emm_context->ue_id, tau_proc->->num_tau_request);
-
-    /** Check for TAU Reject after validating the old context or creating a new one! */
-    /*
-     * Requirement MME24.301R10_5.5.3.2.4_5a
-     */
-    if(tau_proc->ies->eps_bearer_context_status){
-      // todo: handle this with dedicated bearers.
-      // todo: need to send TAU_REJECT?
-      //    emm_ctx_set_eps_bearer_context_status(emm_ctx, &msg->epsbearercontextstatus); /**< This will indicate bearers in active mode. */
-      //    //#pragma message  "TODO Requirement MME24.301R10_5.5.3.2.4_5a: TAU Request: Deactivate EPS bearers if necessary (S11 Modify Bearer Request)"
-      //    // todo:
-      OAILOG_WARNING (LOG_NAS_EMM, "EMM-PROC- Tracking Area Update Request: Bearer context update not implemented.\n");
-    }
-
     /** Update the TAI List with the new TAI parameters in the S1AP message. */
     // todo: not sure if needed, tai list updated with new guti
 //    rc = mme_api_add_tai(&emm_ctx->ue_id, &new_tai, &emm_ctx->_tai_list);
@@ -1863,13 +1855,13 @@ static int _emm_tracking_area_update_run_procedure(emm_data_context_t *emm_conte
 
     /** Set the GUTI-Type (event is context there). */
     if (tau_proc->ies->old_guti_type) {
-      /** Old GUTI Type present. Not setting anything in the EMM_CTX. */
+    	/** Old GUTI Type present. Not setting anything in the EMM_CTX. */
     }
     /*
      * Requirements MME24.301R10_5.5.3.2.4_4
      */
     if (tau_proc->ies->drx_parameter) {
-      emm_ctx_set_drx_parameter(emm_context, tau_proc->ies->drx_parameter);
+    	emm_ctx_set_drx_parameter(emm_context, tau_proc->ies->drx_parameter);
     }
 
     /**
@@ -2204,7 +2196,12 @@ static int _emm_start_tracking_area_update_proc_security (emm_data_context_t *em
    /*
     * Create new NAS security context
     */
+    ksi_t ksi = emm_context->_security.eksi;
     emm_ctx_clear_security(emm_context);
+    tau_proc->ksi = ksi;
+    emm_context->_security.eksi = ksi;
+    OAILOG_DEBUG(LOG_NAS_EMM, "After clearing UE security context --> Setting KSI as (%d) for UE " MME_UE_S1AP_ID_FMT " with IMSI " IMSI_64_FMT ".\n",
+    		emm_context->_security.eksi, emm_context->ue_id, emm_context->_imsi64);
     rc = emm_proc_security_mode_control (emm_context, &tau_proc->emm_spec_proc, tau_proc->ksi, _emm_tracking_area_update_success_security_cb, _emm_tracking_area_update_failure_security_cb);
     if (rc != RETURNok) {
       /*
@@ -2284,8 +2281,8 @@ static void _emm_tracking_area_update_registration_complete(emm_data_context_t *
   MessageDef                    *message_p = NULL;
   int                            rc = RETURNerror;
 
-  nas_emm_tau_proc_t                     *tau_proc = get_nas_specific_procedure_tau(emm_context);
-  ue_context_t 						     *ue_context = mme_ue_context_exists_mme_ue_s1ap_id(&mme_app_desc.mme_ue_contexts, emm_context->ue_id);
+  nas_emm_tau_proc_t            *tau_proc = get_nas_specific_procedure_tau(emm_context);
+  ue_context_t 						     	*ue_context = mme_ue_context_exists_mme_ue_s1ap_id(&mme_app_desc.mme_ue_contexts, emm_context->ue_id);
   DevAssert(tau_proc);
 
   /**

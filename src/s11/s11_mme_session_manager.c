@@ -458,9 +458,6 @@ s11_mme_handle_ulp_error_indicatior(
   nw_gtpv2c_ulp_api_t * pUlpApi)
 {
   /** Get the failed transaction. */
-  /** Check the message type. */
-  OAILOG_FUNC_IN (LOG_S11);
-
   nw_gtpv2c_msg_type_t msgType = pUlpApi->u_api_info.rspFailureInfo.msgType;
   MessageDef * message_p = NULL;
   switch(msgType){
@@ -570,17 +567,15 @@ s11_mme_handle_ulp_error_indicatior(
       ind_p->cause.cause_value = SYSTEM_FAILURE; /**< Would mean that this message either did not come at all or could not be dealt with properly. */
   }
   /** Send this one directly to the ESM. */
-  int rc = itti_send_msg_to_task (TASK_NAS_ESM, INSTANCE_DEFAULT, message_p);
-  OAILOG_FUNC_RETURN (LOG_S11, rc);
+  return itti_send_msg_to_task (TASK_NAS_ESM, INSTANCE_DEFAULT, message_p);
 
   default:
     OAILOG_ERROR (LOG_S10, "Received an unhandled error indicator for the local S11-TEID " TEID_FMT " and message type %d. \n",
         pUlpApi->u_api_info.rspFailureInfo.teidLocal, pUlpApi->u_api_info.rspFailureInfo.msgType);
-    OAILOG_FUNC_RETURN (LOG_S11, RETURNerror);
+    return RETURNerror;
   }
   OAILOG_WARNING (LOG_S10, "Received an error indicator for the local S11-TEID " TEID_FMT " and message type %d. \n",
       pUlpApi->u_api_info.rspFailureInfo.teidLocal, pUlpApi->u_api_info.rspFailureInfo.msgType);
-  int rc = itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
-  OAILOG_FUNC_RETURN (LOG_S11, rc);
+  return itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }
 

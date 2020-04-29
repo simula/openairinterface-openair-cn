@@ -515,7 +515,7 @@ void nas_delete_tau_procedure(struct emm_data_context_s *emm_context)
   if (proc) {
     // free content
     mme_ue_s1ap_id_t      ue_id = emm_context->ue_id;
-    OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete TAU procedure\n", ue_id);
+    OAILOG_DEBUG(LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete TAU procedure\n", ue_id);
     void *unused = NULL;
     nas_stop_T3450(ue_id, &proc->T3450, unused);
     if (proc->ies) {
@@ -524,7 +524,8 @@ void nas_delete_tau_procedure(struct emm_data_context_s *emm_context)
     if (proc->esm_msg_out) {
       bdestroy_wrapper(&proc->esm_msg_out);
     }
-    nas_stop_T_retry_specific_procedure(emm_context->ue_id, &proc->emm_spec_proc.retry_timer, unused);
+    unused = NULL;
+    nas_stop_T_retry_specific_procedure(ue_id, &proc->emm_spec_proc.retry_timer, unused);
     OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " stopped the retry timer for TAU procedure\n", ue_id);
 
     nas_delete_child_procedures(emm_context, (nas_emm_base_proc_t *)proc);
@@ -613,7 +614,7 @@ void nas_delete_cn_procedure(struct emm_data_context_s *emm_context, nas_emm_cn_
             break;
           default:;
         }
-        OAILOG_TRACE (LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete CN procedure %p\n", emm_context->ue_id, p1->proc);
+        OAILOG_DEBUG(LOG_NAS_EMM, "UE " MME_UE_S1AP_ID_FMT " Delete CN procedure %p\n", emm_context->ue_id, p1->proc);
         LIST_REMOVE(p1, entries);
         free_wrapper((void**)&p1);
         return;

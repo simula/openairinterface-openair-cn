@@ -406,11 +406,11 @@ int emm_proc_attach_request (
       emm_sap_send (&emm_sap);
 
       /** Set the new attach procedure into pending mode and continue with it after the completion of the duplicate removal. */
-      void *unused = NULL;
       _emm_proc_create_procedure_attach_request(new_emm_ue_ctx, ies, _emm_attach_retry_procedure);
       nas_emm_attach_proc_t * attach_proc = get_nas_specific_procedure_attach(new_emm_ue_ctx);
-      nas_stop_T_retry_specific_procedure(new_emm_ue_ctx->ue_id, &attach_proc->emm_spec_proc.retry_timer, unused);
-      nas_start_T_retry_specific_procedure(new_emm_ue_ctx->ue_id, &attach_proc->emm_spec_proc.retry_timer, attach_proc->emm_spec_proc.retry_cb, (void*)new_emm_ue_ctx->ue_id);
+      void *unused = NULL;
+      nas_stop_T_retry_specific_procedure(ue_id, &attach_proc->emm_spec_proc.retry_timer, unused);
+      nas_start_T_retry_specific_procedure(ue_id, &attach_proc->emm_spec_proc.retry_timer, attach_proc->emm_spec_proc.retry_cb);
       /** Set the old mme_ue_s1ap id which will be checked. */
       attach_proc->emm_spec_proc.old_ue_id = old_ue_id;
       *duplicate_emm_ue_ctx_pP = NULL;
@@ -437,10 +437,10 @@ int emm_proc_attach_request (
   _emm_proc_create_procedure_attach_request(new_emm_ue_ctx, ies, _emm_attach_retry_procedure);
   if((*duplicate_emm_ue_ctx_pP)){
     /** Set the new attach procedure into pending mode and continue with it after the completion of the duplicate removal. */
-    void *unused = NULL;
     nas_emm_attach_proc_t * attach_proc = get_nas_specific_procedure_attach(new_emm_ue_ctx);
-    nas_stop_T_retry_specific_procedure(new_emm_ue_ctx->ue_id, &attach_proc->emm_spec_proc.retry_timer, unused);
-    nas_start_T_retry_specific_procedure(new_emm_ue_ctx->ue_id, &attach_proc->emm_spec_proc.retry_timer, attach_proc->emm_spec_proc.retry_cb, (void*)new_emm_ue_ctx->ue_id);
+    void *unused = NULL;
+    nas_stop_T_retry_specific_procedure(ue_id, &attach_proc->emm_spec_proc.retry_timer, unused);
+    nas_start_T_retry_specific_procedure(ue_id, &attach_proc->emm_spec_proc.retry_timer, attach_proc->emm_spec_proc.retry_cb);
     /** Set the old mme_ue_s1ap id which will be checked. */
     attach_proc->emm_spec_proc.old_ue_id =(*duplicate_emm_ue_ctx_pP)->ue_id;
     /*
@@ -1267,6 +1267,15 @@ static int _emm_attach_retry_procedure(mme_ue_s1ap_id_t ue_id){
   OAILOG_WARNING(LOG_NAS_EMM, "EMM-PROC  - No old EMM/UE context exists for ue_id=" MME_UE_S1AP_ID_FMT ". Continuing with attach procedure for new ueId " MME_UE_S1AP_ID_FMT ". \n",
       attach_proc->emm_spec_proc.old_ue_id, emm_context->ue_id);
 
+
+  /** Invalidate the timer of the specific procedure. */
+  if(is_nas_specific_procedure_attach_running(emm_context)){
+	  nas_emm_attach_proc_t                  *attach_proc = get_nas_specific_procedure_attach(emm_context);
+	  /** Invalidate the timer of the attach procedure. */
+	  OAILOG_DEBUG(LOG_NAS_EMM, "Setting retry-timer (%lx) of attach procedure of UE " MME_UE_S1AP_ID_FMT " to invalid.\n", attach_proc->emm_spec_proc.retry_timer.id, ue_id);
+	  /** Invalidate the retry timer and don't try to remove it. */
+	  attach_proc->emm_spec_proc.retry_timer.id = NAS_TIMER_INACTIVE_ID;
+  }
 
   rc = _emm_attach_run_procedure(emm_context);
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);

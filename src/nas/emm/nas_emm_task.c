@@ -144,10 +144,10 @@ static void *nas_emm_intertask_interface (void *args_p)
 
     case TIMER_HAS_EXPIRED:{
         /*
-         * Call the NAS timer api
+         * Call the NAS timer callback handler. The handler must set timer to invalid, not to remove another timer.
+         * Afterwards free the argument.
          */
-        nas_timer_handle_signal_expiry (TIMER_HAS_EXPIRED (received_message_p).timer_id, TIMER_HAS_EXPIRED (received_message_p).arg);
-        free_wrapper((void**)&TIMER_HAS_EXPIRED (received_message_p).arg);
+        nas_timer_handle_signal_expiry (TIMER_HAS_EXPIRED (received_message_p).timer_id, &TIMER_HAS_EXPIRED (received_message_p).arg);
       }
       break;
 

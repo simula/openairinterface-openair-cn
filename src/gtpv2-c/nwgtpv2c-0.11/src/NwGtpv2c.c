@@ -1322,7 +1322,7 @@ static nw_rc_t                            nwGtpv2cHandleUlpFindLocalTunnel (
       }
       rc = nwGtpv2cSendTriggeredRspIndToUlp (thiz, &error, keyTrxn.seqNum, &trx_flags, localPort, peerPort, peerIp, hUlpTunnel, msgType, noDelete, hMsg);
       if(remove && !(trx_flags & INTERNAL_LATE_RESPONS_IND)){
-    	  OAILOG_WARNING (LOG_GTPV2C,  "Removing the initial request transaction for message type %d, seqNo %x in conclusion (not late response). \n",
+    	  OAILOG_DEBUG(LOG_GTPV2C,  "Removing the initial request transaction for message type %d, seqNo %x in conclusion (not late response). \n",
     			  msgType, keyTrxn.seqNum);
     	  /** Remove the transaction. */
     	  RB_REMOVE (NwGtpv2cOutstandingTxSeqNumTrxnMap, &(thiz->outstandingTxSeqNumMap), pTrxn);
@@ -2088,7 +2088,7 @@ static nw_rc_t                            nwGtpv2cHandleUlpFindLocalTunnel (
       if (NW_OK != rc) {
         OAILOG_ERROR(LOG_GTPV2C, "Stopping active timer 0x%" PRIxPTR " for info 0x%p failed!\n", timeoutInfo->hTimer, timeoutInfo);
       }else
-    	  OAILOG_INFO (LOG_GTPV2C, "Stopped active timer 0x%" PRIxPTR " for info 0x%p!\n", timeoutInfo->hTimer, timeoutInfo);
+    	  OAILOG_DEBUG(LOG_GTPV2C, "Stopped active timer 0x%" PRIxPTR " for info 0x%p!\n", timeoutInfo->hTimer, timeoutInfo);
       OAI_GCC_DIAG_OFF(int-to-pointer-cast);
       timeoutInfo = nwGtpv2cTmrMinHeapPeek ((NwGtpv2cTmrMinHeapT *)thiz->hTmrMinHeap);
       OAI_GCC_DIAG_ON(int-to-pointer-cast);

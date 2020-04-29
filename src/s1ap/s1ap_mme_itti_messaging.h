@@ -36,6 +36,12 @@ int s1ap_mme_itti_send_sctp_request(STOLEN_REF bstring *payload,
                                     const sctp_stream_id_t stream,
                                     const mme_ue_s1ap_id_t ue_id);
 
+//------------------------------------------------------------------------------
+void
+s1ap_mme_itti_send_sctp_shutdown(
+  const sctp_assoc_id_t assoc_id);
+
+//------------------------------------------------------------------------------
 int s1ap_mme_itti_nas_uplink_ind(const mme_ue_s1ap_id_t ue_id,
                                  STOLEN_REF bstring *payload,
                                  const tai_t      *const tai,

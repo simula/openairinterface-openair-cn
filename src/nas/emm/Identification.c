@@ -252,9 +252,9 @@ emm_proc_identification_complete (
           if(imsi_emm_ctx_duplicate->ue_id != emm_ctx->ue_id){
 			  OAILOG_INFO (LOG_NAS_EMM, "EMM-PROC  - We already have EMM context with ueId " MME_UE_S1AP_ID_FMT " and IMSI " IMSI_64_FMT ". Setting new EMM context with ueId " MME_UE_S1AP_ID_FMT " into pending mode "
 				  "and implicitly detaching old EMM context. \n", imsi_emm_ctx_duplicate->ue_id, imsi64, emm_ctx->ue_id);
-			  void * unused= NULL;
-			  nas_stop_T_retry_specific_procedure(emm_ctx->ue_id, &((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_timer, unused);
-			  nas_start_T_retry_specific_procedure(emm_ctx->ue_id, &((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_timer, ((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_cb, (void*)emm_ctx->ue_id);
+			  void *unused = NULL;
+			  nas_stop_T_retry_specific_procedure(ue_id, &((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_timer, unused);
+			  nas_start_T_retry_specific_procedure(ue_id, &((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_timer, ((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_cb);
 			  /** Set the old mme_ue_s1ap id which will be checked. */
 			  ((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->old_ue_id = imsi_emm_ctx_duplicate->ue_id;
 			  /*
@@ -301,10 +301,9 @@ emm_proc_identification_complete (
               "and implicitly removing old MME_APP UE context. \n", ue_context_duplicate_imsi->privates.mme_ue_s1ap_id, imsi64, emm_ctx->ue_id);
 
           nas_itti_esm_detach_ind(ue_context_duplicate_imsi->privates.mme_ue_s1ap_id, false);
-
-          void * unused= NULL;
-          nas_stop_T_retry_specific_procedure(emm_ctx->ue_id, &((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_timer, unused);
-          nas_start_T_retry_specific_procedure(emm_ctx->ue_id, &((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_timer, ((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_cb, (void*)emm_ctx->ue_id);
+          void *unused = NULL;
+          nas_stop_T_retry_specific_procedure(ue_id, &((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_timer, unused);
+          nas_start_T_retry_specific_procedure(ue_id, &((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_timer, ((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->retry_cb);
           /** Set the old mme_ue_s1ap id which will be checked. */
           ((nas_emm_specific_proc_t*)(((nas_emm_base_proc_t *)ident_proc)->parent))->old_ue_id = ue_context_duplicate_imsi->privates.mme_ue_s1ap_id;
 

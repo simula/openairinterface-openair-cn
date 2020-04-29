@@ -827,7 +827,7 @@ static void  _authentication_t3460_handler (void *args)
      */
     REQUIREMENT_3GPP_24_301(R10_5_4_2_7_b);
     // TODO the network shall abort any ongoing EMM specific procedure.
-
+    auth_proc->T3460.id = NAS_TIMER_INACTIVE_ID;
     auth_proc->retransmission_count += 1;
     OAILOG_WARNING (LOG_NAS_EMM, "EMM-PROC  - T3460 timer expired, retransmission " "counter = %d\n", auth_proc->retransmission_count);
 

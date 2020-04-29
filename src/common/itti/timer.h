@@ -29,6 +29,10 @@
 typedef enum timer_type_s {
   TIMER_PERIODIC,
   TIMER_ONE_SHOT,
+
+  // todo: test this!
+  TIMER_ONE_SHOT_RETRY,
+
   TIMER_TYPE_MAX,
 } timer_type_t;
 

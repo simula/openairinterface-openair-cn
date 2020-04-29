@@ -116,7 +116,8 @@ int mme_app_compare_plmn (
       /*
        * There is a matching plmn
        */
-      return TA_LIST_AT_LEAST_ONE_MATCH;
+      mme_config_unlock (&mme_config);
+    	return TA_LIST_AT_LEAST_ONE_MATCH;
   }
 
   mme_config_unlock (&mme_config);
@@ -215,9 +216,6 @@ static void mme_config_init (mme_config_t * config_pP)
   config_pP->ip.s10_mme_v4.s_addr = INADDR_ANY;
   config_pP->ip.s10_mme_v6 = in6addr_any;
   config_pP->ip.port_s10 = 2123;
-  config_pP->ip.s10_mme_v4.s_addr = INADDR_ANY;
-  config_pP->ip.s10_mme_v6 = in6addr_any;
-  config_pP->ip.port_s10 = 2123;
 
   config_pP->s6a_config.conf_file = bfromcstr(S6A_CONF_FILE);
   config_pP->itti_config.queue_size = ITTI_QUEUE_MAX_ELEMENTS;
@@ -240,9 +238,9 @@ static void mme_config_init (mme_config_t * config_pP)
   config_pP->gummei.gummei[0].plmn.mcc_digit1 = 0;
   config_pP->gummei.gummei[0].plmn.mcc_digit2 = 0;
   config_pP->gummei.gummei[0].plmn.mcc_digit3 = 1;
-  config_pP->gummei.gummei[0].plmn.mcc_digit1 = 0;
-  config_pP->gummei.gummei[0].plmn.mcc_digit2 = 1;
-  config_pP->gummei.gummei[0].plmn.mcc_digit3 = 0x0F;
+  config_pP->gummei.gummei[0].plmn.mnc_digit1 = 0;
+  config_pP->gummei.gummei[0].plmn.mnc_digit2 = 1;
+  config_pP->gummei.gummei[0].plmn.mnc_digit3 = 0x0F;
 
   config_pP->nas_config.t3346_sec = T3346_DEFAULT_VALUE;
   config_pP->nas_config.t3402_min = T3402_DEFAULT_VALUE;
@@ -853,26 +851,26 @@ static int mme_config_parse_file (mme_config_t * config_pP)
             in_addr_var.s_addr = config_pP->ip.s11_mme_v4.s_addr;
             OAILOG_INFO (LOG_MME_APP, "Parsing configuration file found S11: %s/%d on %s\n",
             		inet_ntoa (in_addr_var), config_pP->ip.s11_mme_cidrv4, bdata(config_pP->ip.if_name_s11));
+        	}
+        	/** S11: IPv6. */
+        	if(s11_mme_v6) {
+        		config_pP->ip.port_s11 = (uint16_t)aint_s11;
+        		cidr = bfromcstr (s11_mme_v6);
+        		list = bsplit (cidr, '/');
+        		AssertFatal(2 == list->qty, "Bad CIDR address %s", bdata(cidr));
+        		address = list->entry[0];
+        		mask    = list->entry[1];
+        		IPV6_STR_ADDR_TO_INADDR (bdata(address), config_pP->ip.s11_mme_v6, "BAD IPV6 ADDRESS FORMAT FOR S11-MME !\n");
+        		//    	config_pP->ipv6.netmask_s1_mme = atoi ((const char*)mask->data);
+        		bstrListDestroy(list);
+        		//    	  memcpy(in6_addr_var.s6_addr, config_pP->ipv6.s1_mme.s6_addr, 16);
+        		char strv6[16];
+        		OAILOG_INFO (LOG_MME_APP, "Parsing configuration file found S11-MME: %s/%d on %s\n",
+        				inet_ntop(AF_INET6, &in6_addr_var, strv6, 16), config_pP->ip.s11_mme_cidrv6, bdata(config_pP->ip.if_name_s11));
+        		bdestroy_wrapper(&cidr);
+        		//      	config_pP->ipv6.netmask_s11 = atoi ((const char*)mask->data);
+        	}
         }
-        /** S11: IPv6. */
-        if(s11_mme_v6) {
-      	  config_pP->ip.port_s11 = (uint16_t)aint_s11;
-      	  cidr = bfromcstr (s11_mme_v6);
-      	  list = bsplit (cidr, '/');
-      	  AssertFatal(2 == list->qty, "Bad CIDR address %s", bdata(cidr));
-      	  address = list->entry[0];
-      	  mask    = list->entry[1];
-      	  IPV6_STR_ADDR_TO_INADDR (bdata(address), config_pP->ip.s11_mme_v6, "BAD IPV6 ADDRESS FORMAT FOR S11-MME !\n");
-      	  //    	config_pP->ipv6.netmask_s1_mme = atoi ((const char*)mask->data);
-      	  bstrListDestroy(list);
-  //    	  memcpy(in6_addr_var.s6_addr, config_pP->ipv6.s1_mme.s6_addr, 16);
-      	  char strv6[16];
-      	  OAILOG_INFO (LOG_MME_APP, "Parsing configuration file found S11-MME: %s/%d on %s\n",
-      			  inet_ntop(AF_INET6, &in6_addr_var, strv6, 16), config_pP->ip.s11_mme_cidrv6, bdata(config_pP->ip.if_name_s11));
-      	  bdestroy_wrapper(&cidr);
-  //      	config_pP->ipv6.netmask_s11 = atoi ((const char*)mask->data);
-        }
-      }
 
       /** Process Optional Interfaces. */
       /** S10. */

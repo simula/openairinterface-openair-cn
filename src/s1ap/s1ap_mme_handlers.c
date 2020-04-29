@@ -252,6 +252,7 @@ s1ap_mme_generate_s1_setup_failure (
   bstring b = blk2bstr(buffer_p, length);
   free(buffer_p);
   rc =  s1ap_mme_itti_send_sctp_request (&b, assoc_id, 0, INVALID_MME_UE_S1AP_ID);
+  s1ap_mme_itti_send_sctp_shutdown(assoc_id);
   OAILOG_FUNC_RETURN (LOG_S1AP, rc);
 }
 
@@ -341,7 +342,7 @@ s1ap_mme_handle_s1_setup_request (
     max_s1_enb_connected = mme_config.max_s1_enbs;
     mme_config_unlock (&mme_config);
 
-    if (nb_enb_associated >= max_s1_enb_connected) {
+    if (nb_enb_associated > max_s1_enb_connected) {
       OAILOG_ERROR (LOG_S1AP, "There is too much eNB connected to MME, rejecting the association\n");
       OAILOG_DEBUG (LOG_S1AP, "Connected = %d, maximum allowed = %d\n", nb_enb_associated, max_s1_enb_connected);
       /*
@@ -418,7 +419,12 @@ s1ap_mme_handle_s1_setup_request (
         /** Also remove the old eNB. */
         OAILOG_INFO(LOG_S1AP, "Rejecting the old eNB connection for eNB id %d and old assoc_id: %d\n", enb_id, assoc_id);
         s1ap_dump_enb_list();
+  			s1ap_mme_itti_send_sctp_shutdown(enb_association->sctp_assoc_id);
+
+  			/** Remove the old and new MCEs. */
         s1ap_handle_sctp_disconnection(enb_association->sctp_assoc_id, false);
+        s1ap_handle_sctp_disconnection(assoc_id, false);
+
         OAILOG_FUNC_RETURN (LOG_S1AP, RETURNerror);
       }
 
@@ -750,12 +756,17 @@ s1ap_mme_handle_initial_context_setup_response (
   S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_InitialContextSetupResponseIEs_t, ie, container,
                              S1AP_ProtocolIE_ID_id_E_RABFailedToSetupListBearerSURes, false);
   if (ie) {
-    S1AP_E_RABList_t *s1ap_e_rab_list = &ie->value.choice.E_RABList;
-    for (int index = 0; index < s1ap_e_rab_list->list.count; index++) {
-      S1AP_E_RABItem_t * erab_item = (S1AP_E_RABItem_t *)s1ap_e_rab_list->list.array[index];
-      initial_context_setup_rsp->e_rab_release_list.item[initial_context_setup_rsp->e_rab_release_list.no_of_items].e_rab_id  = erab_item->e_RAB_ID;
-      initial_context_setup_rsp->e_rab_release_list.item[initial_context_setup_rsp->e_rab_release_list.no_of_items].cause     = erab_item->cause;
-      initial_context_setup_rsp->e_rab_release_list.no_of_items++;
+    const S1AP_E_RABList_t * const e_rab_failed_list = &ie->value.choice.E_RABList;
+    for (int index = 0; index < e_rab_failed_list->list.count; index++) {
+
+   	  const S1AP_E_RABItemIEs_t * const erab_item_ies = (S1AP_E_RABItemIEs_t *)e_rab_failed_list->list.array[index];
+   	  const S1AP_E_RABItem_t * const erab_item = (S1AP_E_RABItem_t *)&erab_item_ies->value.choice.E_RABItem;
+
+   	  initial_context_setup_rsp->e_rab_release_list.item[initial_context_setup_rsp->e_rab_release_list.no_of_items].e_rab_id  = erab_item->e_RAB_ID;
+   	  initial_context_setup_rsp->e_rab_release_list.item[initial_context_setup_rsp->e_rab_release_list.no_of_items].cause     = erab_item->cause;
+   	  initial_context_setup_rsp->e_rab_release_list.no_of_items++;
+
+   	  OAILOG_DEBUG (LOG_S1AP, "RECEIVED FAILED DEFAULT BEARER with ebi (%d).\n", erab_item->e_RAB_ID);
     }
   }
 //
@@ -1006,7 +1017,6 @@ s1ap_mme_generate_ue_context_release_command (
     OAILOG_DEBUG (LOG_S1AP, "No UE reference exists for UE id " MME_UE_S1AP_ID_FMT ". Continuing with release complete acknowledge. \n", mme_ue_s1ap_id);
     message_p = itti_alloc_new_message (TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
     AssertFatal (message_p != NULL, "itti_alloc_new_message Failed");
-    memset ((void *)&message_p->ittiMsg.s1ap_ue_context_release_complete, 0, sizeof (itti_s1ap_ue_context_release_complete_t));
 
     /** Notify the MME_APP layer that error handling context removals can continue. */
     S1AP_UE_CONTEXT_RELEASE_COMPLETE (message_p).mme_ue_s1ap_id = mme_ue_s1ap_id;
@@ -1055,12 +1065,17 @@ s1ap_handle_ue_context_release_command (
    */
   if (ue_context_release_command_pP->cause == S1AP_IMPLICIT_CONTEXT_RELEASE ||
       ue_context_release_command_pP->cause == S1AP_SCTP_SHUTDOWN_OR_RESET) {
-    s1ap_remove_ue (ue_ref_p);
+
+	if(ue_context_release_command_pP->cause == S1AP_IMPLICIT_CONTEXT_RELEASE){
+		rc = s1ap_mme_generate_ue_context_release_command (ue_ref_p, ue_context_release_command_pP->mme_ue_s1ap_id, S1AP_SYSTEM_FAILURE, enb_ref_p);
+	}
+	if(ue_context_release_command_pP->cause == S1AP_SCTP_SHUTDOWN_OR_RESET || rc != RETURNok){
+		s1ap_remove_ue (ue_ref_p);
+	}
     /** Send release complete back to proceed with the detach procedure. */
     OAILOG_DEBUG (LOG_S1AP, "Removed UE reference for ueId " MME_UE_S1AP_ID_FMT " implicitly. Continuing with release complete. \n", ue_context_release_command_pP->mme_ue_s1ap_id);
     message_p = itti_alloc_new_message (TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
     AssertFatal (message_p != NULL, "itti_alloc_new_message Failed");
-    memset ((void *)&message_p->ittiMsg.s1ap_ue_context_release_complete, 0, sizeof (itti_s1ap_ue_context_release_complete_t));
 
     /** Notify the MME_APP layer that error handling context removals can continue. */
     S1AP_UE_CONTEXT_RELEASE_COMPLETE (message_p).mme_ue_s1ap_id = ue_context_release_command_pP->mme_ue_s1ap_id;
@@ -1277,7 +1292,7 @@ s1ap_mme_handle_path_switch_request (
   enb_ue_s1ap_id = (enb_ue_s1ap_id_t) (ie->value.choice.ENB_UE_S1AP_ID & ENB_UE_S1AP_ID_MASK);
 
 
-  OAILOG_DEBUG (LOG_S1AP, "Path Switch Request message received from eNB UE S1AP ID: " ENB_UE_S1AP_ID_FMT "\n", enb_ue_s1ap_id);
+  OAILOG_INFO (LOG_S1AP, "Path Switch Request message received from eNB UE S1AP ID: " ENB_UE_S1AP_ID_FMT "\n", enb_ue_s1ap_id);
 
   if ((ue_ref_p = s1ap_is_ue_mme_id_in_list (mme_ue_s1ap_id)) == NULL) {
     /*
@@ -1286,11 +1301,11 @@ s1ap_mme_handle_path_switch_request (
      * * * * as described in TS 36.413 [11].
      * * * * TODO
      */
-    OAILOG_DEBUG (LOG_S1AP, "MME UE S1AP ID provided by eNB doesn't point to any valid UE: " MME_UE_S1AP_ID_FMT "\n", enb_ue_s1ap_id);
+    OAILOG_ERROR(LOG_S1AP, "MME UE S1AP ID provided by eNB doesn't point to any valid UE: " MME_UE_S1AP_ID_FMT "\n", enb_ue_s1ap_id);
     s1ap_send_path_switch_request_failure(assoc_id, mme_ue_s1ap_id, enb_ue_s1ap_id, S1AP_Cause_PR_nas);
   } else {
     /** The enb_ue_s1ap_id will change! **/
-    OAILOG_DEBUG (LOG_S1AP, "Removed old ue_reference before handover for MME UE S1AP ID " MME_UE_S1AP_ID_FMT "\n", (uint32_t) ue_ref_p->mme_ue_s1ap_id);
+    OAILOG_INFO (LOG_S1AP, "Removed old ue_reference before handover for MME UE S1AP ID " MME_UE_S1AP_ID_FMT "\n", (uint32_t) ue_ref_p->mme_ue_s1ap_id);
     s1ap_remove_ue (ue_ref_p);
 
     /*
@@ -2395,9 +2410,15 @@ s1ap_mme_handle_erab_setup_response (
       S1AP_ProtocolIE_ID_id_E_RABFailedToSetupListBearerSURes, false);
   if (ie) {
     int num_erab = ie->value.choice.E_RABList.list.count;
+  	const S1AP_E_RABList_t * const e_rab_failed_list = &ie->value.choice.E_RABList;
     for (int index = 0; index < num_erab; index++) {
-      S1AP_E_RABItem_t * erab_item = (S1AP_E_RABItem_t *)ie->value.choice.E_RABList.list.array[index];
+
+      const S1AP_E_RABItemIEs_t * const erab_item_ies = (S1AP_E_RABItemIEs_t *)e_rab_failed_list->list.array[index];
+      const S1AP_E_RABItem_t * const erab_item = (S1AP_E_RABItem_t *)&erab_item_ies->value.choice.E_RABItem;
+
+      // S1ap_E_RABItemIEs_t * erab_item = (S1ap_E_RABItemIEs_t *)ie->value.choice.E_RABList.list.array[index];
       S1AP_E_RAB_SETUP_RSP (message_p).e_rab_failed_to_setup_list.item[index].e_rab_id = erab_item->e_RAB_ID;
+      OAILOG_DEBUG (LOG_S1AP, "RECEIVED FAILED DEDICATED BEARER with ebi (%d).\n", erab_item->e_RAB_ID);
       S1AP_E_RAB_SETUP_RSP (message_p).e_rab_failed_to_setup_list.item[index].cause = erab_item->cause;
       S1AP_E_RAB_SETUP_RSP (message_p).e_rab_failed_to_setup_list.no_of_items += 1;
     }
@@ -2628,16 +2649,20 @@ s1ap_mme_handle_ue_context_rel_comp_timer_expiry (void *arg)
   /*
    * Remove UE context and inform MME_APP.
    */
-  message_p = itti_alloc_new_message (TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
-  AssertFatal (message_p != NULL, "itti_alloc_new_message Failed");
-  memset ((void *)&message_p->ittiMsg.s1ap_ue_context_release_complete, 0, sizeof (itti_s1ap_ue_context_release_complete_t));
-  S1AP_UE_CONTEXT_RELEASE_COMPLETE (message_p).mme_ue_s1ap_id = ue_ref_p->mme_ue_s1ap_id;
-  MSC_LOG_TX_MESSAGE (MSC_S1AP_MME, MSC_MMEAPP_MME, NULL, 0, "0 S1AP_UE_CONTEXT_RELEASE_COMPLETE mme_ue_s1ap_id " MME_UE_S1AP_ID_FMT " ", S1AP_UE_CONTEXT_RELEASE_COMPLETE (message_p).mme_ue_s1ap_id);
-  itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
-  DevAssert(ue_ref_p->s1_ue_state == S1AP_UE_WAITING_CRR);
-  OAILOG_DEBUG (LOG_S1AP, "Removed S1AP UE " MME_UE_S1AP_ID_FMT "\n", (uint32_t) ue_ref_p->mme_ue_s1ap_id);
-  s1ap_remove_ue (ue_ref_p);
-  OAILOG_FUNC_OUT (LOG_S1AP);
+  if(ue_ref_p->s1_ue_state == S1AP_UE_WAITING_CRR){
+	message_p = itti_alloc_new_message (TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_COMPLETE);
+	AssertFatal (message_p != NULL, "itti_alloc_new_message Failed");
+	S1AP_UE_CONTEXT_RELEASE_COMPLETE (message_p).mme_ue_s1ap_id = ue_ref_p->mme_ue_s1ap_id;
+	MSC_LOG_TX_MESSAGE (MSC_S1AP_MME, MSC_MMEAPP_MME, NULL, 0, "0 S1AP_UE_CONTEXT_RELEASE_COMPLETE mme_ue_s1ap_id " MME_UE_S1AP_ID_FMT " ", S1AP_UE_CONTEXT_RELEASE_COMPLETE (message_p).mme_ue_s1ap_id);
+	itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+	OAILOG_INFO(LOG_S1AP, "Removed S1AP UE " MME_UE_S1AP_ID_FMT " after timeout of UE Context Release complete. \n", (uint32_t) ue_ref_p->mme_ue_s1ap_id);
+	s1ap_remove_ue (ue_ref_p);
+	OAILOG_FUNC_OUT (LOG_S1AP);
+  } else {
+	OAILOG_ERROR(LOG_S1AP, "S1AP UE " MME_UE_S1AP_ID_FMT " with eNB-UE-S1AP-ID " ENB_UE_S1AP_ID_FMT " was not in waiting CRR state, instead (%d). Not removing.\n",
+		ue_ref_p->mme_ue_s1ap_id, ue_ref_p->enb_ue_s1ap_id, ue_ref_p->s1_ue_state);
+	OAILOG_FUNC_OUT (LOG_S1AP);
+  }
 }
 
 //------------------------------------------------------------------------------

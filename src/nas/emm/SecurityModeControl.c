@@ -577,7 +577,8 @@ static void _security_t3460_handler  (void *args)
     /*
      * Increment the retransmission counter
      */
-    smc_proc->retransmission_count += 1;
+	smc_proc->T3460.id = NAS_TIMER_INACTIVE_ID;
+	smc_proc->retransmission_count += 1;
     OAILOG_WARNING (LOG_NAS_EMM, "EMM-PROC  - T3460 timer expired, retransmission " "counter = %d\n", smc_proc->retransmission_count);
 
     if (SECURITY_COUNTER_MAX > smc_proc->retransmission_count) {

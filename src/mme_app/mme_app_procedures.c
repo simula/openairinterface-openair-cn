@@ -286,8 +286,8 @@ static int remove_s10_tunnel_endpoint(struct ue_context_s * ue_context, struct s
   int             rc = RETURNerror;
 //  /** Removed S10 tunnel endpoint. */
   if(ue_context->privates.fields.local_mme_teid_s10 == (teid_t)0){
-    OAILOG_ERROR (LOG_MME_APP, "UE with ueId " MME_UE_S1AP_ID_FMT " has no local S10 teid. Not triggering tunnel removal. \n", ue_context->privates.mme_ue_s1ap_id);
-    OAILOG_FUNC_RETURN(LOG_MME_APP, rc);
+    OAILOG_WARNING(LOG_MME_APP, "UE with ueId " MME_UE_S1AP_ID_FMT " has no local S10 teid. Not triggering tunnel removal. \n", ue_context->privates.mme_ue_s1ap_id);
+    OAILOG_FUNC_RETURN(LOG_MME_APP, RETURNok);
   }
   rc = mme_app_remove_s10_tunnel_endpoint(ue_context->privates.fields.local_mme_teid_s10, peer_ip);
   /** Deregister the key. */
@@ -356,15 +356,20 @@ mme_app_handle_mme_s10_handover_completion_timer_expiry (mme_app_s10_proc_mme_ha
       "Performing S1AP UE Context Release Command and successive NAS implicit detach. \n", ue_context->privates.mme_ue_s1ap_id);
   s10_proc_mme_handover->proc.timer.id = MME_APP_TIMER_INACTIVE_ID;
 
-  /** Check if an NAS context exists (this might happen if a TAU_COMPLETE has not arrived or arrived and was discarded due security reasons. */
+  /** Check if an NAS context exists (this might happen if a TAU_COMPLETE or Update-Location-Response has not arrived or arrived and was discarded due security reasons. */
   emm_data_context_t * emm_context = emm_data_context_get(&_emm_data, ue_context->privates.mme_ue_s1ap_id);
   if(emm_context){
     OAILOG_WARNING (LOG_MME_APP, " **** ABNORMAL **** An EMM context for UE " MME_UE_S1AP_ID_FMT " exists. Performing implicit detach due time out of handover completion timer! \n", ue_context->privates.mme_ue_s1ap_id);
-    /** Check if the CLR flag has been set. */
+
+    /** Remove the MME_APP procedure. */
+    mme_app_delete_s10_procedure_mme_handover(ue_context);
+
     message_p = itti_alloc_new_message (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND);
     DevAssert (message_p != NULL);
     message_p->ittiMsg.nas_implicit_detach_ue_ind.ue_id = ue_context->privates.mme_ue_s1ap_id; /**< We don't send a Detach Type such that no Detach Request is sent to the UE if handover is performed. */
 
+    message_p->ittiMsg.nas_implicit_detach_ue_ind.emm_cause = EMM_CAUSE_NETWORK_FAILURE;
+    message_p->ittiMsg.nas_implicit_detach_ue_ind.detach_type = 0x01; // Re-Attach required: If handover failed on the target side, trigger a new attach.
     MSC_LOG_TX_MESSAGE (MSC_MMEAPP_MME, MSC_NAS_MME, NULL, 0, "0 NAS_IMPLICIT_DETACH_UE_IND_MESSAGE");
     itti_send_msg_to_task (TASK_NAS_EMM, INSTANCE_DEFAULT, message_p);
     OAILOG_FUNC_OUT (LOG_MME_APP);
@@ -403,13 +408,16 @@ mme_app_handle_mobility_completion_timer_expiry (mme_app_s10_proc_mme_handover_t
   DevAssert (ue_context != NULL);
   MessageDef                             *message_p = NULL;
   OAILOG_INFO (LOG_MME_APP, "Expired- MME Handover Completion timer for UE " MME_UE_S1AP_ID_FMT " run out. \n", ue_context->privates.mme_ue_s1ap_id);
+
+  /** Set the timer to idle. */
+  s10_proc_mme_handover->proc.timer.id = MME_APP_TIMER_INACTIVE_ID;
+
   /*
    * This timer is only expired in the inter-MME handover case for the source MME.
    * The timer will be stopped when successfully the S10 Forward Relocation Completion message arrives.
    */
   if(s10_proc_mme_handover->pending_clear_location_request){
     OAILOG_INFO (LOG_MME_APP, "CLR flag is set for UE " MME_UE_S1AP_ID_FMT ". Performing implicit detach. \n", ue_context->privates.mme_ue_s1ap_id);
-    s10_proc_mme_handover->proc.timer.id = MME_APP_TIMER_INACTIVE_ID;
     ue_context->privates.s1_ue_context_release_cause = S1AP_NAS_DETACH;
     /** Check if the CLR flag has been set. */
     message_p = itti_alloc_new_message (TASK_MME_APP, NAS_IMPLICIT_DETACH_UE_IND);
@@ -551,7 +559,7 @@ mme_app_s10_proc_mme_handover_t* mme_app_create_s10_procedure_mme_handover(struc
        * S10 FW Relocation Complete removes this timer.
        */
     } else {
-      OAILOG_DEBUG (LOG_MME_APP, "MME APP : Activated the MME Mobility Completion timer for the source MME for UE id  " MME_UE_S1AP_ID_FMT ". "
+      OAILOG_DEBUG (LOG_MME_APP, "MME APP : Activated the MME Mobility Completion timer for the source MME for UE id " MME_UE_S1AP_ID_FMT ". "
           "Waiting for UE to go back from IDLE mode to ACTIVE mode.. Timer Id %u. Timer duration %d \n",
           ue_context->privates.mme_ue_s1ap_id, s10_proc_mme_handover->proc.timer.id, (mme_config.mme_mobility_completion_timer * 1));
       /** Upon expiration, invalidate the timer.. no flag needed. */
@@ -660,10 +668,10 @@ void mme_app_delete_s10_procedure_mme_handover(struct ue_context_s * const ue_co
         /** Check if a timer is running, if so remove the timer. */
         if(s10_proc->timer.id != MME_APP_TIMER_INACTIVE_ID){
           if (timer_remove(s10_proc->timer.id, NULL)) {
-            OAILOG_ERROR (LOG_MME_APP, "Failed to stop the procedure timer for -MMME handover for UE id  %d \n", ue_context->privates.mme_ue_s1ap_id);
+            OAILOG_ERROR (LOG_MME_APP, "Failed to stop the procedure timer (%lx) for MME handover for UE id  %d \n", s10_proc->timer.id, ue_context->privates.mme_ue_s1ap_id);
             s10_proc->timer.id = MME_APP_TIMER_INACTIVE_ID;
           }else{
-            OAILOG_DEBUG(LOG_MME_APP, "Successfully removed timer for -MMME handover for UE id  %d \n", ue_context->privates.mme_ue_s1ap_id);
+            OAILOG_DEBUG(LOG_MME_APP, "Successfully removed timer for MME handover for UE id  %d \n", ue_context->privates.mme_ue_s1ap_id);
           }
         }
         s10_proc->timer.id = MME_APP_TIMER_INACTIVE_ID;
@@ -683,7 +691,7 @@ void mme_app_delete_s10_procedure_mme_handover(struct ue_context_s * const ue_co
         /** Check if a timer is running, if so remove the timer. */
         if(s10_proc->timer.id != MME_APP_TIMER_INACTIVE_ID){
           if (timer_remove(s10_proc->timer.id, NULL)) {
-            OAILOG_ERROR (LOG_MME_APP, "Failed to stop the procedure timer for -MMME handover for UE id  %d \n", ue_context->privates.mme_ue_s1ap_id);
+            OAILOG_ERROR (LOG_MME_APP, "Failed to stop the procedure timer (%lx) for -MMME handover for UE id  %d \n", s10_proc->timer.id, ue_context->privates.mme_ue_s1ap_id);
             s10_proc->timer.id = MME_APP_TIMER_INACTIVE_ID;
           }
         }

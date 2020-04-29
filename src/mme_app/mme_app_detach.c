@@ -49,7 +49,7 @@ mme_app_handle_detach_req (
   DevAssert(detach_req_p != NULL);
   ue_context = mme_ue_context_exists_mme_ue_s1ap_id (&mme_app_desc.mme_ue_contexts, detach_req_p->ue_id);
   if (ue_context == NULL) {
-    OAILOG_ERROR (LOG_MME_APP, "UE context doesn't exist for ueId "MME_UE_S1AP_ID_FMT "-> Nothing to do :-) \n", detach_req_p->ue_id);
+    OAILOG_INFO(LOG_MME_APP, "UE context doesn't exist for ueId "MME_UE_S1AP_ID_FMT "-> Nothing to do :-) \n", detach_req_p->ue_id);
     OAILOG_FUNC_OUT (LOG_MME_APP);
   }
 
@@ -91,12 +91,17 @@ mme_app_handle_detach_req (
   if (ECM_IDLE == ue_context->privates.fields.ecm_state) {
     // todo: perform paging, if the UE is in EMM_DEREGISTER_INITIATED! state (MME triggered detach).
     // Notify S1AP to release S1AP UE context locally.
-    OAILOG_DEBUG (LOG_MME_APP, "ECM context for UE with IMSI: " IMSI_64_FMT " and MME_UE_S1AP_ID : " MME_UE_S1AP_ID_FMT " (already idle). \n",
-         ue_context->privates.fields.imsi, ue_context->privates.mme_ue_s1ap_id);
+    OAILOG_INFO(LOG_MME_APP, "ECM context for UE with IMSI: " IMSI_64_FMT " and MME_UE_S1AP_ID : " MME_UE_S1AP_ID_FMT " (already idle). UE-Context s1ap release cause (%d).\n",
+         ue_context->privates.fields.imsi, ue_context->privates.mme_ue_s1ap_id, ue_context->privates.s1_ue_context_release_cause);
     // Free MME UE Context
     if(ue_context->privates.s1_ue_context_release_cause != S1AP_INVALIDATE_NAS){
       /** No context release complete is expected, so directly remove the UE context, too. */
-      mme_app_itti_ue_context_release (ue_context->privates.mme_ue_s1ap_id, ue_context->privates.fields.enb_ue_s1ap_id, S1AP_IMPLICIT_CONTEXT_RELEASE, ue_context->privates.fields.e_utran_cgi.cell_identity.enb_id); /**< Set the signaling connection to ECM_IDLE when the Context-Removal-Completion has arrived. */
+      if(ue_context->privates.enb_s1ap_id_key != INVALID_ENB_UE_S1AP_ID_KEY){
+    	  mme_app_itti_ue_context_release (ue_context->privates.mme_ue_s1ap_id, ue_context->privates.fields.enb_ue_s1ap_id, S1AP_IMPLICIT_CONTEXT_RELEASE, ue_context->privates.fields.e_utran_cgi.cell_identity.enb_id); /**< Set the signaling connection to ECM_IDLE when the Context-Removal-Completion has arrived. */
+      } else {
+    	  OAILOG_INFO(LOG_MME_APP, "ECM context for UE with IMSI: " IMSI_64_FMT " and MME_UE_S1AP_ID : " MME_UE_S1AP_ID_FMT " (already idle). No valid enb Ue s1ap id key exist. Not sending UE Release command. \n",
+    	        ue_context->privates.fields.imsi, ue_context->privates.mme_ue_s1ap_id);
+      }
       mme_remove_ue_context (&mme_app_desc.mme_ue_contexts, ue_context);
     }
     /** UE Context already released from source eNodeB. */
@@ -162,7 +167,7 @@ mme_app_handle_detach_req (
       mme_remove_ue_context (&mme_app_desc.mme_ue_contexts, ue_context);
     }
     else if (ue_context->privates.s1_ue_context_release_cause == S1AP_INVALIDATE_NAS){ /**< Wait for a response. */
-      OAILOG_DEBUG (LOG_MME_APP, "UE context will not be released since only NAS is invalidated for IMSI: " IMSI_64_FMT " and MME_UE_S1AP_ID : %d. \n",
+      OAILOG_WARNING (LOG_MME_APP, "UE context will not be released since only NAS is invalidated for IMSI: " IMSI_64_FMT " and MME_UE_S1AP_ID : %d. \n",
           ue_context->privates.fields.imsi, ue_context->privates.mme_ue_s1ap_id);
       mme_ue_context_update_ue_sig_connection_state (&mme_app_desc.mme_ue_contexts, ue_context, ECM_IDLE);
       // todo: manually release the mme_app_handover procedure // emm_cn_procedure?!

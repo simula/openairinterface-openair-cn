@@ -715,7 +715,7 @@ void  s10_context_req_timer_expiry_handler (void *args)
 //    void * timer_callback_args = NULL;
 //    nas_stop_Ts10_ctx_res(ctx_req_proc->ue_id, &ctx_req_proc->timer_s10, timer_callback_args);
 
-//    ctx_req_proc->timer_s10.id = NAS_TIMER_INACTIVE_ID;
+    ctx_req_proc->timer_s10.id = NAS_TIMER_INACTIVE_ID; /**< Always set the timer to idle. */
       
     /*
      * Notify the failed context request procedure.

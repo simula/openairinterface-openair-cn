@@ -376,7 +376,7 @@ int lowerlayer_activate_bearer_req (
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNerror);
   } else if (emm_data_context->_emm_fsm_state != EMM_REGISTERED){
 	  /** Check if a TAU procedure is ongoing. Set the pending flag for pending QoS. */
-	  OAILOG_ERROR(LOG_NAS_EMM, "EMM context not in EMM_REGISTERED state for UE " MME_UE_S1AP_ID_FMT ". "
+	  OAILOG_INFO(LOG_NAS_EMM, "EMM context not in EMM_REGISTERED state for UE " MME_UE_S1AP_ID_FMT ". "
 			  "Cannot activate bearers. \n", ue_id);
 	  /** Check for an EMM (idle TAU) or S10 handover procedure. */
 	  nas_emm_tau_proc_t * nas_proc_tau = get_nas_specific_procedure_tau(emm_data_context);
@@ -446,7 +446,7 @@ int lowerlayer_modify_bearer_req (
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNerror);
   } else if (emm_data_context->_emm_fsm_state != EMM_REGISTERED){
 	  /** Check if a TAU procedure is ongoing. Set the pending flag for pending QoS. */
-	  OAILOG_ERROR(LOG_NAS_EMM, "EMM context not in EMM_REGISTERED state for UE " MME_UE_S1AP_ID_FMT ". "
+	  OAILOG_INFO(LOG_NAS_EMM, "EMM context not in EMM_REGISTERED state for UE " MME_UE_S1AP_ID_FMT ". "
 				"Cannot modify bearers. \n", ue_id);
 	  /** Only do this for DEREGISTERED state. */
 	  /** Check for an EMM (idle TAU) or S10 handover procedure. */
@@ -519,7 +519,7 @@ int lowerlayer_deactivate_bearer_req (
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNerror);
   } else if (!emm_data_context->is_has_been_attached){
 	  /** Check if a TAU procedure is ongoing. Set the pending flag for pending QoS. */
-	  OAILOG_ERROR(LOG_NAS_EMM, "EMM context not in EMM_REGISTERED state for UE " MME_UE_S1AP_ID_FMT ". "
+	  OAILOG_INFO(LOG_NAS_EMM, "EMM context not in EMM_REGISTERED state for UE " MME_UE_S1AP_ID_FMT ". "
 			  "Cannot delete bearers. \n", ue_id);
 	  /** Check for an EMM (idle TAU) or S10 handover procedure. */
 	  nas_emm_tau_proc_t * nas_proc_tau = get_nas_specific_procedure_tau(emm_data_context);

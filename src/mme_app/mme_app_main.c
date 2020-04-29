@@ -513,7 +513,7 @@ int mme_app_init (const mme_config_t * mme_config_p)
   OAILOG_FUNC_IN (LOG_MME_APP);
 
   memset (&mme_app_desc, 0, sizeof (mme_app_desc));
-  // todo: (from develop)   pthread_rwlock_init (&mme_app_desc.rw_lock, NULL); && where to unlock it?
+  pthread_rwlock_init (&mme_app_desc.rw_lock, NULL);
   bstring b = bfromcstr("mme_app_imsi_ue_context_htbl");
   mme_app_desc.mme_ue_contexts.imsi_ue_context_htbl = hashtable_uint64_ts_create (mme_config.max_ues, NULL, b);
   btrunc(b, 0);
@@ -539,7 +539,6 @@ int mme_app_init (const mme_config_t * mme_config_p)
   bdestroy_wrapper (&b);
 
   /** Initialize for the UE session pool. */
-  // todo: (from develop)   pthread_rwlock_init (&mme_app_desc.rw_lock, NULL); && where to unlock it?
   b = bfromcstr("mme_app_tun11_ue_session_pool_htbl");
   bassigncstr(b, "mme_app_tun11_ue_session_pool_htbl");
   mme_app_desc.mme_ue_session_pools.tun11_ue_session_pool_htbl = hashtable_uint64_ts_create (mme_config.max_ues, NULL, b);
@@ -661,6 +660,7 @@ void mme_app_exit (void)
   // todo: also check other timers!
   timer_remove(mme_app_desc.statistic_timer_id, NULL);
   mme_app_edns_exit();
+  pthread_rwlock_destroy (&mme_app_desc.rw_lock);
   hashtable_uint64_ts_destroy (mme_app_desc.mme_ue_contexts.imsi_ue_context_htbl);
   hashtable_uint64_ts_destroy (mme_app_desc.mme_ue_contexts.enb_ue_s1ap_id_ue_context_htbl);
   hashtable_uint64_ts_destroy (mme_app_desc.mme_ue_contexts.tun11_ue_context_htbl);

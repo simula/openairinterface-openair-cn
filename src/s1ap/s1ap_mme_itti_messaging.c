@@ -61,6 +61,18 @@ s1ap_mme_itti_send_sctp_request (
 }
 
 //------------------------------------------------------------------------------
+void
+s1ap_mme_itti_send_sctp_shutdown(
+  const sctp_assoc_id_t assoc_id)
+{
+  MessageDef                             *message_p = NULL;
+
+  message_p = itti_alloc_new_message (TASK_S1AP, SCTP_CLOSE_ASSOCIATION);
+  SCTP_CLOSE_ASSOCIATION(message_p).assoc_id = assoc_id;
+  itti_send_msg_to_task (TASK_SCTP, INSTANCE_DEFAULT, message_p);
+}
+
+//------------------------------------------------------------------------------
 int
 s1ap_mme_itti_nas_uplink_ind (
   const mme_ue_s1ap_id_t  ue_id,

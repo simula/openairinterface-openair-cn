@@ -212,7 +212,7 @@ emm_proc_detach (
    * Get the UE context
    */
   if (emm_context == NULL) {
-    OAILOG_WARNING (LOG_NAS_EMM, "No EMM context exists for the UE (ue_id=" MME_UE_S1AP_ID_FMT ")", ue_id);
+    OAILOG_WARNING (LOG_NAS_EMM, "No EMM context exists for the UE (ue_id=" MME_UE_S1AP_ID_FMT ").\n", ue_id);
     // There may be MME APP Context. Trigger clean up in MME APP
     nas_itti_esm_detach_ind(ue_id, clr);
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNok);
@@ -222,7 +222,7 @@ emm_proc_detach (
    * todo: check if this state change is valid!
    */
   if(emm_fsm_set_state (ue_id, emm_context, EMM_DEREGISTERED_INITIATED) == RETURNerror){
-    OAILOG_WARNING (LOG_NAS_EMM, "An implicit detach procedure is already ongoing for EMM context of the UE (ue_id=" MME_UE_S1AP_ID_FMT "). Aborting new implicit detach.", ue_id);
+    OAILOG_WARNING (LOG_NAS_EMM, "An implicit detach procedure is already ongoing for EMM context of the UE (ue_id=" MME_UE_S1AP_ID_FMT "). Aborting new implicit detach.\n", ue_id);
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNok);
   }
 

@@ -66,7 +66,7 @@ int mme_app_handle_s6a_update_location_ans (
   OAILOG_DEBUG (LOG_MME_APP, "%s Handling imsi " IMSI_64_FMT "\n", __FUNCTION__, imsi64);
 
   if ((ue_context = mme_ue_context_exists_imsi (&mme_app_desc.mme_ue_contexts, imsi64)) == NULL) {
-    OAILOG_ERROR (LOG_MME_APP, "That's embarrassing as we don't know this IMSI\n");
+    OAILOG_ERROR (LOG_MME_APP, "That's embarrassing as we don't know this IMSI " IMSI_64_FMT"\n", imsi64);
     MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_UPDATE_LOCATION unknown imsi " IMSI_64_FMT" ", imsi64);
     OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
   }
@@ -168,7 +168,7 @@ mme_app_handle_s6a_cancel_location_req(
   OAILOG_DEBUG (LOG_MME_APP, "%s Handling CANCEL_LOCATION_REQUEST for imsi " IMSI_64_FMT "\n", __FUNCTION__, imsi);
 
   if ((ue_context = mme_ue_context_exists_imsi (&mme_app_desc.mme_ue_contexts, imsi)) == NULL) {
-    OAILOG_ERROR (LOG_MME_APP, "That's embarrassing as we don't know this IMSI\n");
+    OAILOG_ERROR (LOG_MME_APP, "That's embarrassing as we don't know this IMSI " IMSI_64_FMT" \n", imsi);
     MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_CANCEL_LOCATION unknown imsi " IMSI_64_FMT" ", imsi);
     OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
   }

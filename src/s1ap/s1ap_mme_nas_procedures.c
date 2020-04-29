@@ -257,7 +257,7 @@ s1ap_mme_handle_uplink_nas_transport (
     enb_ref = s1ap_is_enb_assoc_id_in_list (assoc_id);
 
     if (!(ue_ref = s1ap_is_ue_enb_id_in_list ( enb_ref, enb_ue_s1ap_id))) {
-      OAILOG_WARNING (LOG_S1AP, "Received S1AP UPLINK_NAS_TRANSPORT No UE is attached to this enb_ue_s1ap_id: " ENB_UE_S1AP_ID_FMT "\n",enb_ue_s1ap_id);
+      OAILOG_ERROR(LOG_S1AP, "Received S1AP UPLINK_NAS_TRANSPORT No UE is attached to this enb_ue_s1ap_id: " ENB_UE_S1AP_ID_FMT "\n",enb_ue_s1ap_id);
       OAILOG_FUNC_RETURN (LOG_S1AP, RETURNerror);
     }
   } else {
@@ -265,11 +265,10 @@ s1ap_mme_handle_uplink_nas_transport (
         mme_ue_s1ap_id);
 
     if (!(ue_ref = s1ap_is_ue_mme_id_in_list (mme_ue_s1ap_id))) {
-      OAILOG_WARNING (LOG_S1AP, "Received S1AP UPLINK_NAS_TRANSPORT No UE is attached to this mme_ue_s1ap_id: " MME_UE_S1AP_ID_FMT "\n", mme_ue_s1ap_id);
       /** Check via the received ENB_UE_S1AP_ID and the ENB_ID. */
       enb_ref = s1ap_is_enb_assoc_id_in_list (assoc_id);
       if (!(ue_ref = s1ap_is_ue_enb_id_in_list ( enb_ref, enb_ue_s1ap_id))) {
-        OAILOG_WARNING (LOG_S1AP, "Received S1AP UPLINK_NAS_TRANSPORT No UE is attached to this enb_ue_s1ap_id (after searching with mmeUeS1apId): " ENB_UE_S1AP_ID_FMT "\n",enb_ue_s1ap_id);
+        OAILOG_ERROR(LOG_S1AP, "Received S1AP UPLINK_NAS_TRANSPORT No UE is attached to this enb_ue_s1ap_id (after searching with mmeUeS1apId): " ENB_UE_S1AP_ID_FMT "\n",enb_ue_s1ap_id);
         OAILOG_FUNC_RETURN (LOG_S1AP, RETURNerror);
       }else{
         OAILOG_WARNING (LOG_S1AP, "Received S1AP UPLINK_NAS_TRANSPORT and found the UE reference via enb_ue_s1ap_id: " ENB_UE_S1AP_ID_FMT \
@@ -522,6 +521,15 @@ int s1ap_generate_s1ap_e_rab_setup_req (itti_s1ap_e_rab_setup_req_t * const e_ra
   pdu.choice.initiatingMessage.value.present = S1AP_InitiatingMessage__value_PR_E_RABSetupRequest;
   out = &pdu.choice.initiatingMessage.value.choice.E_RABSetupRequest;
 
+  if(ue_ref->s1_ue_state == S1AP_UE_WAITING_CRR && ue_ref->s1ap_ue_context_rel_timer.id != S1AP_TIMER_INACTIVE_ID){
+    if (timer_remove(ue_ref->s1ap_ue_context_rel_timer.id, NULL)) {
+      OAILOG_ERROR(LOG_MME_APP, "UE " MME_UE_S1AP_ID_FMT " with enbUeId " ENB_UE_S1AP_ID_FMT " was in S1AP_UE_WAITING_CRR state. Could not remove timer due newly established bearer. \n",
+    	ue_ref->mme_ue_s1ap_id, ue_ref->enb_ue_s1ap_id);
+    }
+    OAILOG_WARNING(LOG_MME_APP, "UE " MME_UE_S1AP_ID_FMT " with enbUeId " ENB_UE_S1AP_ID_FMT " was in S1AP_UE_WAITING_CRR state. Removing the timer and setting S1AP UE state as connected due newly established bearer. \n",
+      ue_ref->mme_ue_s1ap_id, ue_ref->enb_ue_s1ap_id);
+  }
+  ue_ref->s1ap_ue_context_rel_timer.id = S1AP_TIMER_INACTIVE_ID;
   ue_ref->s1_ue_state = S1AP_UE_CONNECTED;
 
   /*
@@ -693,6 +701,17 @@ int s1ap_generate_s1ap_e_rab_modify_req (itti_s1ap_e_rab_modify_req_t * const e_
     pdu.choice.initiatingMessage.value.present = S1AP_InitiatingMessage__value_PR_E_RABModifyRequest;
     out = &pdu.choice.initiatingMessage.value.choice.E_RABModifyRequest;
 
+    if(ue_ref->s1_ue_state == S1AP_UE_WAITING_CRR && ue_ref->s1ap_ue_context_rel_timer.id != S1AP_TIMER_INACTIVE_ID){
+      if (timer_remove(ue_ref->s1ap_ue_context_rel_timer.id, NULL)) {
+        OAILOG_ERROR(LOG_MME_APP, "UE " MME_UE_S1AP_ID_FMT " with enbUeId " ENB_UE_S1AP_ID_FMT " was in S1AP_UE_WAITING_CRR state. Could not remove timer due modified bearer. \n",
+      	ue_ref->mme_ue_s1ap_id, ue_ref->enb_ue_s1ap_id);
+      }
+      OAILOG_WARNING(LOG_MME_APP, "UE " MME_UE_S1AP_ID_FMT " with enbUeId " ENB_UE_S1AP_ID_FMT " was in S1AP_UE_WAITING_CRR state. Removing the timer and setting S1AP UE state as connected due modified bearer. \n",
+        ue_ref->mme_ue_s1ap_id, ue_ref->enb_ue_s1ap_id);
+    }
+    ue_ref->s1ap_ue_context_rel_timer.id = S1AP_TIMER_INACTIVE_ID;
+    ue_ref->s1_ue_state = S1AP_UE_CONNECTED;
+
     /*
      * Setting UE informations with the ones found in ue_ref
      */
@@ -856,18 +875,17 @@ int s1ap_generate_s1ap_e_rab_release_req (itti_s1ap_e_rab_release_req_t * const 
     ie->value.choice.ENB_UE_S1AP_ID = ue_ref->enb_ue_s1ap_id;
     ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
 
-
+    if(ue_ref->s1_ue_state == S1AP_UE_WAITING_CRR && ue_ref->s1ap_ue_context_rel_timer.id != S1AP_TIMER_INACTIVE_ID){
+      if (timer_remove(ue_ref->s1ap_ue_context_rel_timer.id, NULL)) {
+        OAILOG_ERROR(LOG_MME_APP, "UE " MME_UE_S1AP_ID_FMT " with enbUeId " ENB_UE_S1AP_ID_FMT " was in S1AP_UE_WAITING_CRR state. Could not remove timer due released bearer. \n",
+      	ue_ref->mme_ue_s1ap_id, ue_ref->enb_ue_s1ap_id);
+      }
+      OAILOG_WARNING(LOG_MME_APP, "UE " MME_UE_S1AP_ID_FMT " with enbUeId " ENB_UE_S1AP_ID_FMT " was in S1AP_UE_WAITING_CRR state. Removing the timer and setting S1AP UE state due released bearer. \n",
+        ue_ref->mme_ue_s1ap_id, ue_ref->enb_ue_s1ap_id);
+    }
+    ue_ref->s1ap_ue_context_rel_timer.id = S1AP_TIMER_INACTIVE_ID;
     ue_ref->s1_ue_state = S1AP_UE_CONNECTED;
 
-    /*eNB
-     * Fill in the NAS pdu
-     */
-			//S1AP_UEAggregateMaximumBitrate_t	 UEAggregateMaximumBitrate;
-
-//    if (e_rab_release_req->ue_aggregate_maximum_bit_rate_present) {
-//      e_rabreleasecommandies->presenceMask |= S1AP_E_RABRELEASECOMMANDIES_UEAGGREGATEMAXIMUMBITRATE_PRESENT;
-//      TO DO e_rabreleasecommandies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf
-//    }
     ie = (S1AP_E_RABReleaseCommandIEs_t *)calloc(1, sizeof(S1AP_E_RABReleaseCommandIEs_t));
     ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeReleasedList;
     ie->criticality = S1AP_Criticality_ignore;
@@ -1019,6 +1037,28 @@ s1ap_handle_conn_est_cnf (
     e_RABToBeSetup->e_RABlevelQoSParameters.allocationRetentionPriority.priorityLevel = conn_est_cnf_pP->e_rab_level_qos_priority_level[item];
     e_RABToBeSetup->e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionCapability = conn_est_cnf_pP->e_rab_level_qos_preemption_capability[item];
     e_RABToBeSetup->e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionVulnerability = conn_est_cnf_pP->e_rab_level_qos_preemption_vulnerability[item];
+
+    /* OPTIONAL */
+    gbr_qos_information_t *gbr_qos_information = &conn_est_cnf_pP->gbr_qos_information[item];
+    if ((gbr_qos_information->e_rab_maximum_bit_rate_downlink)    ||
+      (gbr_qos_information->e_rab_maximum_bit_rate_uplink)      ||
+	  (gbr_qos_information->e_rab_guaranteed_bit_rate_downlink) ||
+	  (gbr_qos_information->e_rab_guaranteed_bit_rate_uplink)) {
+      e_RABToBeSetup->e_RABlevelQoSParameters.gbrQosInformation = calloc(1, sizeof(struct S1AP_GBR_QosInformation));
+      if (e_RABToBeSetup->e_RABlevelQoSParameters.gbrQosInformation) {
+    	  asn_uint642INTEGER(&e_RABToBeSetup->e_RABlevelQoSParameters.gbrQosInformation->e_RAB_MaximumBitrateDL,
+    	    gbr_qos_information->e_rab_maximum_bit_rate_downlink);
+
+    	  asn_uint642INTEGER(&e_RABToBeSetup->e_RABlevelQoSParameters.gbrQosInformation->e_RAB_MaximumBitrateUL,
+    		gbr_qos_information->e_rab_maximum_bit_rate_uplink);
+
+    	  asn_uint642INTEGER(&e_RABToBeSetup->e_RABlevelQoSParameters.gbrQosInformation->e_RAB_GuaranteedBitrateDL,
+    	    gbr_qos_information->e_rab_guaranteed_bit_rate_downlink);
+
+          asn_uint642INTEGER(&e_RABToBeSetup->e_RABlevelQoSParameters.gbrQosInformation->e_RAB_GuaranteedBitrateUL,
+            gbr_qos_information->e_rab_guaranteed_bit_rate_uplink);
+      }
+    }
     if(conn_est_cnf_pP->nas_pdu[item]){
       //DevAssert(!nas_pdu);
   	  S1AP_NAS_PDU_t	 * nas_pdu = calloc (1, sizeof(S1AP_NAS_PDU_t));
@@ -1274,7 +1314,7 @@ s1ap_handle_path_switch_req_ack(
   free(buffer_p);
   s1ap_mme_itti_send_sctp_request (&b, ue_ref->enb->sctp_assoc_id, ue_ref->sctp_stream_send, ue_ref->mme_ue_s1ap_id);
 
-  /** Set the new state as connected. */
+  /** Set the new state as connected. Since it is a new connection, no CRR state is expected. */
   ue_ref->s1_ue_state = S1AP_UE_CONNECTED;
 
   OAILOG_FUNC_OUT (LOG_S1AP);
@@ -1675,7 +1715,7 @@ s1ap_handle_handover_request (
 
   /** Set Id-Cause. */
   ie = (S1AP_HandoverRequestIEs_t *)calloc(1, sizeof(S1AP_HandoverRequestIEs_t));
-  ie->id = S1AP_ProtocolIE_ID_id_HO_Cause;
+  ie->id = S1AP_ProtocolIE_ID_id_Cause;
   ie->criticality = S1AP_Criticality_reject;
   ie->value.present = S1AP_HandoverRequestIEs__value_PR_Cause;
   ie->value.choice.Cause.present = S1AP_Cause_PR_radioNetwork;
@@ -1691,54 +1731,6 @@ s1ap_handle_handover_request (
   ie->value.present = S1AP_HandoverRequestIEs__value_PR_UEAggregateMaximumBitrate;
   asn_uint642INTEGER (&ie->value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL, handover_request_pP->ambr.br_dl);
   asn_uint642INTEGER (&ie->value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL, handover_request_pP->ambr.br_ul);
-  ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
-
-  /** Set the UE security capabilities. */
-  ie = (S1AP_HandoverRequestIEs_t *)calloc(1, sizeof(S1AP_HandoverRequestIEs_t));
-  ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
-  ie->criticality = S1AP_Criticality_reject;
-  ie->value.present = S1AP_HandoverRequestIEs__value_PR_UESecurityCapabilities;
-  S1AP_UESecurityCapabilities_t	*const  ue_security_capabilities = &ie->value.choice.UESecurityCapabilities;
-  ue_security_capabilities->encryptionAlgorithms.buf = calloc(1, sizeof(uint16_t));
-  memcpy(ue_security_capabilities->encryptionAlgorithms.buf, &handover_request_pP->security_capabilities_encryption_algorithms, sizeof(uint16_t));
-  ue_security_capabilities->encryptionAlgorithms.size = 2;
-  ue_security_capabilities->encryptionAlgorithms.bits_unused = 0;
-  OAILOG_DEBUG (LOG_S1AP, "security_capabilities_encryption_algorithms 0x%04X\n", handover_request_pP->security_capabilities_encryption_algorithms);
-
-  ue_security_capabilities->integrityProtectionAlgorithms.buf = calloc(1, sizeof(uint16_t));
-  memcpy(ue_security_capabilities->integrityProtectionAlgorithms.buf, &handover_request_pP->security_capabilities_integrity_algorithms, sizeof(uint16_t));
-  ue_security_capabilities->integrityProtectionAlgorithms.size = 2;
-  ue_security_capabilities->integrityProtectionAlgorithms.bits_unused = 0;
-  OAILOG_DEBUG (LOG_S1AP, "security_capabilities_integrity_algorithms 0x%04X\n", handover_request_pP->security_capabilities_integrity_algorithms);
-  ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
-
-  /** Add the security context. */
-  ie = (S1AP_HandoverRequestIEs_t *)calloc(1, sizeof(S1AP_HandoverRequestIEs_t));
-  ie->id = S1AP_ProtocolIE_ID_id_SecurityContext;
-  ie->criticality = S1AP_Criticality_reject;
-  ie->value.present = S1AP_HandoverRequestIEs__value_PR_SecurityContext;
-  if (handover_request_pP->nh) {
-	ie->value.choice.SecurityContext.nextHopParameter.buf = calloc (AUTH_NH_SIZE, sizeof(uint8_t));
-	memcpy (ie->value.choice.SecurityContext.nextHopParameter.buf, handover_request_pP->nh, AUTH_NH_SIZE);
-	ie->value.choice.SecurityContext.nextHopParameter.size = AUTH_NH_SIZE;
-  } else {
-	  OAILOG_DEBUG (LOG_S1AP, "No nh \n");
-	  ie->value.choice.SecurityContext.nextHopParameter.buf = NULL;
-	  ie->	value.choice.SecurityContext.nextHopParameter.size = 0;
-  }
-  ie->value.choice.SecurityContext.nextHopParameter.bits_unused = 0;
-  ie->value.choice.SecurityContext.nextHopChainingCount = handover_request_pP->ncc;
-  ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
-
-  /*
-   * E-UTRAN Target-ToSource Transparent Container.
-   */
-  ie = (S1AP_HandoverRequestIEs_t *)calloc(1, sizeof(S1AP_HandoverRequestIEs_t));
-  ie->id = S1AP_ProtocolIE_ID_id_Source_ToTarget_TransparentContainer;
-  ie->criticality = S1AP_Criticality_reject;
-  ie->value.present = S1AP_HandoverRequestIEs__value_PR_Source_ToTarget_TransparentContainer;
-  OCTET_STRING_fromBuf(&ie->value.choice.Source_ToTarget_TransparentContainer,
-		  handover_request_pP->source_to_target_eutran_container->data, blength(handover_request_pP->source_to_target_eutran_container));
   ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
 
   /* mandatory */
@@ -1832,6 +1824,54 @@ s1ap_handle_handover_request (
 
   /** bstring of message will be destroyed outside of the ITTI message handler. */
 
+
+  /*
+   * E-UTRAN Target-ToSource Transparent Container.
+   */
+  ie = (S1AP_HandoverRequestIEs_t *)calloc(1, sizeof(S1AP_HandoverRequestIEs_t));
+  ie->id = S1AP_ProtocolIE_ID_id_Source_ToTarget_TransparentContainer;
+  ie->criticality = S1AP_Criticality_reject;
+  ie->value.present = S1AP_HandoverRequestIEs__value_PR_Source_ToTarget_TransparentContainer;
+  OCTET_STRING_fromBuf(&ie->value.choice.Source_ToTarget_TransparentContainer,
+		  handover_request_pP->source_to_target_eutran_container->data, blength(handover_request_pP->source_to_target_eutran_container));
+  ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
+
+  /** Set the UE security capabilities. */
+  ie = (S1AP_HandoverRequestIEs_t *)calloc(1, sizeof(S1AP_HandoverRequestIEs_t));
+  ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
+  ie->criticality = S1AP_Criticality_reject;
+  ie->value.present = S1AP_HandoverRequestIEs__value_PR_UESecurityCapabilities;
+  S1AP_UESecurityCapabilities_t	*const  ue_security_capabilities = &ie->value.choice.UESecurityCapabilities;
+  ue_security_capabilities->encryptionAlgorithms.buf = calloc(1, sizeof(uint16_t));
+  memcpy(ue_security_capabilities->encryptionAlgorithms.buf, &handover_request_pP->security_capabilities_encryption_algorithms, sizeof(uint16_t));
+  ue_security_capabilities->encryptionAlgorithms.size = 2;
+  ue_security_capabilities->encryptionAlgorithms.bits_unused = 0;
+  OAILOG_DEBUG (LOG_S1AP, "security_capabilities_encryption_algorithms 0x%04X\n", handover_request_pP->security_capabilities_encryption_algorithms);
+
+  ue_security_capabilities->integrityProtectionAlgorithms.buf = calloc(1, sizeof(uint16_t));
+  memcpy(ue_security_capabilities->integrityProtectionAlgorithms.buf, &handover_request_pP->security_capabilities_integrity_algorithms, sizeof(uint16_t));
+  ue_security_capabilities->integrityProtectionAlgorithms.size = 2;
+  ue_security_capabilities->integrityProtectionAlgorithms.bits_unused = 0;
+  OAILOG_DEBUG (LOG_S1AP, "security_capabilities_integrity_algorithms 0x%04X\n", handover_request_pP->security_capabilities_integrity_algorithms);
+  ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
+
+  /** Add the security context. */
+  ie = (S1AP_HandoverRequestIEs_t *)calloc(1, sizeof(S1AP_HandoverRequestIEs_t));
+  ie->id = S1AP_ProtocolIE_ID_id_SecurityContext;
+  ie->criticality = S1AP_Criticality_reject;
+  ie->value.present = S1AP_HandoverRequestIEs__value_PR_SecurityContext;
+  if (handover_request_pP->nh) {
+	ie->value.choice.SecurityContext.nextHopParameter.buf = calloc (AUTH_NH_SIZE, sizeof(uint8_t));
+	memcpy (ie->value.choice.SecurityContext.nextHopParameter.buf, handover_request_pP->nh, AUTH_NH_SIZE);
+	ie->value.choice.SecurityContext.nextHopParameter.size = AUTH_NH_SIZE;
+  } else {
+	  OAILOG_DEBUG (LOG_S1AP, "No nh \n");
+	  ie->value.choice.SecurityContext.nextHopParameter.buf = NULL;
+	  ie->	value.choice.SecurityContext.nextHopParameter.size = 0;
+  }
+  ie->value.choice.SecurityContext.nextHopParameter.bits_unused = 0;
+  ie->value.choice.SecurityContext.nextHopChainingCount = handover_request_pP->ncc;
+  ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
 
   if (s1ap_mme_encode_pdu (&pdu, &buffer_p, &length) < 0) {
 	  // TODO: handle something

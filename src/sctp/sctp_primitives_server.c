@@ -39,6 +39,7 @@
 #include <netinet/in.h>
 #include <netinet/sctp.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 #include "bstrlib.h"
 
@@ -92,7 +93,9 @@ typedef struct sctp_arg_s {
 static struct sctp_descriptor_s         sctp_desc;
 
 // Thread used to handle sctp messages
-static pthread_t                        assoc_thread;
+static pthread_t                        assoc_thread[2];
+static pthread_mutex_t                  sctp_desc_mutex = PTHREAD_MUTEX_INITIALIZER;
+static int                              pthread_count = 0;
 
 // LOCAL FUNCTIONS prototypes
 void                                   *sctp_receiver_thread (void *args_p);
@@ -120,6 +123,7 @@ static struct sctp_association_s *sctp_add_new_peer (void)
 
   new_sctp_descriptor->next_assoc = NULL;
   new_sctp_descriptor->previous_assoc = NULL;
+  pthread_mutex_lock (&sctp_desc_mutex);
 
   if (sctp_desc.available_connections_tail == NULL) {
     sctp_desc.available_connections_head = new_sctp_descriptor;
@@ -132,6 +136,7 @@ static struct sctp_association_s *sctp_add_new_peer (void)
 
   sctp_desc.number_of_connections++;
   sctp_dump_list ();
+  pthread_mutex_unlock (&sctp_desc_mutex);
   return new_sctp_descriptor;
 }
 
@@ -157,6 +162,7 @@ static struct sctp_association_s *sctp_is_assoc_in_list (sctp_assoc_id_t assoc_i
 static int sctp_remove_assoc_from_list (sctp_assoc_id_t assoc_id)
 {
   struct sctp_association_s              *assoc_desc = NULL;
+  pthread_mutex_lock (&sctp_desc_mutex);
 
   /*
    * Association not in the list
@@ -200,6 +206,7 @@ static int sctp_remove_assoc_from_list (sctp_assoc_id_t assoc_id)
   }
   free_wrapper ((void**)&assoc_desc);
   sctp_desc.number_of_connections--;
+  pthread_mutex_unlock (&sctp_desc_mutex);
   return 0;
 }
 
@@ -260,6 +267,7 @@ static int sctp_send_msg (
   struct sctp_association_s              *assoc_desc = NULL;
 
   DevAssert (*payload);
+  pthread_mutex_lock (&sctp_desc_mutex);
 
   if ((assoc_desc = sctp_is_assoc_in_list (sctp_assoc_id)) == NULL) {
     OAILOG_DEBUG (LOG_SCTP, "This assoc id has not been fount in list (%d)\n", sctp_assoc_id);
@@ -289,6 +297,7 @@ static int sctp_send_msg (
   bdestroy_wrapper(payload);
 
   assoc_desc->messages_sent++;
+  pthread_mutex_unlock (&sctp_desc_mutex);
   return 0;
 }
 
@@ -384,10 +393,17 @@ static int sctp_create_new_listener (SctpInit * init_p)
 	  sctp_arg_p->sd = sd;
 	  sctp_arg_p->ppid = init_p->ppid;
 
-	  if (pthread_create (&assoc_thread, NULL, &sctp_receiver_thread, (void *)sctp_arg_p) < 0) {
+	  pthread_t                        *assoc_thread_p = &assoc_thread[pthread_count];
+	  OAILOG_DEBUG(LOG_SCTP, "Creating pthread (%p) for pcount(%d).", assoc_thread_p, pthread_count);
+	  pthread_count++;
+		if (pthread_create (&assoc_thread, NULL, &sctp_receiver_thread, (void *)sctp_arg_p) < 0) {
 		  OAILOG_ERROR (LOG_SCTP, "pthread_create: %s:%d\n", strerror (errno), errno);
 		  return -1;
 	  }
+
+	  int rv = pthread_detach(*assoc_thread_p);
+	  if (rv) OAI_FPRINTF_ERR("pthread_cancel(%08lX) failed: %d:%s\n", *assoc_thread_p, rv, strerror(rv));
+
   }
 
   return sd;
@@ -461,6 +477,7 @@ static inline int sctp_read_from_socket (int sd, int ppid)
             return SCTP_RC_ERROR;
           } else {
             new_association->sd = sd;
+            OAILOG_DEBUG(LOG_SCTP, "Received a new SCTP_COMM_UP on assoc_id (%d) and sd (%d).", sctp_assoc_changed->sac_assoc_id, sd);
             new_association->ppid = ppid;
             new_association->instreams = sctp_assoc_changed->sac_inbound_streams;
             new_association->outstreams = sctp_assoc_changed->sac_outbound_streams;
@@ -536,6 +553,11 @@ static int sctp_handle_com_down (sctp_assoc_id_t assoc_id)
 }
 
 //------------------------------------------------------------------------------
+static void sctp_clean_arg(void * arg){
+	free_wrapper(&arg);
+}
+
+//------------------------------------------------------------------------------
 void *sctp_receiver_thread (void *args_p)
 {
   struct sctp_arg_s                      *sctp_arg_p = NULL;
@@ -569,13 +591,41 @@ void *sctp_receiver_thread (void *args_p)
   FD_SET (sctp_arg_p->sd, &master);
   fdmax = sctp_arg_p->sd;       /* so far, it's this one */
 
+  struct timeval tv_socket;
+  tv_socket.tv_sec = 1;
+  tv_socket.tv_usec = 0;
+
+  pthread_cleanup_push(sctp_clean_arg, args_p);
+
   while (1) {
     memcpy (&read_fds, &master, sizeof (master));
 
-    if (select (fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) {
-      OAILOG_ERROR (LOG_SCTP, "[%d] Select() error: %s", sctp_arg_p->sd, strerror (errno));
-      free_wrapper ((void**)&args_p);
-      pthread_exit (NULL);
+    tv_socket.tv_sec = 2;
+    tv_socket.tv_usec = 0;
+
+    if (select (fdmax + 1, &read_fds, NULL, NULL, &tv_socket) == -1) {
+      /** Check if a file descriptor is closed, which is not the listen socket. */
+      if(errno == EBADF){
+        OAILOG_ERROR (LOG_SCTP, "[%d] Received bad file descriptor error. Checking file descriptor and invalidating. (%s). \n", sctp_arg_p->sd, strerror (errno));
+        for (i = 0; i <= fdmax; i++) {
+      		if (fcntl(i, F_GETFD) == -1){
+      			/** We may check additionally if result of select() is 0, which would indicate timeout. */
+      			OAILOG_WARNING(LOG_SCTP, "Socket descriptor (%d) is not valid. Removing from map.\n", i);
+      			FD_CLR (i, &master);
+      			if (i == fdmax) { /**< Enters for last one, so no problem. */
+      				while (FD_ISSET (fdmax, &master) == false)
+      					fdmax -= 1;
+      			}
+      		}
+      	}
+        continue;
+      } else {
+        OAILOG_ERROR (LOG_SCTP, "[%d]. Closing SCTP server thread due Select() error: %s \n", sctp_arg_p->sd, strerror (errno));
+
+        free_wrapper ((void**)&args_p);
+        pthread_exit (NULL);
+
+      }
     }
 
     for (i = 0; i <= fdmax; i++) {
@@ -627,8 +677,11 @@ void *sctp_receiver_thread (void *args_p)
     }
   }
 
-  free_wrapper ((void**)&args_p);
-  return NULL;
+  pthread_cleanup_pop(0);
+
+  if(args_p)
+   	free_wrapper ((void**)&args_p);
+   return NULL;
 }
 
 //------------------------------------------------------------------------------
@@ -643,8 +696,16 @@ static void * sctp_intertask_interface (void *args_p)
 
     switch (ITTI_MSG_ID (received_message_p)) {
     case SCTP_CLOSE_ASSOCIATION:{
-      }
-      break;
+    	sctp_assoc_id_t assoc_id = SCTP_CLOSE_ASSOCIATION(received_message_p).assoc_id;
+    	struct sctp_association_s * sctp_assoc = sctp_is_assoc_in_list(assoc_id);
+    	if(sctp_assoc){
+        close (sctp_assoc->sd);
+        OAILOG_WARNING (LOG_SCTP, "Closed SD [%d] for assoc-id (%d).\n", sctp_assoc->sd, assoc_id);
+    	} else {
+    		OAILOG_ERROR(LOG_SCTP, "No SCTP description could be found for sctp assoc_id (%d). No socket to shut down.\n", assoc_id);
+    	}
+    }
+    break;
 
     case SCTP_DATA_REQ:{
         if (sctp_send_msg (SCTP_DATA_REQ (received_message_p).assoc_id,
@@ -734,22 +795,32 @@ int sctp_init (const mme_config_t * mme_config_p)
 //------------------------------------------------------------------------------
 static void sctp_exit (void)
 {
+	int pthread_index = 0;
 
-  int rv = pthread_cancel(assoc_thread);
-  if (rv) OAILOG_DEBUG (LOG_SCTP, "pthread_cancel(%08lX) failed: %d:%s\n", assoc_thread, rv, strerror(rv));
+	while(pthread_index < pthread_count) {
+		OAI_FPRINTF_INFO("Pthread cancel for (%p) and pindex (%d).\n", &assoc_thread[pthread_index], pthread_index);
 
-  struct sctp_association_s              *sctp_assoc_p = sctp_desc.available_connections_head;
-  struct sctp_association_s              *next_sctp_assoc_p = sctp_desc.available_connections_head;
+		int rv = pthread_cancel(assoc_thread[pthread_index]);
+		if (rv) OAI_FPRINTF_ERR("pthread_cancel(%08lX) failed: %d:%s\n", assoc_thread[pthread_count], rv, strerror(rv));
 
-  while (next_sctp_assoc_p) {
-    next_sctp_assoc_p = sctp_assoc_p->next_assoc;
-    if (sctp_assoc_p->peer_addresses) {
-      rv = sctp_freepaddrs(sctp_assoc_p->peer_addresses);
-      if (rv) OAILOG_DEBUG (LOG_SCTP, "sctp_freepaddrs(%p) failed\n", sctp_assoc_p->peer_addresses);
-    }
-    free_wrapper ((void**)&sctp_assoc_p);
-    sctp_desc.number_of_connections--;
-    sctp_assoc_p = next_sctp_assoc_p;
-  }
-  OAI_FPRINTF_INFO("TASK_SCTP terminated\n");
+		pthread_index++;
+	}
+
+	struct sctp_association_s              *sctp_assoc_p = sctp_desc.available_connections_head;
+	struct sctp_association_s              *next_sctp_assoc_p = sctp_desc.available_connections_head;
+
+	while (next_sctp_assoc_p) {
+		next_sctp_assoc_p = sctp_assoc_p->next_assoc;
+		if (sctp_assoc_p->peer_addresses) {
+			int rv = sctp_freepaddrs(sctp_assoc_p->peer_addresses);
+			if (rv) OAI_FPRINTF_ERR("sctp_freepaddrs(%p) failed\n", sctp_assoc_p->peer_addresses);
+		}
+		free_wrapper ((void**)&sctp_assoc_p);
+		sctp_desc.number_of_connections--;
+		sctp_assoc_p = next_sctp_assoc_p;
+	}
+	pthread_mutex_destroy (&sctp_desc_mutex);
+
+	OAI_FPRINTF_INFO("TASK_SCTP terminated\n");
+
 }

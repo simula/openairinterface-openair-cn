@@ -61,6 +61,8 @@ typedef struct itti_mme_app_connection_establishment_cnf_s {
   pre_emption_capability_t    e_rab_level_qos_preemption_capability[BEARERS_PER_UE];
   //       >>>Pre-emption Vulnerability
   pre_emption_vulnerability_t e_rab_level_qos_preemption_vulnerability[BEARERS_PER_UE];
+  //       >>>GBR QoS Information
+  gbr_qos_information_t gbr_qos_information[BEARERS_PER_UE];
   //     >>Transport Layer Address
   bstring                 transport_layer_address[BEARERS_PER_UE];
   //     >>GTP-TEID

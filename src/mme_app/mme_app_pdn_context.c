@@ -118,9 +118,7 @@ mme_app_esm_create_pdn_context(mme_ue_s1ap_id_t ue_id, const ebi_t linked_ebi, c
 
   /** Check the subscribed APN values. */
   ambr_t new_total_apn_ambr = mme_app_total_p_gw_apn_ambr(ue_session_pool);
-  new_total_apn_ambr.br_dl += apn_ambr->br_dl;
-  new_total_apn_ambr.br_ul += apn_ambr->br_ul;
-  if(new_total_apn_ambr.br_dl > ue_session_pool->privates.fields.subscribed_ue_ambr.br_dl){
+  if(new_total_apn_ambr.br_dl >= ue_session_pool->privates.fields.subscribed_ue_ambr.br_dl) {
     OAILOG_ERROR(LOG_MME_APP, "New total APN-AMBR (%d) exceeds the subscribed APN-AMBR (%d) (DL) for ueId " MME_UE_S1AP_ID_FMT". \n",
     		ue_session_pool->privates.mme_ue_s1ap_id,
 			new_total_apn_ambr.br_dl,
@@ -128,14 +126,17 @@ mme_app_esm_create_pdn_context(mme_ue_s1ap_id_t ue_id, const ebi_t linked_ebi, c
 			ue_session_pool->privates.mme_ue_s1ap_id);
     OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
   }
-  if(new_total_apn_ambr.br_ul > ue_session_pool->privates.fields.subscribed_ue_ambr.br_ul){
-    OAILOG_ERROR(LOG_MME_APP, "New total APN-AMBR (%d) exceeds the subscribed APN-AMBR (%d) (UL) for ueId " MME_UE_S1AP_ID_FMT". \n",
-    		new_total_apn_ambr.br_ul,
-			ue_session_pool->privates.fields.subscribed_ue_ambr.br_ul,
-			ue_session_pool->privates.mme_ue_s1ap_id);
-    OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
+  /** Uplink */
+  if(new_total_apn_ambr.br_ul >= ue_session_pool->privates.fields.subscribed_ue_ambr.br_ul) {
+	  OAILOG_ERROR(LOG_MME_APP, "New total APN-AMBR (%d) exceeds the subscribed APN-AMBR (%d) (UL) for ueId " MME_UE_S1AP_ID_FMT". \n",
+			  ue_session_pool->privates.mme_ue_s1ap_id,
+			  new_total_apn_ambr.br_ul,
+			  ue_session_pool->privates.fields.subscribed_ue_ambr.br_ul,
+			  ue_session_pool->privates.mme_ue_s1ap_id);
+	  OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNerror);
   }
-
+  ambr_t new_ambr = {.br_dl = min(apn_ambr->br_dl, ue_session_pool->privates.fields.subscribed_ue_ambr.br_dl - new_total_apn_ambr.br_dl),
+		  .br_ul = min(apn_ambr->br_ul, ue_session_pool->privates.fields.subscribed_ue_ambr.br_ul - new_total_apn_ambr.br_ul)};
 
   // todo: lock the session pool
   /** Get a PDN context. */
@@ -179,8 +180,8 @@ mme_app_esm_create_pdn_context(mme_ue_s1ap_id_t ue_id, const ebi_t linked_ebi, c
   /** Set the APN independently. */
   (*pdn_context_pp)->apn_subscribed = bstrcpy(apn_subscribed);
   /** Set the default QoS values. */
-  (*pdn_context_pp)->subscribed_apn_ambr.br_dl = apn_ambr->br_dl;
-  (*pdn_context_pp)->subscribed_apn_ambr.br_ul = apn_ambr->br_ul;
+  (*pdn_context_pp)->subscribed_apn_ambr.br_dl = new_ambr.br_dl;
+  (*pdn_context_pp)->subscribed_apn_ambr.br_ul = new_ambr.br_ul;
   (*pdn_context_pp)->pdn_type                     = pdn_type;
   /**Don't set the SAE-GW TEID. */
   // (*pdn_context_pp)->s_gw_teid_s11_s4 = ue_session_pool->privates.fields.saegw_teid_s11;

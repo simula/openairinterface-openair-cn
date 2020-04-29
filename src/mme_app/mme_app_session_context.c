@@ -295,7 +295,7 @@ mme_app_esm_detach(mme_ue_s1ap_id_t ue_id){
 
   /** Release the session pool. */ // todo: locks
   mme_remove_ue_session_pool(&mme_app_desc.mme_ue_session_pools, ue_session_pool);
-  OAILOG_INFO(LOG_MME_APP, "Removing the session pool for UE " MME_UE_S1AP_ID_FMT". \n", ue_id);
+  OAILOG_INFO(LOG_MME_APP, "Removed the session pool for UE " MME_UE_S1AP_ID_FMT". \n", ue_id);
   OAILOG_FUNC_OUT(LOG_MME_APP);
 }
 

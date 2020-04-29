@@ -343,7 +343,7 @@ inline void emm_ctx_set_security_type(emm_data_context_t * const ctxt, emm_sc_ty
 inline void emm_ctx_set_security_eksi(emm_data_context_t * const ctxt, ksi_t eksi)
 {
   ctxt->_security.eksi = eksi;
-  OAILOG_TRACE (LOG_NAS_EMM, "ue_id=" MME_UE_S1AP_ID_FMT " set security context eksi %d\n", ctxt->ue_id, eksi);
+  OAILOG_DEBUG(LOG_NAS_EMM, "ue_id=" MME_UE_S1AP_ID_FMT " set security context eksi %d\n", ctxt->ue_id, eksi);
 }
 
 //------------------------------------------------------------------------------
@@ -1124,13 +1124,13 @@ void nas_start_Ts10_ctx_req(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * c
 }
 
 //------------------------------------------------------------------------------
-void nas_start_T_retry_specific_procedure(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * const T_retry,  time_out_t time_out_cb, void *timer_callback_args)
+void nas_start_T_retry_specific_procedure(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * const T_retry,  time_out_t time_out_cb)
 {
   if ((T_retry) && (T_retry->id == NAS_TIMER_INACTIVE_ID)) {
-    T_retry->id = nas_emm_timer_start (T_retry->sec, T_retry->usec, time_out_cb, timer_callback_args);
+    T_retry->id = nas_emm_timer_start(T_retry->sec, T_retry->usec, time_out_cb, (void*)ue_id);
     if (NAS_TIMER_INACTIVE_ID != T_retry->id) {
       MSC_LOG_EVENT (MSC_NAS_EMM_MME, "0 T_retry started UE " MME_UE_S1AP_ID_FMT " ", ue_id);
-      OAILOG_DEBUG (LOG_NAS_EMM, "T_retry started UE " MME_UE_S1AP_ID_FMT "\n", ue_id);
+      OAILOG_DEBUG (LOG_NAS_EMM, "T_retry started UE " MME_UE_S1AP_ID_FMT " with ID (%lx).\n", ue_id, T_retry->id);
     } else {
       OAILOG_ERROR (LOG_NAS_EMM, "Could not start T_retry UE " MME_UE_S1AP_ID_FMT " ", ue_id);
     }
@@ -1187,14 +1187,13 @@ void nas_stop_Ts10_ctx_res(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * co
   }
 }
 
-#include "s1ap_mme.h"
 //------------------------------------------------------------------------------
 void nas_stop_T_retry_specific_procedure(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * const T_retry, void *timer_callback_args)
 {
   if ((T_retry) && (T_retry->id != NAS_TIMER_INACTIVE_ID)) {
-    T_retry->id = nas_timer_stop(T_retry->id, &timer_callback_args);
-    MSC_LOG_EVENT (MSC_NAS_EMM_MME, "0 T_retry stopped UE " MME_UE_S1AP_ID_FMT " ", ue_id);
-    OAILOG_DEBUG (LOG_NAS_EMM, "T_retry stopped UE " MME_UE_S1AP_ID_FMT "\n", ue_id);
+	T_retry->id = nas_timer_stop(T_retry->id, &timer_callback_args);
+	MSC_LOG_EVENT (MSC_NAS_EMM_MME, "0 T_retry stopped UE " MME_UE_S1AP_ID_FMT " ", ue_id);
+	OAILOG_DEBUG (LOG_NAS_EMM, "T_retry stopped UE " MME_UE_S1AP_ID_FMT " with timer id %u \n", ue_id, T_retry->id);
   }
 }
 

@@ -268,15 +268,16 @@ mme_api_notify_imsi (
   const imsi64_t imsi64)
 {
   ue_context_t                           *ue_context = NULL;
-
   ue_context_t                           *ue_context_imsi_duplicate = NULL;
 
   OAILOG_FUNC_IN (LOG_NAS);
 
   ue_context_imsi_duplicate = mme_ue_context_exists_imsi(&mme_app_desc.mme_ue_contexts, imsi64);
   if(ue_context_imsi_duplicate){
-    OAILOG_ERROR(LOG_MME_APP, "MME_APP context with ue_id=" MME_UE_S1AP_ID_FMT " already exists for IMSI " IMSI_64_FMT" (valid). Overwriting the IMSI value to new " MME_UE_S1AP_ID_FMT ".\n",
-        ue_context_imsi_duplicate->privates.mme_ue_s1ap_id, imsi64, id);
+    if(ue_context_imsi_duplicate->privates.fields.mm_state == EMM_REGISTERED){
+	  OAILOG_ERROR(LOG_MME_APP, "MME_APP context (EMM-REGISTERED) with ue_id=" MME_UE_S1AP_ID_FMT " already exists for IMSI " IMSI_64_FMT" (valid). Overwriting the IMSI value to new " MME_UE_S1AP_ID_FMT ".\n",
+			  ue_context_imsi_duplicate->privates.mme_ue_s1ap_id, imsi64, id);
+    }
     OAILOG_FUNC_RETURN (LOG_NAS, RETURNok);
   }
 

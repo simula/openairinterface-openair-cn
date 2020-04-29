@@ -515,7 +515,7 @@ static int _emm_as_data_ind (emm_as_data_t * msg, int *emm_cause)
 
       if (plain_msg) {
         nas_message_security_header_t           header = {0};
-        emm_security_context_t                  security_temp = {0}, *security = NULL;        /* Current EPS NAS security context     */
+        emm_security_context_t                  security_temp = {0}, *security_p = NULL;        /* Current EPS NAS security context     */
         nas_message_decode_status_t             decode_status = {0};
 
         /*
@@ -525,7 +525,7 @@ static int _emm_as_data_ind (emm_as_data_t * msg, int *emm_cause)
 
         if (emm_ctx) {
           if (IS_EMM_CTXT_PRESENT_SECURITY(emm_ctx)) {
-            security = &emm_ctx->_security;
+            security_p = &emm_ctx->_security;
           }
         } else {
         	/** Might TAU after HO. */
@@ -533,8 +533,13 @@ static int _emm_as_data_ind (emm_as_data_t * msg, int *emm_cause)
         	if(ue_context){
         		mme_app_s10_proc_mme_handover_t * s10_proc_ho = mme_app_get_s10_procedure_mme_handover(ue_context);
         		if(s10_proc_ho){
-        			security = &security_temp;
-        			temp_sec_ctx_from_mm_eps_context(security, s10_proc_ho->nas_s10_context.mm_eps_ctx);
+        			if(s10_proc_ho->proc.target_mme && s10_proc_ho->nas_s10_context.mm_eps_ctx){
+            			security_p = &security_temp;
+            			temp_sec_ctx_from_mm_eps_context(security_p, s10_proc_ho->nas_s10_context.mm_eps_ctx);
+        			} else {
+        				/** (Implicit) detach might be in process. Dropping the message bit below. */
+        	            OAILOG_ERROR(LOG_NAS_EMM, "EMMAS-SAP - No EMM context exists for ue_id " MME_UE_S1AP_ID_FMT". And handover procedure cannot be used (no valid security context).\n", msg->ue_id);
+        			}
         		}
         	}
         }
@@ -543,7 +548,7 @@ static int _emm_as_data_ind (emm_as_data_t * msg, int *emm_cause)
             plain_msg->data,
             &header,
             blength(msg->nas_msg),
-            security,
+            security_p,
             &ul_nas_count,
             &decode_status);
 

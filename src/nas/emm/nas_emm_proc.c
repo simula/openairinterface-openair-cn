@@ -294,8 +294,7 @@ nas_proc_authentication_info_answer (
 
   ctxt = emm_data_context_get_by_imsi(&_emm_data, imsi64);
   if (!(ctxt)) {
-    OAILOG_ERROR (LOG_NAS_EMM, "That's embarrassing as we don't know this IMSI\n");
-    MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_AUTH_INFO_ANS Unknown imsi " IMSI_64_FMT, imsi64);
+    OAILOG_ERROR (LOG_NAS_EMM, "That's embarrassing as we don't know this IMSI " IMSI_64_FMT".\n", imsi64);
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNerror);
   }
 
@@ -311,8 +310,7 @@ nas_proc_authentication_info_answer (
 
     rc = nas_proc_auth_param_res (ctxt->ue_id, aia->auth_info.nb_of_vectors, aia->auth_info.eutran_vector);
   } else {
-    OAILOG_ERROR (LOG_NAS_EMM, "INFORMING NAS ABOUT AUTH RESP ERROR CODE\n");
-    MSC_LOG_EVENT (MSC_MMEAPP_MME, "0 S6A_AUTH_INFO_ANS S6A Failure imsi " IMSI_64_FMT, imsi64);
+    OAILOG_ERROR (LOG_NAS_EMM, "INFORMING NAS ABOUT AUTH RESP ERROR CODE FOR IMSI " IMSI_64_FMT ".\n", imsi64);
 
     /*
      * Inform NAS layer with the right failure

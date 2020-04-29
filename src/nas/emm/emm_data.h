@@ -387,7 +387,7 @@ void nas_stop_Ts6a_auth_info(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * 
 void nas_start_Ts10_ctx_req(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * const Ts10_auth_info,  time_out_t time_out_cb, void *timer_callback_args);
 void nas_stop_Ts10_ctx_res(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * const Ts10_ctx_res, void *timer_callback_args);
 
-void nas_start_T_retry_specific_procedure(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * const T_retry,  time_out_t time_out_cb, void *timer_callback_args);
+void nas_start_T_retry_specific_procedure(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * const T_retry,  time_out_t time_out_cb);
 void nas_stop_T_retry_specific_procedure(const mme_ue_s1ap_id_t ue_id, struct nas_timer_s * const T_retry, void *timer_callback_args);
 
 int  emm_data_context_add(emm_data_t *emm_data, struct emm_data_context_s *elm) __attribute__ ((nonnull)) ;
