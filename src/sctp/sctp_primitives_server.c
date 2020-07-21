@@ -168,7 +168,8 @@ static int sctp_remove_assoc_from_list (sctp_assoc_id_t assoc_id)
    * Association not in the list
    */
   if ((assoc_desc = sctp_is_assoc_in_list (assoc_id)) == NULL) {
-    return -1;
+    pthread_mutex_unlock (&sctp_desc_mutex);
+		return -1;
   }
 
   if (assoc_desc->next_assoc == NULL) {
@@ -270,7 +271,8 @@ static int sctp_send_msg (
   pthread_mutex_lock (&sctp_desc_mutex);
 
   if ((assoc_desc = sctp_is_assoc_in_list (sctp_assoc_id)) == NULL) {
-    OAILOG_DEBUG (LOG_SCTP, "This assoc id has not been fount in list (%d)\n", sctp_assoc_id);
+    OAILOG_ERROR (LOG_SCTP, "This assoc id has not been fount in list (%d)\n", sctp_assoc_id);
+    pthread_mutex_unlock (&sctp_desc_mutex);
     return -1;
   }
 
@@ -278,7 +280,8 @@ static int sctp_send_msg (
     /*
      * The socket is invalid may be closed.
      */
-    OAILOG_DEBUG (LOG_SCTP, "The socket is invalid may be closed (assoc id %d)\n", sctp_assoc_id);
+  	OAILOG_ERROR(LOG_SCTP, "The socket is invalid may be closed (assoc id %d)\n", sctp_assoc_id);
+    pthread_mutex_unlock (&sctp_desc_mutex);
     return -1;
   }
 
@@ -290,7 +293,8 @@ static int sctp_send_msg (
    */
   if (sctp_sendmsg (assoc_desc->sd, (const void *)bdata(*payload), blength(*payload), NULL, 0, htonl(assoc_desc->ppid), 0, stream, 0, 0) < 0) {
     bdestroy_wrapper(payload);
-    OAILOG_ERROR (LOG_SCTP, "send: %s:%d", strerror (errno), errno);
+    OAILOG_ERROR (LOG_SCTP, "send: %s:%d\n", strerror (errno), errno);
+    pthread_mutex_unlock (&sctp_desc_mutex);
     return -1;
   }
   OAILOG_DEBUG (LOG_SCTP, "Successfully sent %d bytes on stream %d\n", blength(*payload), stream);

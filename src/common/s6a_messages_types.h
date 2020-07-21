@@ -51,9 +51,13 @@ typedef struct s6a_update_location_req_s {
   unsigned skip_subscriber_data:1;
 #define INITIAL_ATTACH       (0x1)
   unsigned initial_attach:1;
+  unsigned imeisv_present:1;
 
   char       imsi[IMSI_BCD_DIGITS_MAX + 1]; // username
   uint8_t    imsi_length;               // username
+
+  char       imei[IMEI_DIGITS_MAX + 1]; // imeisv
+  char       sv[2];
 
   plmn_t     visited_plmn;              // visited plmn id
   rat_type_t rat_type;                  // rat type

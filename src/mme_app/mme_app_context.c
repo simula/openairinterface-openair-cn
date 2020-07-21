@@ -2043,7 +2043,7 @@ mme_app_handle_s10_context_request(const itti_s10_context_request_t * const s10_
  }
 
 // if(1){
-//   _mme_app_send_s10_context_response_err(s10_context_request_pP->s10_target_mme_teid.teid, &s10_context_request_pP->peer_ip, s10_context_request_pP->trxn, CONTEXT_NOT_FOUND);	//	 _mme_app_send_s10_context_response_err(s10_context_request_pP->s10_target_mme_teid.teid, &s10_context_request_pP->peer_ip, s10_context_request_pP->trxn, CONTEXT_NOT_FOUND);
+//   _mme_app_send_s10_context_response_err(s10_context_request_pP->s10_target_mme_teid.teid, &s10_context_request_pP->mme_peer_ip, s10_context_request_pP->trxn, CONTEXT_NOT_FOUND);	//	 _mme_app_send_s10_context_response_err(s10_context_request_pP->s10_target_mme_teid.teid, &s10_context_request_pP->peer_ip, s10_context_request_pP->trxn, CONTEXT_NOT_FOUND);
 //   OAILOG_FUNC_OUT (LOG_MME_APP);
 // }
 

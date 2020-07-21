@@ -189,7 +189,7 @@ esm_proc_pdn_disconnect_request (
   OAILOG_INFO (LOG_NAS_ESM, "ESM-PROC  - Creating an ESM procedure and starting T3495 for Deactivate Default EPS bearer context deactivation (ue_id=" MME_UE_S1AP_ID_FMT ", context_identifier=%d)\n",
       ue_id, pdn_context->context_identifier);
   /** Create a procedure, but don't start the timer yet. */
-  esm_proc_pdn_disconnect = _esm_proc_create_pdn_connectivity_procedure(ue_id, NULL, pti);
+  esm_proc_pdn_disconnect = _esm_proc_create_pdn_connectivity_procedure(ue_id, NULL, NULL, pti);
   esm_proc_pdn_disconnect->default_ebi = pdn_context->default_ebi;
   /** Update the PDN connectivity procedure with the PDN context information. */
   esm_proc_pdn_disconnect->pdn_cid = pdn_context->context_identifier;

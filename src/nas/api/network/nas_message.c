@@ -400,7 +400,7 @@ int nas_message_decode (
   /*
    * Decode the header
    */
-  OAILOG_STREAM_HEX(OAILOG_LEVEL_DEBUG, LOG_NAS, "Incoming NAS message: ", buffer, length)
+  OAILOG_STREAM_HEX(OAILOG_LEVEL_DEBUG, LOG_NAS, "Incoming NAS message: \n", buffer, length)
   if (emm_security_context) {
     status->security_context_available = 1;
   }

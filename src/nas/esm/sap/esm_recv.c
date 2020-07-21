@@ -51,6 +51,7 @@
 #include "common_types.h"
 #include "assertions.h"
 #include "conversions.h"
+#include "3gpp_23.003.h"
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 #include "3gpp_29.274.h"
@@ -162,6 +163,7 @@ esm_recv_pdn_connectivity_request (
   bool *is_attach,
   const mme_ue_s1ap_id_t ue_id,
   const imsi_t *imsi,
+  const imeisv_t *imeisv_pP,
   proc_tid_t pti,
   ebi_t ebi,
   tai_t *visited_tai,
@@ -304,7 +306,7 @@ esm_recv_pdn_connectivity_request (
    */
   DevAssert(!esm_proc_pdn_connectivity);
   OAILOG_DEBUG(LOG_NAS_ESM, "ESM-SAP   - No ESM procedure for UE " MME_UE_S1AP_ID_FMT " exists. Proceeding with handling the new ESM request (pti=%d) for PDN connectivity.\n", ue_id, pti);
-  esm_proc_pdn_connectivity = _esm_proc_create_pdn_connectivity_procedure(ue_id, imsi, pti);
+  esm_proc_pdn_connectivity = _esm_proc_create_pdn_connectivity_procedure(ue_id, imsi, imeisv_pP, pti);
   esm_proc_pdn_connectivity->request_type = pdn_request_type;
   esm_proc_pdn_connectivity->pdn_type = pdn_type;
   esm_proc_pdn_connectivity->is_attach = *is_attach;
@@ -358,7 +360,7 @@ esm_recv_pdn_connectivity_request (
   }
   if(!apn_configuration) { /**< We should have an APN identifier by now. If no APN-Config is available, request subscription data. */
     OAILOG_INFO (LOG_NAS_ESM, "ESM-SAP   - Getting subscription profile for IMSI "IMSI_64_FMT ". " "(ue_id=%d, pti=%d)\n", imsi64, ue_id, pti);
-    nas_itti_pdn_config_req(ue_id, imsi, esm_proc_pdn_connectivity->request_type, &esm_proc_pdn_connectivity->visited_tai.plmn);
+    nas_itti_pdn_config_req(ue_id, imsi, imeisv_pP, esm_proc_pdn_connectivity->request_type, &esm_proc_pdn_connectivity->visited_tai.plmn);
     /*
      * No ESM response message. Downloading subscription data via ULR.
      * An ESM procedure is created but no timer is started.
@@ -505,7 +507,9 @@ esm_cause_t esm_recv_information_response (
 
   if(!apn_configuration) { /**< Will always be the default configuration, even if a name is given. */
     OAILOG_INFO (LOG_NAS_ESM, "ESM-SAP   - Getting subscription profile for IMSI "IMSI_64_FMT ". " "(ue_id=%d, pti=%d)\n", imsi64, ue_id, pti);
-    nas_itti_pdn_config_req(ue_id, &esm_proc_pdn_connectivity->imsi, esm_proc_pdn_connectivity->request_type, &esm_proc_pdn_connectivity->visited_tai.plmn);
+    nas_itti_pdn_config_req(ue_id, &esm_proc_pdn_connectivity->imsi,
+    		esm_proc_pdn_connectivity->imeisv_is_present ? &esm_proc_pdn_connectivity->imeisv : NULL,
+				esm_proc_pdn_connectivity->request_type, &esm_proc_pdn_connectivity->visited_tai.plmn);
     /*
      * No ESM response message. Downloading subscription data via ULR.
      * An ESM procedure is created but no timer is started.

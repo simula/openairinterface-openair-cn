@@ -272,6 +272,36 @@ s6a_generate_update_location (
   value.u32 = ulr_pP->rat_type;
   CHECK_FCT (fd_msg_avp_setvalue (avp_p, &value));
   CHECK_FCT (fd_msg_avp_add (msg_p, MSG_BRW_LAST_CHILD, avp_p));
+
+  /*
+   * Adding the Terminal Information AVP
+   */
+  if(ulr_pP->imeisv_present)
+  {
+  	struct avp                             *child_avp;
+
+  	CHECK_FCT (fd_msg_avp_new (s6a_fd_cnf.dataobj_s6a_terminal_information, 0, &avp_p));
+  	/*
+  	 * Add the IMEI
+  	 */
+  	CHECK_FCT (fd_msg_avp_new (s6a_fd_cnf.dataobj_s6a_imei, 0, &child_avp));
+  	value.os.data = (unsigned char *)ulr_pP->imei;
+  	value.os.len = strlen (ulr_pP->imei);
+  	CHECK_FCT (fd_msg_avp_setvalue (child_avp, &value));
+  	CHECK_FCT (fd_msg_avp_add (avp_p, MSG_BRW_LAST_CHILD, child_avp));
+
+  	/*
+  	 * Add the Software Version as empty
+  	 */
+  	CHECK_FCT (fd_msg_avp_new (s6a_fd_cnf.dataobj_s6a_software_version, 0, &child_avp));
+  	value.os.data = (unsigned char *)ulr_pP->sv;
+  	value.os.len = strlen (ulr_pP->sv);
+  	CHECK_FCT (fd_msg_avp_setvalue (child_avp, &value));
+  	CHECK_FCT (fd_msg_avp_add (avp_p, MSG_BRW_LAST_CHILD, child_avp));
+
+  	CHECK_FCT (fd_msg_avp_add (msg_p, MSG_BRW_LAST_CHILD, avp_p));
+  }
+
   /*
    * Adding ULR-Flags
    */

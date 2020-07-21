@@ -60,6 +60,7 @@
 #include "log.h"
 #include "common_types.h"
 #include "conversions.h"
+#include "3gpp_23.003.h"
 #include "3gpp_24.007.h"
 #include "3gpp_24.008.h"
 #include "3gpp_29.274.h"
@@ -144,7 +145,7 @@ esm_send_pdn_connectivity_reject (
 }
 
 //-----------------------------------------------------------------------------
-nas_esm_proc_pdn_connectivity_t *_esm_proc_create_pdn_connectivity_procedure(mme_ue_s1ap_id_t ue_id, imsi_t *imsi, pti_t pti)
+nas_esm_proc_pdn_connectivity_t *_esm_proc_create_pdn_connectivity_procedure(mme_ue_s1ap_id_t ue_id, imsi_t *imsi, imeisv_t *imeisv, pti_t pti)
 {
   /** APN may be missing at the beginning. */
   nas_esm_proc_pdn_connectivity_t  *esm_proc_pdn_connectivity = mme_app_nas_esm_create_pdn_connectivity_procedure(ue_id, pti);
@@ -152,6 +153,10 @@ nas_esm_proc_pdn_connectivity_t *_esm_proc_create_pdn_connectivity_procedure(mme
 
   if(imsi)
     memcpy((void*)&esm_proc_pdn_connectivity->imsi, imsi, sizeof(imsi_t));
+  if(imeisv){
+    memcpy((void*)&esm_proc_pdn_connectivity->imeisv, imeisv, sizeof(imeisv_t));
+    esm_proc_pdn_connectivity->imeisv_is_present = true;
+	}
   return esm_proc_pdn_connectivity;
 }
 
@@ -498,10 +503,11 @@ esm_proc_pdn_config_res(mme_ue_s1ap_id_t ue_id, bool * is_attach, pti_t * pti, i
     	/**
     	 * Trigger a new ESM procedure and handle.
     	 * Continue with the session creation.
+    	 * No IMEI-SV needed at this point, since the APN Configuration profile is already loaded.
     	 */
     	OAILOG_WARNING (LOG_NAS_EMM, "EMM-PROC  - " "No PDN context could be found PDN configuration response not processed in EMM layer only due TAU. "
     			"Ignoring (should be sent to ESM).. for id " MME_UE_S1AP_ID_FMT ". \n", ue_id);
-    	esm_proc_pdn_connectivity = _esm_proc_create_pdn_connectivity_procedure(ue_id, imsi, PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
+    	esm_proc_pdn_connectivity = _esm_proc_create_pdn_connectivity_procedure(ue_id, imsi, NULL, PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
     	esm_proc_pdn_connectivity->is_attach = true; /**< Will only set the default bearer. */
     	esm_proc_pdn_connectivity->request_type = REQUEST_TYPE_INITIAL_REQUEST;
     	memcpy(&esm_proc_pdn_connectivity->visited_tai, visited_tai, sizeof(tai_t));

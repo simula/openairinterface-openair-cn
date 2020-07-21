@@ -164,7 +164,7 @@ nas_esm_proc_data_ind (
   bstring                                 rsp = NULL;
   int                                     rc = RETURNok;
 
-  _esm_sap_recv(esm_data_ind->ue_id, &esm_data_ind->imsi, &esm_data_ind->visited_tai, esm_data_ind->req, &rsp);
+  _esm_sap_recv(esm_data_ind->ue_id, &esm_data_ind->imsi, &esm_data_ind->imeisv, &esm_data_ind->visited_tai, esm_data_ind->req, &rsp);
   /** We don't check for the error.. If a response message is there, we directly transmit it over the lower layers.. */
   if(rsp){
     /**

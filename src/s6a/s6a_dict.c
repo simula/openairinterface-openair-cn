@@ -88,6 +88,11 @@ s6a_fd_init_dict_objs (
   CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Visited-PLMN-Id", &s6a_fd_cnf.dataobj_s6a_visited_plmn_id, ENOENT));
   CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RAT-Type", &s6a_fd_cnf.dataobj_s6a_rat_type, ENOENT));
   CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Cancellation-Type", &s6a_fd_cnf.dataobj_s6a_cancellation_type, ENOENT));
+
+  CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Terminal-Information", &s6a_fd_cnf.dataobj_s6a_terminal_information, ENOENT));
+  CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IMEI", &s6a_fd_cnf.dataobj_s6a_imei, ENOENT));
+  CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Software-Version", &s6a_fd_cnf.dataobj_s6a_software_version, ENOENT));
+
   CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CLR-Flags", &s6a_fd_cnf.dataobj_s6a_clr_flags, ENOENT));
   CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "ULR-Flags", &s6a_fd_cnf.dataobj_s6a_ulr_flags, ENOENT));
   CHECK_FD_FCT (fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "ULA-Flags", &s6a_fd_cnf.dataobj_s6a_ula_flags, ENOENT));

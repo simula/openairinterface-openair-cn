@@ -60,7 +60,7 @@ Description Defines the ESM Service Access Points at which the EPS
 
 void esm_sap_initialize(void);
 
-void _esm_sap_recv (mme_ue_s1ap_id_t mme_ue_s1ap_id, imsi_t *imsi, tai_t *visited_tai,
+void _esm_sap_recv (mme_ue_s1ap_id_t mme_ue_s1ap_id, imsi_t *imsi, const imeisv_t *const imeisv_pP, tai_t *visited_tai,
   const_bstring req, bstring *rsp);
 
 void esm_sap_signal(esm_sap_t *msg, bstring * resp);

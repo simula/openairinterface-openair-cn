@@ -452,6 +452,27 @@ imsi64_t imsi_to_imsi64(const imsi_t * const imsi);
           }\
         }
 
+#define IMEISV_TO_STRING(iMeIsV_t_PtR, iMeI_sTr, sV_sTr, MaXlEn) \
+        {\
+          int l_offset = 0;\
+          int l_ret    = 0;\
+          l_ret = snprintf(iMeI_sTr + l_offset, MaXlEn - l_offset, "%u%u%u%u%u%u%u%u",\
+                  (iMeIsV_t_PtR)->u.num.tac1, (iMeIsV_t_PtR)->u.num.tac2,\
+                  (iMeIsV_t_PtR)->u.num.tac3, (iMeIsV_t_PtR)->u.num.tac4,\
+                  (iMeIsV_t_PtR)->u.num.tac5, (iMeIsV_t_PtR)->u.num.tac6,\
+                  (iMeIsV_t_PtR)->u.num.tac7, (iMeIsV_t_PtR)->u.num.tac8);\
+          if (l_ret > 0) {\
+            l_offset += l_ret;\
+            l_ret = snprintf(iMeI_sTr + l_offset, MaXlEn - l_offset, "%u%u%u%u%u%u",\
+                (iMeIsV_t_PtR)->u.num.snr1, (iMeIsV_t_PtR)->u.num.snr2,\
+                (iMeIsV_t_PtR)->u.num.snr3, (iMeIsV_t_PtR)->u.num.snr4,\
+                (iMeIsV_t_PtR)->u.num.snr5, (iMeIsV_t_PtR)->u.num.snr6);\
+          }\
+					if (l_ret > 0) {\
+						l_ret = snprintf(sV_sTr, MaXlEn - l_offset, "%u%u", \
+								(iMeIsV_t_PtR)->u.num.svn1, (iMeIsV_t_PtR)->u.num.svn2);\
+					}\
+        }
 
 void hexa_to_ascii(uint8_t *from, char *to, size_t length);
 

@@ -1923,7 +1923,9 @@ static int _emm_tracking_area_update_run_procedure(emm_data_context_t *emm_conte
             /**
              * Always use initial to trigger a CLR.
              */
-            rc = nas_itti_pdn_config_req(emm_context->ue_id, &emm_context->_imsi, REQUEST_TYPE_INITIAL_REQUEST, &emm_context->originating_tai.plmn);
+            rc = nas_itti_pdn_config_req(emm_context->ue_id, &emm_context->_imsi,
+        				IS_EMM_CTXT_PRESENT_IMEISV(emm_context) ? &emm_context->_imeisv : NULL,
+								REQUEST_TYPE_INITIAL_REQUEST, &emm_context->originating_tai.plmn);
             OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
     	}
       } else{
@@ -1934,7 +1936,7 @@ static int _emm_tracking_area_update_run_procedure(emm_data_context_t *emm_conte
           nas_delete_tau_procedure(emm_context);
         }else{
           OAILOG_INFO(LOG_NAS_EMM, "EMM-PROC  - EMM context for the ue_id=" MME_UE_S1AP_ID_FMT " has a valid and active EPS security context and subscription but is not in EMM_REGISTERED state. Instead %d. "
-              "Continuing with the tracking area update reject. \n", emm_context->ue_id);
+              "Continuing with the tracking area update reject. \n", emm_context->ue_id, emm_context->_emm_fsm_state);
           rc = emm_wrapper_tracking_area_update_reject (emm_context, EMM_CAUSE_NETWORK_FAILURE);
           OAILOG_FUNC_RETURN (LOG_NAS_EMM, RETURNerror);
         }
@@ -1945,8 +1947,14 @@ static int _emm_tracking_area_update_run_procedure(emm_data_context_t *emm_conte
       /** Check if the origin TAI is belonging to the same MME (RF issues). */
       if (mme_app_check_ta_local(&tau_proc->ies->last_visited_registered_tai->plmn, tau_proc->ies->last_visited_registered_tai->tac)) {
         OAILOG_WARNING(LOG_NAS_EMM, "EMM-PROC  - For UE " MME_UE_S1AP_ID_FMT " the last visited TAI " TAI_FMT " is attached to current MME (assuming RF issues). "
-            "Proceeding with identification procedure. \n", TAI_ARG(tau_proc->ies->last_visited_registered_tai), emm_context->ue_id);
-        rc = emm_proc_identification (emm_context, (nas_emm_proc_t *)tau_proc, IDENTITY_TYPE_2_IMSI, _emm_tracking_area_update_success_identification_cb, _emm_tracking_area_update_failure_identification_cb);
+            "Proceeding with identification procedure. \n", emm_context->ue_id, TAI_ARG(tau_proc->ies->last_visited_registered_tai));
+        /* Only, in case the TAU is not of type periodic, start the identification procedure. Else the security attributes will not be present. */
+        if(tau_proc->ies->eps_update_type.eps_update_type_value != EPS_UPDATE_TYPE_PERIODIC_UPDATING)
+        	rc = emm_proc_identification (emm_context, (nas_emm_proc_t *)tau_proc, IDENTITY_TYPE_2_IMSI, _emm_tracking_area_update_success_identification_cb, _emm_tracking_area_update_failure_identification_cb);
+        else {
+          OAILOG_ERROR(LOG_NAS_EMM, "EMM-PROC  - For UE " MME_UE_S1AP_ID_FMT " the last visited TAI " TAI_FMT " is attached to current MME. We have received a periodic TAU but cannot proceed with the request, since security capabilities cannot be retrieved.\n", emm_context->ue_id, TAI_ARG(tau_proc->ies->last_visited_registered_tai));
+        	rc = emm_wrapper_tracking_area_update_reject (emm_context, EMM_CAUSE_NETWORK_FAILURE);
+        }
         OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
       }
 
@@ -2078,7 +2086,9 @@ static int _context_req_proc_success_cb (emm_data_context_t *emm_context)
     nas_delete_cn_procedure(emm_context, nas_ctx_req_proc);
 
   /** ESM context will not change, no ESM_PROC data will be created. */
-  rc = nas_itti_pdn_config_req(emm_context->ue_id, &emm_context->_imsi, REQUEST_TYPE_INITIAL_REQUEST, &emm_context->originating_tai.plmn);
+  rc = nas_itti_pdn_config_req(emm_context->ue_id, &emm_context->_imsi,
+			IS_EMM_CTXT_PRESENT_IMEISV(emm_context) ? &emm_context->_imeisv : NULL,
+			REQUEST_TYPE_INITIAL_REQUEST, &emm_context->originating_tai.plmn);
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
 }
 
@@ -2243,7 +2253,9 @@ static int _emm_tracking_area_update_success_security_cb (emm_data_context_t *em
 	 * Not checking if any ESM process is running, should not.
 	 * Ask for subscription information.
 	 */
-    rc = nas_itti_pdn_config_req(emm_context->ue_id, &emm_context->_imsi, REQUEST_TYPE_INITIAL_REQUEST, &emm_context->originating_tai.plmn);
+    rc = nas_itti_pdn_config_req(emm_context->ue_id, &emm_context->_imsi,
+				IS_EMM_CTXT_PRESENT_IMEISV(emm_context) ? &emm_context->_imeisv : NULL,
+				REQUEST_TYPE_INITIAL_REQUEST, &emm_context->originating_tai.plmn);
     OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);
   }
   OAILOG_FUNC_RETURN (LOG_NAS_EMM, rc);

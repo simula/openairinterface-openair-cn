@@ -169,7 +169,9 @@ esm_sap_signal(esm_sap_t * msg, bstring *rsp)
 
   case ESM_PDN_CONFIG_RES:{
     pti_t pti = PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    msg->esm_cause = esm_proc_pdn_config_res(msg->ue_id, &msg->is_attach_tau, &pti, &msg->data.pdn_config_res->imsi, &msg->data.pdn_config_res->target_tai,
+    msg->esm_cause = esm_proc_pdn_config_res(msg->ue_id, &msg->is_attach_tau, &pti,
+    		&msg->data.pdn_config_res->imsi,
+				&msg->data.pdn_config_res->target_tai,
     		&msg->active_ebrs);
     if(msg->esm_cause != ESM_CAUSE_SUCCESS) {
       /*
@@ -463,7 +465,8 @@ void
 _esm_sap_recv (
   mme_ue_s1ap_id_t    mme_ue_s1ap_id,
   imsi_t             *imsi,
-  tai_t              *visited_tai,
+  const imeisv_t     *const imeisv_pP,
+	tai_t              *visited_tai,
   const_bstring       req,
   bstring            *rsp)
 {
@@ -550,7 +553,7 @@ _esm_sap_recv (
       /*
        * Process PDN connectivity request message received from the UE.
        */
-      esm_cause = esm_recv_pdn_connectivity_request (&is_attach, mme_ue_s1ap_id, imsi, pti, ebi, visited_tai, &esm_msg.pdn_connectivity_request, &esm_resp_msg);
+      esm_cause = esm_recv_pdn_connectivity_request (&is_attach, mme_ue_s1ap_id, imsi, imeisv_pP, pti, ebi, visited_tai, &esm_msg.pdn_connectivity_request, &esm_resp_msg);
       if (esm_cause != ESM_CAUSE_SUCCESS) {
         /*
          * No transaction expected (not touching network triggered transactions.

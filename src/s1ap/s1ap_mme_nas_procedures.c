@@ -896,7 +896,7 @@ int s1ap_generate_s1ap_e_rab_release_req (itti_s1ap_e_rab_release_req_t * const 
 
     for  (int i= 0; i < e_rab_release_req->e_rab_to_be_release_list.no_of_items; i++) {
       S1AP_E_RABItemIEs_t * s1ap_e_rab_item_ies = calloc(1, sizeof(S1AP_E_RABItemIEs_t));
-      s1ap_e_rab_item_ies->id = S1AP_ProtocolIE_ID_id_E_RABReleaseItem;
+      s1ap_e_rab_item_ies->id = S1AP_ProtocolIE_ID_id_E_RABItem;
       s1ap_e_rab_item_ies->criticality = S1AP_Criticality_ignore;
       s1ap_e_rab_item_ies->value.present = S1AP_E_RABItemIEs__value_PR_E_RABItem;
 

@@ -580,7 +580,9 @@ static int _emm_as_data_ind (emm_as_data_t * msg, int *emm_cause)
             // shrink plain_msg
         	btrunc(plain_msg, bytes);
         	nas_itti_esm_data_ind(emm_ctx->ue_id, plain_msg,
-        			&emm_ctx->_imsi, &emm_ctx->originating_tai);
+        			&emm_ctx->_imsi,
+							IS_EMM_CTXT_PRESENT_IMEISV(emm_ctx) ? &emm_ctx->_imeisv : NULL,
+							&emm_ctx->originating_tai);
         	/** Not removing the truncated message. */
           } else {
             OAILOG_INFO (LOG_NAS_EMM, "EMMAS-SAP - No UE context exists for ue_id " MME_UE_S1AP_ID_FMT". "

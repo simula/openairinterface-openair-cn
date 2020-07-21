@@ -155,6 +155,7 @@ typedef struct itti_nas_esm_data_ind_s {
   mme_ue_s1ap_id_t  ue_id;
   bstring           req;
   imsi_t            imsi;
+  imeisv_t          imeisv;
   tai_t             visited_tai;
 } itti_nas_esm_data_ind_t;
 

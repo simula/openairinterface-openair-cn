@@ -40,6 +40,7 @@
 
 #include "log.h"
 #include "msc.h"
+#include "3gpp_23.003.h"
 #include "assertions.h"
 #include "conversions.h"
 #include "dynamic_memory_check.h"
@@ -61,6 +62,7 @@ nas_itti_esm_data_ind(
   const mme_ue_s1ap_id_t  ue_id,
   bstring                 esm_msg_p,
   imsi_t                 *imsi,
+	imeisv_t						   *imeisv,
   tai_t                  *visited_tai)
 {
   MessageDef  *message_p = itti_alloc_new_message (TASK_NAS_EMM, NAS_ESM_DATA_IND);
@@ -68,6 +70,8 @@ nas_itti_esm_data_ind(
   NAS_ESM_DATA_IND (message_p).req     = esm_msg_p;
   if(imsi)
     memcpy(&NAS_ESM_DATA_IND (message_p).imsi, imsi, sizeof(imsi_t));
+  if(imeisv)
+  	memcpy(&NAS_ESM_DATA_IND (message_p).imeisv, imeisv, sizeof(imeisv_t));
   if(visited_tai)
     memcpy(&NAS_ESM_DATA_IND (message_p).visited_tai, visited_tai, sizeof(tai_t));
 
@@ -337,6 +341,7 @@ void nas_itti_dedicated_eps_bearer_deactivation_complete(
 void nas_itti_pdn_config_req(
   unsigned int            ue_idP,
   const imsi_t           *const imsi_pP,
+  const imeisv_t         *const imeisv_pP,
   esm_proc_pdn_request_t  request_type,
   plmn_t                 *visited_plmn)
 {
@@ -358,6 +363,13 @@ void nas_itti_pdn_config_req(
 
   memcpy (&s6a_ulr_p->visited_plmn, visited_plmn, sizeof (plmn_t));
   s6a_ulr_p->rat_type = RAT_EUTRAN;
+
+  /* Set the IMEI-SV. Can reuse the IMEI_TO_STRING Macro */
+  if(imeisv_pP){
+  	IMEISV_TO_STRING(imeisv_pP, s6a_ulr_p->imei, s6a_ulr_p->sv, IMEISV_DIGITS_MAX);
+  	s6a_ulr_p->imeisv_present = 1;
+  }
+
   /*
    * Check if we already have UE data
    * todo: remove this?

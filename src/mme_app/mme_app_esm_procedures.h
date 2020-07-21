@@ -85,6 +85,8 @@ typedef struct nas_esm_proc_pdn_connectivity_s {
   esm_proc_pdn_type_t          pdn_type;
   esm_proc_pdn_request_t       request_type;
   imsi_t                       imsi;
+  imeisv_t                     imeisv;
+  bool                         imeisv_is_present;
   /** Additional elements requested from the UE and set with time.. */
   bstring                      subscribed_apn; /**< Should be copied with bstrcpy(). */
   tai_t                        visited_tai;

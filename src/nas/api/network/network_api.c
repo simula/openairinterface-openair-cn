@@ -394,7 +394,7 @@ network_api_decode_data (
   int                                     as_id = as_message_decode (_network_api_recv_buffer, &_as_data, length);
 
   if (as_id != RETURNerror) {
-    OAILOG_INFO (LOG_NAS,  "NET-API   - AS message id=0x%x successfully decoded", as_id);
+    OAILOG_INFO (LOG_NAS,  "NET-API   - AS message id=0x%x successfully decoded\n", as_id);
   }
 
   OAILOG_FUNC_RETURN (LOG_NAS, as_id);
@@ -428,7 +428,7 @@ network_api_encode_data (
                                                                      NETWORK_API_SEND_BUFFER_SIZE);
 
   if (bytes != RETURNerror) {
-    OAILOG_INFO (LOG_NAS,  "NET-API   - %d bytes encoded", bytes);
+    OAILOG_INFO (LOG_NAS,  "NET-API   - %d bytes encoded\n", bytes);
   }
 
   OAILOG_FUNC_RETURN (LOG_NAS, bytes);

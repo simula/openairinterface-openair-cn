@@ -445,7 +445,7 @@ mme_app_handle_initial_ue_message (
           /** Remove the UE reference implicitly, and then the old context. */
           ue_description_t * temp_ue_reference = s1ap_is_enb_ue_s1ap_id_in_list_per_enb(initial_pP->enb_ue_s1ap_id, initial_pP->ecgi.cell_identity.enb_id);
           if(temp_ue_reference){
-            OAILOG_ERROR (LOG_MME_APP, "MME_APP_INITAIL_UE_MESSAGE. ERROR***** Removing the newly created s1ap UE reference with enbUeS1apId " ENB_UE_S1AP_ID_FMT " and enbId %d.\n" ,
+            OAILOG_ERROR (LOG_MME_APP, "MME_APP_INITIAL_UE_MESSAGE. ERROR***** Removing the newly created s1ap UE reference with enbUeS1apId " ENB_UE_S1AP_ID_FMT " and enbId %d.\n" ,
                 initial_pP->enb_ue_s1ap_id, initial_pP->ecgi.cell_identity.enb_id);
             s1ap_remove_ue(temp_ue_reference);
           }
@@ -491,7 +491,7 @@ mme_app_handle_initial_ue_message (
                 DevAssert(s10_handover_proc->proc.timer.id != MME_APP_TIMER_INACTIVE_ID);
                 hashtable_rc_t result_deletion = hashtable_uint64_ts_remove (mme_app_desc.mme_ue_contexts.enb_ue_s1ap_id_ue_context_htbl,
                     (const hash_key_t)enb_s1ap_id_key);
-                OAILOG_ERROR (LOG_MME_APP, "MME_APP_INITAIL_UE_MESSAGE. ERROR***** enb_s1ap_id_key %ld has valid value " ENB_UE_S1AP_ID_FMT ". Result of deletion %d.\n" ,
+                OAILOG_ERROR (LOG_MME_APP, "MME_APP_INITIAL_UE_MESSAGE. ERROR***** enb_s1ap_id_key %ld has valid value " ENB_UE_S1AP_ID_FMT ". Result of deletion %d.\n" ,
                     enb_s1ap_id_key,
                     initial_pP->enb_ue_s1ap_id,
                     result_deletion);
@@ -512,7 +512,7 @@ mme_app_handle_initial_ue_message (
               OAILOG_ERROR (LOG_MME_APP, "MME_APP_INITIAL_UE_MESSAGE. ERROR***** Found an old UE_REFERENCE with enbUeS1apId " ENB_UE_S1AP_ID_FMT " and enbId %d.\n" ,
                   old_ue_reference->enb_ue_s1ap_id, ue_context->privates.fields.e_utran_cgi.cell_identity.enb_id);
               s1ap_remove_ue(old_ue_reference);
-//              OAILOG_WARNING (LOG_MME_APP, "MME_APP_INITAIL_UE_MESSAGE. ERROR***** Removed old UE_REFERENCE with enbUeS1apId " ENB_UE_S1AP_ID_FMT " and enbId %d.\n" ,
+//              OAILOG_WARNING (LOG_MME_APP, "MME_APP_INITIAL_UE_MESSAGE. ERROR***** Removed old UE_REFERENCE with enbUeS1apId " ENB_UE_S1AP_ID_FMT " and enbId %d.\n" ,
 //                  old_ue_reference->enb_ue_s1ap_id, ue_context->privates.fields.e_utran_cgi.cell_identity.enb_id);
             }
             /*
@@ -523,7 +523,7 @@ mme_app_handle_initial_ue_message (
              */
             hashtable_rc_t result_deletion = hashtable_uint64_ts_remove (mme_app_desc.mme_ue_contexts.enb_ue_s1ap_id_ue_context_htbl,
                 (const hash_key_t)ue_context->privates.enb_s1ap_id_key);
-            OAILOG_ERROR (LOG_MME_APP, "MME_APP_INITAIL_UE_MESSAGE. ERROR***** enb_s1ap_id_key %ld has valid value " ENB_UE_S1AP_ID_FMT ". Result of deletion %d.\n" ,
+            OAILOG_ERROR (LOG_MME_APP, "MME_APP_INITIAL_UE_MESSAGE. ERROR***** enb_s1ap_id_key %ld has valid value " ENB_UE_S1AP_ID_FMT ". Result of deletion %d.\n" ,
                 ue_context->privates.enb_s1ap_id_key,
                 ue_context->privates.fields.enb_ue_s1ap_id,
                 result_deletion);
@@ -1411,24 +1411,24 @@ mme_app_handle_modify_bearer_resp (
    * Updating statistics
    */
   if (modify_bearer_resp_pP->cause.cause_value != REQUEST_ACCEPTED) {
-	/**
-	 * Check if a non-zero default-EBI exists, if so check that the PDN is still there.
-	 * If not, ignore the error.
-	 */
-	if (modify_bearer_resp_pP->linked_eps_bearer_id){
-	  mme_app_get_pdn_context(ue_context->privates.mme_ue_s1ap_id, PDN_CONTEXT_IDENTIFIER_UNASSIGNED, modify_bearer_resp_pP->linked_eps_bearer_id, NULL, &pdn_context);
-	  bearer_context_new_t * bc_new = NULL;
-	  if(pdn_context){
-		  bc_new = mme_app_get_session_bearer_context(pdn_context, pdn_context->default_ebi);
-	  }
-	  if(!pdn_context || !bc_new || (bc_new->esm_ebr_context.status == ESM_EBR_INACTIVE_PENDING)){
-	    OAILOG_WARNING(LOG_MME_APP, "Received a non-zero default ebi %d for received MBResp for UE " MME_UE_S1AP_ID_FMT " with error cause. No PDN session found or BC in pendign status (%d).. Ignoring MBResp. \n",
-	    		modify_bearer_resp_pP->linked_eps_bearer_id, ue_context->privates.mme_ue_s1ap_id, (!bc_new) ? NULL: bc_new->esm_ebr_context.status);
-	    OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNok);
-	  }
-	  OAILOG_WARNING(LOG_MME_APP, "Received a non-zero default ebi %d for received MBResp for UE " MME_UE_S1AP_ID_FMT " with error cause. PDN still exists, continuing with implicit detach. BC-state %d. \n",
-			  modify_bearer_resp_pP->linked_eps_bearer_id, ue_context->privates.mme_ue_s1ap_id, (!bc_new) ? NULL: bc_new->esm_ebr_context.status);
-	}
+		/**
+		 * Check if a non-zero default-EBI exists, if so check that the PDN is still there.
+		 * If not, ignore the error.
+		 */
+		if (modify_bearer_resp_pP->linked_eps_bearer_id){
+			mme_app_get_pdn_context(ue_context->privates.mme_ue_s1ap_id, PDN_CONTEXT_IDENTIFIER_UNASSIGNED, modify_bearer_resp_pP->linked_eps_bearer_id, NULL, &pdn_context);
+			bearer_context_new_t * bc_new = NULL;
+			if(pdn_context){
+				bc_new = mme_app_get_session_bearer_context(pdn_context, pdn_context->default_ebi);
+			}
+			if(!pdn_context || !bc_new || (bc_new->esm_ebr_context.status == ESM_EBR_INACTIVE_PENDING)){
+				OAILOG_WARNING(LOG_MME_APP, "Received a non-zero default ebi %d for received MBResp for UE " MME_UE_S1AP_ID_FMT " with error cause. No PDN session found or BC in pendign status (%d).. Ignoring MBResp. \n",
+						modify_bearer_resp_pP->linked_eps_bearer_id, ue_context->privates.mme_ue_s1ap_id, (!bc_new) ? NULL: bc_new->esm_ebr_context.status);
+				OAILOG_FUNC_RETURN (LOG_MME_APP, RETURNok);
+			}
+			OAILOG_WARNING(LOG_MME_APP, "Received a non-zero default ebi %d for received MBResp for UE " MME_UE_S1AP_ID_FMT " with error cause. PDN still exists, continuing with implicit detach. BC-state %d. \n",
+					modify_bearer_resp_pP->linked_eps_bearer_id, ue_context->privates.mme_ue_s1ap_id, (!bc_new) ? NULL: bc_new->esm_ebr_context.status);
+		}
     /**
      * Check if it is an X2 Handover procedure, in that case send an X2 Path Switch Request Failure to the target MME.
      * In addition, perform an implicit detach in any case.
@@ -1671,7 +1671,7 @@ mme_app_handle_downlink_data_notification(const itti_s11_downlink_data_notificat
 
   /** Check that the UE is in idle mode!. */
   if (ECM_IDLE != ue_context->privates.fields.ecm_state) {
-    OAILOG_ERROR (LOG_MME_APP, "UE_Context with IMSI " IMSI_64_FMT " and mmeUeS1apId: %d. \n is not in ECM_IDLE mode, instead %d. \n",
+    OAILOG_ERROR (LOG_MME_APP, "UE_Context with IMSI " IMSI_64_FMT " and mmeUeS1apId: %d is not in ECM_IDLE mode, instead %d. \n",
         ue_context->privates.fields.imsi, ue_context->privates.mme_ue_s1ap_id, ue_context->privates.fields.ecm_state);
     // todo: later.. check this more granularly
     mme_app_send_downlink_data_notification_acknowledge(UE_ALREADY_RE_ATTACHED, saegw_dl_data_ntf_pP->teid, ue_context->privates.fields.mme_teid_s11, saegw_dl_data_ntf_pP->peer_ip, saegw_dl_data_ntf_pP->trxn);
@@ -1741,7 +1741,7 @@ mme_app_trigger_paging_due_signaling(const mme_ue_s1ap_id_t ue_id){
 
   /** Check that the UE is in idle mode!. */
   if (ECM_IDLE != ue_context->privates.fields.ecm_state) {
-    OAILOG_ERROR (LOG_MME_APP, "UE_Context with IMSI " IMSI_64_FMT " and mmeUeS1apId: %d. \n is not in ECM_IDLE mode, instead %d. \n",
+    OAILOG_ERROR (LOG_MME_APP, "UE_Context with IMSI " IMSI_64_FMT " and mmeUeS1apId: %d is not in ECM_IDLE mode, instead %d. \n",
         ue_context->privates.fields.imsi, ue_context->privates.mme_ue_s1ap_id, ue_context->privates.fields.ecm_state);
     // todo: later.. check this more granularly
     /** Ignore this case for signaling.. wait for the MBR to be completed. */

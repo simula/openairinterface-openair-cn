@@ -39,6 +39,7 @@ nas_itti_esm_data_ind(
   const mme_ue_s1ap_id_t  ue_id,
   bstring                 esm_msg_p,
   imsi_t                 *imsi,
+	imeisv_t               *imeisv,
   tai_t                  *visited_tai);
 
 int
@@ -89,6 +90,7 @@ nas_itti_erab_release_req (const mme_ue_s1ap_id_t ue_id,
 void nas_itti_pdn_config_req(
   unsigned int            ue_idP,
   const imsi_t           *const imsi_pP,
+  const imeisv_t           *const imeisv_pP,
   esm_proc_pdn_request_t  request_type,
   plmn_t                 *visited_plmn);
 

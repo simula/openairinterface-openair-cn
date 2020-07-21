@@ -98,6 +98,9 @@ typedef struct {
   /* S6A specific AVPs */
   struct dict_object *dataobj_s6a_visited_plmn_id;
   struct dict_object *dataobj_s6a_rat_type;
+  struct dict_object *dataobj_s6a_terminal_information;
+  struct dict_object *dataobj_s6a_imei;
+  struct dict_object *dataobj_s6a_software_version;
   struct dict_object *dataobj_s6a_ulr_flags;
   struct dict_object *dataobj_s6a_ula_flags;
   struct dict_object *dataobj_s6a_subscription_data;
@@ -155,6 +158,9 @@ extern s6a_fd_cnf_t s6a_fd_cnf;
 #define AVP_CODE_PRE_EMPTION_CAPABILITY            (1047)
 #define AVP_CODE_PRE_EMPTION_VULNERABILITY         (1048)
 #define AVP_CODE_SUBSCRIPTION_DATA                 (1400)
+#define AVP_CODE_TERMINAL_INFORMATION							 (1401)
+#define AVP_CODE_IMEI 														 (1402)
+#define AVP_CODE_SOFTWARE_VERSION 								 (1403)
 #define AVP_CODE_AUTHENTICATION_INFO               (1413)
 #define AVP_CODE_E_UTRAN_VECTOR                    (1414)
 #define AVP_CODE_NETWORK_ACCESS_MODE               (1417)

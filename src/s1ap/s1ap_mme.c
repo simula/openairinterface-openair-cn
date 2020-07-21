@@ -517,7 +517,7 @@ enb_description_t                      *
 s1ap_is_enb_id_in_list (
   const uint32_t enb_id)
 {
-  enb_description_t                      *enb_ref = NULL;
+  enb_description_t                      *enb_ref 	= NULL;
   uint32_t                               *enb_id_p  = (uint32_t*)&enb_id;
   hashtable_ts_apply_callback_on_elements((hash_table_ts_t * const)&g_s1ap_enb_coll, s1ap_enb_compare_by_enb_id_cb, (void *)enb_id_p, (void**)&enb_ref);
   return enb_ref;
@@ -831,7 +831,7 @@ s1ap_remove_ue (
       enb_ref->s1_state = S1AP_INIT;
       update_mme_app_stats_connected_enb_sub();
     } else if (enb_ref->s1_state == S1AP_SHUTDOWN) {
-      OAILOG_INFO(LOG_S1AP, "Deleting eNB");
+      OAILOG_INFO(LOG_S1AP, "Deleting eNB with eNB ID (%d) due to removed UEs.", enb_ref->enb_id);
       hashtable_ts_free (&g_s1ap_enb_coll, enb_ref->sctp_assoc_id);
     }
   }

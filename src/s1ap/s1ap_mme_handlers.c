@@ -421,7 +421,7 @@ s1ap_mme_handle_s1_setup_request (
         s1ap_dump_enb_list();
   			s1ap_mme_itti_send_sctp_shutdown(enb_association->sctp_assoc_id);
 
-  			/** Remove the old and new MCEs. */
+  			/** Remove the old and new eNBs. */
         s1ap_handle_sctp_disconnection(enb_association->sctp_assoc_id, false);
         s1ap_handle_sctp_disconnection(assoc_id, false);
 
@@ -453,6 +453,7 @@ s1ap_mme_handle_s1_setup_request (
   }
   OAILOG_FUNC_RETURN (LOG_S1AP, RETURNerror);
 }
+
 //------------------------------------------------------------------------------
 static
   int
@@ -2276,6 +2277,9 @@ s1ap_handle_sctp_disconnection (
       S1AP_ENB_DEREGISTERED_IND (message_p).mme_ue_s1ap_id[arg.current_ue_index] = 0;
       S1AP_ENB_DEREGISTERED_IND (message_p).enb_ue_s1ap_id[arg.current_ue_index] = 0;
     }
+    /* Add the eNBId. */
+    S1AP_ENB_DEREGISTERED_IND (message_p).enb_id = enb_association->enb_id;
+
     MSC_LOG_TX_MESSAGE (MSC_S1AP_MME, MSC_NAS_MME, NULL, 0, "0 S1AP_ENB_DEREGISTERED_IND num ue to deregister %u", S1AP_ENB_DEREGISTERED_IND (message_p).nb_ue_to_deregister);
     itti_send_msg_to_task (TASK_MME_APP, INSTANCE_DEFAULT, message_p);
     message_p = NULL;
